@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/notifier"
-	"github.com/arturpanteleev/ai-team/pkg/web/store"
+	"github.com/arturpanteleev/workaistrator/pkg/notifier"
+	"github.com/arturpanteleev/workaistrator/pkg/web/store"
 )
 
 // openCursorStore returns a file-backed store with a few events and a second

@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arturpanteleev/ai-team/pkg/gatelib"
-	"github.com/arturpanteleev/ai-team/pkg/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/gate/lib"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/workflow"
 )
 
 // workflow_exit_merge_test.go — finding 6 and 7: ExitGateGroupsFor always merges

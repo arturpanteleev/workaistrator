@@ -15,12 +15,12 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/arturpanteleev/ai-team/pkg/autopickup"
-	"github.com/arturpanteleev/ai-team/pkg/cloudidentity"
-	"github.com/arturpanteleev/ai-team/pkg/lifecycle"
-	"github.com/arturpanteleev/ai-team/pkg/tokenbudget"
-	"github.com/arturpanteleev/ai-team/pkg/web/store"
-	"github.com/arturpanteleev/ai-team/pkg/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/autopickup"
+	"github.com/arturpanteleev/workaistrator/pkg/cloudidentity"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/lifecycle"
+	"github.com/arturpanteleev/workaistrator/pkg/tokenbudget"
+	"github.com/arturpanteleev/workaistrator/pkg/web/store"
 )
 
 // autoPickupActor — исполнитель, от имени которого подборщик создаёт задачу.

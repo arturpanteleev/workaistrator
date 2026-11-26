@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/web/store"
+	"github.com/arturpanteleev/workaistrator/pkg/web/store"
 )
 
 // The observability page selects inclusive calendar days and sends the next

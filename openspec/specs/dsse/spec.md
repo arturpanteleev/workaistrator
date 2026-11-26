@@ -19,26 +19,26 @@ tampered payload or a mismatched public key.
 
 ### Requirement: Signed run and gate bundles
 
-`ai-team export` and `ai-team gate` MUST be able to sign their bundle `BundleDigest`
+`workaistrator export` and `workaistrator gate` MUST be able to sign their bundle `BundleDigest`
 with an ed25519 key, writing a signature file into the bundle
 (`dsse.json`) alongside `index.json`.
 
 #### Scenario: Bundle is signed
 
-- **WHEN** `ai-team export --sign-key <path>` (or `gate --sign-key <path>`) runs
+- **WHEN** `workaistrator export --sign-key <path>` (or `gate --sign-key <path>`) runs
 - **THEN** a `dsse.json` signature file MUST exist in the bundle
 - **AND** it MUST verify against the bundle `BundleDigest`
 
 ### Requirement: Bundle signature verification
 
-`ai-team verify` MUST verify a bundle signature when a public key is provided
+`workaistrator verify` MUST verify a bundle signature when a public key is provided
 (`--verify-key <path>`). If the key is provided but the signature is absent or
 invalid, verification MUST fail (fail-closed). A bundle without a signature
 remains valid when no key is requested.
 
 #### Scenario: Signature verifies
 
-- **WHEN** `ai-team verify --verify-key <path>` checks a correctly signed bundle
+- **WHEN** `workaistrator verify --verify-key <path>` checks a correctly signed bundle
 - **THEN** verification MUST succeed
 
 #### Scenario: Signature invalid or missing with key required
@@ -48,7 +48,7 @@ remains valid when no key is requested.
 
 #### Scenario: Unsigned bundle verified without key
 
-- **WHEN** `ai-team verify` checks a bundle with no signature and no key requested
+- **WHEN** `workaistrator verify` checks a bundle with no signature and no key requested
 - **THEN** verification MUST succeed (integrity only)
 
 ### Requirement: Key files are never committed

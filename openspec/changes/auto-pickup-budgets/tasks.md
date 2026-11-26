@@ -7,7 +7,7 @@
 - [x] Pause over-budget runs as resumable with a `budget_exceeded` event.
 - [x] Store the draft idea backlog separately with human-only `ready`
       transitions and an atomic picker claim.
-- [x] Run the picker in `ai-team web` with the parallel-task limit, daily
+- [x] Run the picker in `workaistrator web` with the parallel-task limit, daily
       budget and deferred/started/failed events; reconcile claims on restart.
 - [x] Table tests for limit boundaries, UTC day boundary, unknown markers,
       budget stops and restart persistence with an injected clock.

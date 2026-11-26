@@ -9,7 +9,7 @@ dependency audit без подавления или исключения advisor
 
 #### Scenario: Запуск на push
 - **КОГДА** происходит push в master
-- **ТОГДА** workflow MUST запустить `go build ./cmd/ai-team`
+- **ТОГДА** workflow MUST запустить `go build ./cmd/workaistrator`
 - **И** запустить unit и E2E tests
 - **И** запустить race detector и coverage gate не ниже 60%
 - **И** запустить `go vet ./...`

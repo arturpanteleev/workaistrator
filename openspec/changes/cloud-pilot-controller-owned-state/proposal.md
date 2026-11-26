@@ -13,7 +13,7 @@ authoritative evidence, control-plane databases или admin API. До этой 
 
 ### ПОЧЕМУ
 
-Сейчас `ai-team worker` исполняет полный pipeline. Web/controller и worker
+Сейчас `workaistrator worker` исполняет полный pipeline. Web/controller и worker
 используют один SQLite approval store, так что worker может напрямую подделать
 или изменить approvals, несмотря на то что легитимные human decisions проходят
 через authenticated controller. Lifecycle и evidence всё ещё используют

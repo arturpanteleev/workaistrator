@@ -11,9 +11,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/config"
-	"github.com/arturpanteleev/ai-team/pkg/notifier"
-	"github.com/arturpanteleev/ai-team/pkg/web/store"
+	"github.com/arturpanteleev/workaistrator/pkg/config"
+	"github.com/arturpanteleev/workaistrator/pkg/notifier"
+	"github.com/arturpanteleev/workaistrator/pkg/web/store"
 )
 
 const notifierIntegrationName = "notifier"
@@ -112,8 +112,8 @@ func (s *Server) deliverNotification(ctx context.Context, stored store.Event) bo
 
 // NotificationWorker delivers durable store events to the configured channels.
 // It is the single delivery path for every process that writes task events
-// into the shared SQLite store: `ai-team web`, a local `ai-team run` and
-// `ai-team scheduler-worker`. Each process keeps its own cursor, while the
+// into the shared SQLite store: `workaistrator web`, a local `workaistrator run` and
+// `workaistrator scheduler-worker`. Each process keeps its own cursor, while the
 // channel/event claim in notification_deliveries is shared, so processes on
 // one database never notify the same channel about the same event twice.
 type NotificationWorker struct {
@@ -155,7 +155,7 @@ func WithDurableNotificationCursor(integration string) NotificationWorkerOption 
 
 // NewNotificationWorker creates a worker over s. Without a durable cursor the
 // worker starts at the current event tail and keeps its position in memory,
-// which suits a single `ai-team run` process. It returns nil when dispatcher
+// which suits a single `workaistrator run` process. It returns nil when dispatcher
 // is nil, i.e. notifications are not configured.
 func NewNotificationWorker(s *store.Store, dispatcher *notifier.Dispatcher, options ...NotificationWorkerOption) (*NotificationWorker, error) {
 	if s == nil || dispatcher == nil {

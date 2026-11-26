@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arturpanteleev/ai-team/pkg/gatelib"
-	"github.com/arturpanteleev/ai-team/pkg/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/gate/lib"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/workflow"
 )
 
 // trusted_commands_workflow_gate_override_test.go — review P1: a workflow

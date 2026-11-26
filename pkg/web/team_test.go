@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/cloudidentity"
+	"github.com/arturpanteleev/workaistrator/pkg/cloudidentity"
 )
 
 func cloudSessionForTest(t *testing.T, s *Server, manager *cloudidentity.TokenManager, actor string, roles ...cloudidentity.Role) (*http.Cookie, string) {

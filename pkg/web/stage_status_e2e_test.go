@@ -8,11 +8,11 @@ import (
 	"sync"
 	"testing/fstest"
 
-	"github.com/arturpanteleev/ai-team/pkg/agent"
-	"github.com/arturpanteleev/ai-team/pkg/cloudidentity"
-	"github.com/arturpanteleev/ai-team/pkg/config"
-	"github.com/arturpanteleev/ai-team/pkg/runtime"
-	"github.com/arturpanteleev/ai-team/pkg/stageexec"
+	"github.com/arturpanteleev/workaistrator/pkg/agent"
+	"github.com/arturpanteleev/workaistrator/pkg/cloudidentity"
+	"github.com/arturpanteleev/workaistrator/pkg/config"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/stage/exec"
+	"github.com/arturpanteleev/workaistrator/pkg/runtime"
 )
 
 // stage_status_e2e_test.go — fixtures of the S11 end-to-end test (the flow is

@@ -5,7 +5,7 @@ import type { RunTracker, TrackerDelivery, TrackerInbound, TrackerLink, TrackerO
 
 const API_BASE = '/api';
 
-export const SESSION_EXPIRED_EVENT = 'ai-team:session-expired';
+export const SESSION_EXPIRED_EVENT = 'WorkAiStrator:session-expired';
 
 function expireSession() {
   csrfToken = null;

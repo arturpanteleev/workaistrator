@@ -3,8 +3,8 @@ package web
 import (
 	"net/http"
 
-	"github.com/arturpanteleev/ai-team/pkg/gatelib"
-	"github.com/arturpanteleev/ai-team/pkg/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/gate/lib"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/workflow"
 )
 
 // gateCatalogEntry is one published gate definition as the catalog shows it.

@@ -19,7 +19,7 @@
 - Mock opencode для E2E
 - E2E-тест: полный пайплайн + верификация артефактов
 - Eval-пакет: чтение output агента, прогон через LLM-судью (опционально)
-- Команда `ai-team eval`
+- Команда `workaistrator eval`
 
 **Не-цели:**
 - Eval без opencode (всегда вызывает opencode как судью)
@@ -35,7 +35,7 @@
 
 ### Решение 2: E2E-тест на Go
 - Ставит `testdata/` на первое место в PATH
-- Создаёт временный проект, запускает `ai-team init` и `ai-team run`
+- Создаёт временный проект, запускает `workaistrator init` и `workaistrator run`
 - Верифицирует что созданы все артефакты
 - Тестирует сценарий отказа: mock-opencode возвращает ошибку
 
@@ -56,9 +56,9 @@ type Result struct {
 - Критерии: полнота, тестируемость, отсутствие двусмысленностей
 - **Почему:** вызов opencode как судьи — тот же AgentCLI runtime
 
-### Решение 4: CLI `ai-team eval`
+### Решение 4: CLI `workaistrator eval`
 ```
-ai-team eval --feature "hello-api" --task "..."
+workaistrator eval --feature "hello-api" --task "..."
 ```
 - Запускает пайплайн (опционально, если артефакты уже есть)
 - Для каждого артефакта запускает eval

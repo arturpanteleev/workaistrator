@@ -1,0 +1,1278 @@
+// Package evidence stores immutable run and stage-attempt evidence.
+package evidence
+
+import (
+	"bytes"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+	"reflect"
+	"runtime"
+	"runtime/debug"
+	"strings"
+	"sync"
+	"time"
+
+	"github.com/arturpanteleev/workaistrator/pkg/delivery"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/stage/checks"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/safeio"
+	"github.com/arturpanteleev/workaistrator/pkg/store/runid"
+)
+
+// SchemaVersion 7 binds each run to the exact resolved workflow, config and
+// controller executable/toolchain identity, hash-chains lifecycle events from a
+// run-specific chain root and records the typed fields required for
+// deterministic lifecycle replay.
+const SchemaVersion = 7
+
+// ValidateRunID checks that a run identity is a single safe path component.
+// Run IDs are used in filesystem-backed stores as well as controller API
+// scopes, so reject traversal and platform-specific separators at every
+// boundary that accepts an externally supplied identity.
+func ValidateRunID(runID string) error {
+	return runid.Validate(runID)
+}
+
+const (
+	// chainGenesisDomain — domain separator корня hash-chain событий.
+	// Версия внутри строки отделяет схему привязки от SchemaVersion: смена
+	// строки меняет все корни цепочек и потому делается только осознанно.
+	chainGenesisDomain = "ai-team/evidence/event-chain/v1"
+	maxEventLogSize    = 64 << 20
+)
+
+// MaxEventLogSize is the existing hard bound for event journal files and API
+// snapshots.
+const MaxEventLogSize = maxEventLogSize
+
+// chainGenesis — стартовое звено hash-chain событий, выведенное из identity
+// прогона.
+//
+// Почему не константа (QS-13): при общем для всех прогонов корне цепочка
+// доказывает лишь внутреннюю целостность лога — что события не менялись, не
+// вставлялись, не удалялись и не переставлялись. Принадлежность лога своему
+// прогону при этом держалась на одном сравнении полей (`event.RunID != runID`),
+// потому что дайджест каждого события считается по его собственному `run_id`,
+// взятому из самого события. Полный валидный лог прогона B структурно
+// неотличим от лога прогона A: достаточно перештамповать `run_id` и пересобрать
+// цепочку от общего корня, и проверка целостности проходит. Корень, выведенный
+// из run_id, делает принадлежность прогону частью самой цепочки: первое звено
+// чужого лога не сходится с ожидаемым корнем, какие бы поля в нём ни правили.
+func chainGenesis(runID string) string {
+	return sha256Bytes([]byte(chainGenesisDomain + "\x00" + runID))
+}
+
+type ControllerIdentity struct {
+	ExecutableSHA256 string `json:"executable_sha256"`
+	GoVersion        string `json:"go_version"`
+	GOOS             string `json:"goos"`
+	GOARCH           string `json:"goarch"`
+	ModuleVersion    string `json:"module_version,omitempty"`
+	VCSRevision      string `json:"vcs_revision,omitempty"`
+	VCSModified      string `json:"vcs_modified,omitempty"`
+}
+
+type RunManifest struct {
+	SchemaVersion          int                `json:"schema_version"`
+	RunID                  string             `json:"run_id"`
+	Feature                string             `json:"feature"`
+	TargetDir              string             `json:"target_dir"`
+	StartedAt              time.Time          `json:"started_at"`
+	ConfigEvidence         string             `json:"config_evidence"`
+	ConfigSHA256           string             `json:"config_sha256"`
+	ResolvedWorkflow       string             `json:"resolved_workflow_evidence"`
+	ResolvedWorkflowSHA256 string             `json:"resolved_workflow_sha256"`
+	Controller             ControllerIdentity `json:"controller"`
+	// TaskRepository is the lower-cased host/owner/repo of the target's origin,
+	// captured by the controller before any agent runs. PR stage checks bind
+	// every PR to it instead of trusting mutable checkout configuration.
+	TaskRepository string `json:"task_repository,omitempty"`
+	// Provenance (V0-2) — authority-bearing provenance manifest v1, хранится
+	// inline в run.json; при resume сверяется с заново построенным manifest'ом
+	// (drift detection). Опак для evidence: содержимое интерпретирует pipeline.
+	Provenance       json.RawMessage `json:"provenance,omitempty"`
+	ConfigSnapshot   json.RawMessage `json:"-"`
+	WorkflowSnapshot json.RawMessage `json:"-"`
+}
+
+type AttemptManifest struct {
+	SchemaVersion              int                       `json:"schema_version"`
+	RunID                      string                    `json:"run_id"`
+	AttemptID                  string                    `json:"attempt_id"`
+	Stage                      string                    `json:"stage"`
+	Executor                   string                    `json:"executor,omitempty"`
+	ActorID                    string                    `json:"actor_id,omitempty"`
+	ActorRole                  string                    `json:"actor_role,omitempty"`
+	HumanInputApprovalID       string                    `json:"human_input_approval_id,omitempty"`
+	HumanSubmissionVersion     int                       `json:"human_submission_version,omitempty"`
+	HumanSubmissionSHA256      string                    `json:"human_submission_sha256,omitempty"`
+	HumanSubmissionResult      string                    `json:"human_submission_result,omitempty"`
+	HumanSubmissionLinkKind    string                    `json:"human_submission_link_kind,omitempty"`
+	HumanSubmissionDescription string                    `json:"human_submission_description,omitempty"`
+	HumanEditOfAgentAttemptID  string                    `json:"human_edit_of_agent_attempt_id,omitempty"`
+	StageIndex                 int                       `json:"stage_index"`
+	TotalStages                int                       `json:"total_stages,omitempty"`
+	StartedAt                  time.Time                 `json:"started_at"`
+	FinishedAt                 time.Time                 `json:"finished_at"`
+	Status                     string                    `json:"status"`
+	Execution                  string                    `json:"execution"`
+	Decision                   string                    `json:"decision"`
+	Outcome                    string                    `json:"outcome"`
+	Verdict                    string                    `json:"verdict,omitempty"`
+	Blocker                    string                    `json:"blocker,omitempty"`
+	Error                      string                    `json:"error,omitempty"`
+	Inputs                     []ArtifactRecord          `json:"inputs,omitempty"`
+	Outputs                    []ArtifactRecord          `json:"outputs,omitempty"`
+	Checks                     []checks.Result           `json:"checks,omitempty"`
+	Mutations                  []string                  `json:"mutations,omitempty"`
+	MutationChanges            []workflow.MutationChange `json:"mutation_changes,omitempty"`
+	Delivery                   *delivery.Result          `json:"delivery,omitempty"`
+	Usage                      *workflow.AttemptUsage    `json:"usage,omitempty"`
+	ExecutorInfo               *workflow.ExecutorInfo    `json:"executor_info,omitempty"`
+}
+
+// ArtifactDigest exposes the same bounded evidence identity used by attempt
+// manifests for checkpoint subjects and other controller decisions.
+func ArtifactDigest(path string) (artifactType string, size int64, digest string, err error) {
+	return hashArtifact(path)
+}
+
+type Artifact struct {
+	Name       string
+	Path       string
+	SourcePath string
+}
+
+type ArtifactRecord struct {
+	Name                  string `json:"name"`
+	Type                  string `json:"type"`
+	SourcePath            string `json:"source_path"`
+	EvidencePath          string `json:"evidence_path"`
+	ProducerStage         string `json:"producer_stage,omitempty"`
+	ProducerRunID         string `json:"producer_run_id,omitempty"`
+	ProducerAttemptID     string `json:"producer_attempt_id,omitempty"`
+	ConsumedByRunID       string `json:"consumed_by_run_id,omitempty"`
+	ConsumedByAttemptID   string `json:"consumed_by_attempt_id,omitempty"`
+	ExternalOrLegacyInput bool   `json:"external_or_legacy_input,omitempty"`
+	Size                  int64  `json:"size"`
+	SHA256                string `json:"sha256"`
+}
+
+type Event struct {
+	SchemaVersion  int            `json:"schema_version"`
+	Sequence       uint64         `json:"sequence"`
+	RunID          string         `json:"run_id"`
+	Type           string         `json:"type"`
+	Stage          string         `json:"stage,omitempty"`
+	AttemptID      string         `json:"attempt_id,omitempty"`
+	Timestamp      time.Time      `json:"timestamp"`
+	Data           map[string]any `json:"data,omitempty"`
+	PreviousSHA256 string         `json:"previous_sha256"`
+	SHA256         string         `json:"sha256"`
+}
+
+type Store struct {
+	root          string
+	runID         string
+	eventLog      eventLog
+	mu            sync.Mutex
+	nextID        uint64
+	lastEventHash string
+	provenanceMu  sync.Mutex
+	provenance    map[string]ArtifactRecord
+}
+
+// EventLog is the scoped persistence contract for one run's append-only event
+// journal. Implementations verify the existing chain before appending;
+// expectedSequence and expectedPreviousSHA256 bind writes to the caller's
+// last observed state. Event payloads remain worker-supplied and untrusted.
+type EventLog interface {
+	Read(runID string) ([]Event, error)
+	ReadBytes(runID string) ([]byte, error)
+	Append(runID string, event Event, expectedSequence uint64, expectedPreviousSHA256 string) (Event, error)
+}
+
+type eventLog = EventLog
+
+type externalEventAuthority interface{ ExternalEventAuthority() }
+
+type controllerOnlyEventAppender interface {
+	AppendControllerEvent(runID string, event Event, expectedSequence uint64, expectedPreviousSHA256 string) (Event, error)
+}
+
+// fileEventLog persists a run journal at one filesystem path.
+type fileEventLog struct {
+	path      string
+	closeFile func(*os.File) error
+}
+
+func newFileEventLog(path string) *fileEventLog { return &fileEventLog{path: path} }
+
+func validateOpenedEventLogPath(file *os.File, path string) error {
+	before, err := os.Lstat(path)
+	if err != nil {
+		return err
+	}
+	if before.Mode()&os.ModeSymlink != 0 || !before.Mode().IsRegular() {
+		return fmt.Errorf("%s must be a regular file without symlink", path)
+	}
+	after, err := file.Stat()
+	if err != nil {
+		return err
+	}
+	if !after.Mode().IsRegular() || !os.SameFile(before, after) {
+		return fmt.Errorf("%s changed while opening event log", path)
+	}
+	return nil
+}
+
+func closeEventLogFile(file *os.File, closeFile func(*os.File) error) error {
+	if closeFile != nil {
+		return closeFile(file)
+	}
+	return file.Close()
+}
+
+func (l *fileEventLog) Read(runID string) ([]Event, error) {
+	if l == nil || l.path == "" {
+		return nil, errors.New("event log path is required")
+	}
+	data, err := l.ReadBytes(runID)
+	if err != nil {
+		return nil, err
+	}
+	return VerifyEventLogBytes(data, runID)
+}
+
+func (l *fileEventLog) ReadBytes(runID string) ([]byte, error) {
+	if l == nil || l.path == "" {
+		return nil, errors.New("event log path is required")
+	}
+	f, unlock, err := openLockedEventLog(l.path, false, l.closeFile)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = unlock() }()
+	data, err := readEventLogBytes(f)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := VerifyEventLogBytes(data, runID); err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func (l *fileEventLog) Append(runID string, event Event, expectedSequence uint64, expectedPreviousSHA256 string) (Event, error) {
+	if l == nil || l.path == "" {
+		return Event{}, errors.New("event log path is required")
+	}
+	f, unlock, err := openLockedEventLog(l.path, true, l.closeFile)
+	if err != nil {
+		return Event{}, err
+	}
+	defer func() { _ = unlock() }()
+	events, err := readEventLogFile(f, runID)
+	if err != nil {
+		return Event{}, fmt.Errorf("event log integrity: %w", err)
+	}
+	lastHash := chainGenesis(runID)
+	if len(events) > 0 {
+		lastHash = events[len(events)-1].SHA256
+	}
+	if uint64(len(events)) != expectedSequence || lastHash != expectedPreviousSHA256 {
+		return Event{}, fmt.Errorf("event log changed outside current store")
+	}
+	event.SchemaVersion = SchemaVersion
+	event.Sequence = expectedSequence + 1
+	event.RunID = runID
+	if event.Timestamp.IsZero() {
+		event.Timestamp = time.Now().UTC()
+	}
+	event.PreviousSHA256 = expectedPreviousSHA256
+	event.SHA256, err = eventDigest(event)
+	if err != nil {
+		return Event{}, err
+	}
+	data, err := json.Marshal(event)
+	if err != nil {
+		return Event{}, err
+	}
+	if _, err := f.Seek(0, io.SeekEnd); err != nil {
+		return Event{}, err
+	}
+	if _, err := f.Write(append(data, '\n')); err != nil {
+		return Event{}, err
+	}
+	if err := f.Sync(); err != nil {
+		return Event{}, err
+	}
+	if err := unlock(); err != nil {
+		return Event{}, err
+	}
+	return event, nil
+}
+
+func (l *fileEventLog) AppendControllerEvent(runID string, event Event, expectedSequence uint64, expectedPreviousSHA256 string) (Event, error) {
+	if l == nil || l.path == "" {
+		return Event{}, errors.New("event log path is required")
+	}
+	events, err := l.Read(runID)
+	if err != nil {
+		return Event{}, err
+	}
+	validated, exactRetry, err := ValidateControllerEventAppend(events, runID, filepath.Dir(l.path), event,
+		expectedSequence, expectedPreviousSHA256, FilesystemAttemptManifestSource())
+	if err != nil {
+		return Event{}, err
+	}
+	if exactRetry {
+		return validated, nil
+	}
+	return l.Append(runID, validated, expectedSequence, expectedPreviousSHA256)
+}
+
+func sameRetryEvent(stored, requested Event, runID string, sequence uint64, previous string) bool {
+	requested.SchemaVersion = SchemaVersion
+	requested.Sequence = sequence
+	requested.RunID = runID
+	requested.PreviousSHA256 = previous
+	if requested.Timestamp.IsZero() {
+		requested.Timestamp = stored.Timestamp
+	}
+	requested.SHA256 = ""
+	digest, err := eventDigest(requested)
+	if err != nil {
+		return false
+	}
+	requested.SHA256 = digest
+	return reflect.DeepEqual(stored, requested)
+}
+
+func NewRunID(now time.Time) (string, error) {
+	random := make([]byte, 8)
+	if _, err := rand.Read(random); err != nil {
+		return "", fmt.Errorf("run id entropy: %w", err)
+	}
+	return now.UTC().Format("20060102T150405.000000000Z") + "-" + hex.EncodeToString(random), nil
+}
+
+func Start(root string, manifest RunManifest) (*Store, error) {
+	return startWithEventLog(root, manifest, nil)
+}
+
+// StartWithEventLog creates the worker-visible evidence tree while appending
+// lifecycle events only through the supplied authority source.
+func StartWithEventLog(root string, manifest RunManifest, source EventLog) (*Store, error) {
+	if source == nil {
+		return nil, errors.New("event log source is required")
+	}
+	return startWithEventLog(root, manifest, source)
+}
+
+// startWithEventLog creates the filesystem-backed run metadata and binds event
+// persistence to the supplied source when present. A nil source selects the
+// established run-local events.jsonl implementation.
+func startWithEventLog(root string, manifest RunManifest, eventLog eventLog) (*Store, error) {
+	if err := ValidateRunID(manifest.RunID); err != nil {
+		return nil, err
+	}
+	root, err := filepath.Abs(root)
+	if err != nil {
+		return nil, err
+	}
+	root, err = safeio.EnsureDir(filepath.Dir(root), filepath.Base(root))
+	if err != nil {
+		return nil, err
+	}
+	finalDir := filepath.Join(root, manifest.RunID)
+	if _, err := os.Stat(finalDir); err == nil {
+		return nil, fmt.Errorf("run %s уже существует", manifest.RunID)
+	} else if !os.IsNotExist(err) {
+		return nil, err
+	}
+	tmpDir, err := os.MkdirTemp(root, ".tmp-"+manifest.RunID+"-")
+	if err != nil {
+		return nil, err
+	}
+	cleanup := true
+	defer func() {
+		if cleanup {
+			_ = os.RemoveAll(tmpDir)
+		}
+	}()
+	if !json.Valid(manifest.ConfigSnapshot) || !json.Valid(manifest.WorkflowSnapshot) {
+		return nil, fmt.Errorf("run evidence: config и resolved workflow snapshots обязательны и должны быть JSON")
+	}
+	if len(manifest.Provenance) > 0 && !json.Valid(manifest.Provenance) {
+		return nil, fmt.Errorf("run evidence: provenance manifest должен быть JSON")
+	}
+	manifest.SchemaVersion = SchemaVersion
+	manifest.ConfigEvidence = "config.json"
+	manifest.ResolvedWorkflow = "workflow.json"
+	manifest.ConfigSHA256 = sha256Bytes(manifest.ConfigSnapshot)
+	manifest.ResolvedWorkflowSHA256 = sha256Bytes(manifest.WorkflowSnapshot)
+	identity, identityErr := currentControllerIdentity()
+	if identityErr != nil {
+		return nil, identityErr
+	}
+	manifest.Controller = identity
+	if err := writeJSON(filepath.Join(tmpDir, "run.json"), manifest); err != nil {
+		return nil, err
+	}
+	if err := writeImmutableSnapshot(filepath.Join(tmpDir, manifest.ConfigEvidence), manifest.ConfigSnapshot); err != nil {
+		return nil, err
+	}
+	if err := writeImmutableSnapshot(filepath.Join(tmpDir, manifest.ResolvedWorkflow), manifest.WorkflowSnapshot); err != nil {
+		return nil, err
+	}
+	for _, dir := range []string{"attempts", "logs", "reports", "inflight-inputs"} {
+		if err := os.MkdirAll(filepath.Join(tmpDir, dir), 0755); err != nil {
+			return nil, err
+		}
+	}
+	_, externalAuthority := eventLog.(externalEventAuthority)
+	if eventLog == nil || !externalAuthority {
+		if err := os.WriteFile(filepath.Join(tmpDir, "events.jsonl"), nil, 0644); err != nil {
+			return nil, err
+		}
+	}
+	if err := os.Rename(tmpDir, finalDir); err != nil {
+		return nil, err
+	}
+	cleanup = false
+	if eventLog == nil {
+		eventLog = newFileEventLog(filepath.Join(finalDir, "events.jsonl"))
+	}
+	return &Store{
+		root: root, runID: manifest.RunID, lastEventHash: chainGenesis(manifest.RunID),
+		eventLog:   eventLog,
+		provenance: make(map[string]ArtifactRecord),
+	}, nil
+}
+
+// Resume открывает существующий non-terminal run после полной проверки
+// manifest, snapshots и hash-chained event log.
+func Resume(root, runID string) (*Store, RunManifest, ReplayedRun, error) {
+	return ResumeWithAttemptManifestSource(root, runID, nil)
+}
+
+// ResumeWithAttemptManifestSource resumes a run while obtaining immutable
+// attempt manifest bytes from source. Source-backed reads are limited to
+// MaxAttemptManifestSize. Resume retains its existing 8 MiB filesystem
+// manifest-read limit.
+func ResumeWithAttemptManifestSource(root, runID string, source AttemptManifestSource) (*Store, RunManifest, ReplayedRun, error) {
+	return resumeWithEventLogAndAttemptManifestSource(root, runID, nil, source)
+}
+
+// ResumeWithEventLog resumes a run using the supplied scoped event authority
+// and attempt-manifest source.
+func ResumeWithEventLog(root, runID string, source EventLog, manifests AttemptManifestSource) (*Store, RunManifest, ReplayedRun, error) {
+	if source == nil {
+		return nil, RunManifest{}, ReplayedRun{}, errors.New("event log source is required")
+	}
+	return resumeWithEventLogAndAttemptManifestSource(root, runID, source, manifests)
+}
+
+// resumeWithEventLog is the legacy in-package wrapper that uses the local file
+// source unless the caller provides another source.
+func resumeWithEventLog(root, runID string, eventLog eventLog) (*Store, RunManifest, ReplayedRun, error) {
+	return resumeWithEventLogAndAttemptManifestSource(root, runID, eventLog, nil)
+}
+
+func resumeWithEventLogAndAttemptManifestSource(root, runID string, eventLog eventLog, source AttemptManifestSource) (*Store, RunManifest, ReplayedRun, error) {
+	if runID == "" || runID == "." || runID == ".." || filepath.Base(runID) != runID {
+		return nil, RunManifest{}, ReplayedRun{}, fmt.Errorf("недопустимый run_id %q", runID)
+	}
+	root, err := filepath.Abs(root)
+	if err != nil {
+		return nil, RunManifest{}, ReplayedRun{}, err
+	}
+	runDir := filepath.Join(root, runID)
+	if _, err := safeio.ExistingDir(root, runID); err != nil {
+		return nil, RunManifest{}, ReplayedRun{}, err
+	}
+	manifestData, err := safeio.ReadRegularFile(filepath.Join(runDir, "run.json"), 1<<20)
+	if err != nil {
+		return nil, RunManifest{}, ReplayedRun{}, err
+	}
+	decoder := json.NewDecoder(bytes.NewReader(manifestData))
+	decoder.DisallowUnknownFields()
+	var manifest RunManifest
+	if err := decoder.Decode(&manifest); err != nil {
+		return nil, RunManifest{}, ReplayedRun{}, err
+	}
+	if manifest.SchemaVersion != SchemaVersion || manifest.RunID != runID {
+		return nil, RunManifest{}, ReplayedRun{}, errors.New("run manifest identity/schema mismatch")
+	}
+	configData, err := safeio.ReadRegularFile(filepath.Join(runDir, manifest.ConfigEvidence), 8<<20)
+	if err != nil || sha256Bytes(configData) != manifest.ConfigSHA256 {
+		return nil, RunManifest{}, ReplayedRun{}, errors.New("config snapshot identity mismatch")
+	}
+	workflowData, err := safeio.ReadRegularFile(filepath.Join(runDir, manifest.ResolvedWorkflow), 8<<20)
+	if err != nil || sha256Bytes(workflowData) != manifest.ResolvedWorkflowSHA256 {
+		return nil, RunManifest{}, ReplayedRun{}, errors.New("workflow snapshot identity mismatch")
+	}
+	if eventLog == nil {
+		resolved, reserved, resolveErr := defaultEventLogSource(filepath.Join(runDir, "events.jsonl"), runID)
+		if resolveErr != nil {
+			return nil, RunManifest{}, ReplayedRun{}, resolveErr
+		}
+		if reserved {
+			eventLog = resolved
+		} else {
+			eventLog = newFileEventLog(filepath.Join(runDir, "events.jsonl"))
+		}
+	}
+	events, err := eventLog.Read(runID)
+	if err != nil {
+		return nil, RunManifest{}, ReplayedRun{}, err
+	}
+	events, err = reconcileMissingAgentFinishedEvent(runDir, runID, eventLog, source, events)
+	if err != nil {
+		return nil, RunManifest{}, ReplayedRun{}, fmt.Errorf("recover agent completion event: %w", err)
+	}
+	var replayed ReplayedRun
+	if len(events) == 0 {
+		// Atomic evidence creation can complete before the first run_started
+		// append. Keep this empty prefix resumable so recovery can append that
+		// event before restoring lifecycle state.
+		replayed = ReplayedRun{RunID: runID, Attempts: make([]ReplayedAttempt, 0)}
+	} else {
+		replayed, err = replayEventsWithAttemptManifestSource(events, runID, runDir, source)
+		if err != nil {
+			return nil, RunManifest{}, ReplayedRun{}, err
+		}
+	}
+	if !replayed.FinishedAt.IsZero() {
+		return nil, RunManifest{}, ReplayedRun{}, fmt.Errorf("run %s уже terminal", runID)
+	}
+	lastHash := chainGenesis(runID)
+	if len(events) > 0 {
+		lastHash = events[len(events)-1].SHA256
+	}
+	store := &Store{
+		root: root, runID: runID, nextID: uint64(len(events)), lastEventHash: lastHash,
+		eventLog:   eventLog,
+		provenance: make(map[string]ArtifactRecord),
+	}
+	for _, attempt := range replayed.Attempts {
+		if attempt.ManifestSHA256 == "" {
+			continue
+		}
+		_, attemptManifest, readErr := readAttemptManifest(source, runDir, runID, attempt.AttemptID)
+		if readErr != nil {
+			return nil, RunManifest{}, ReplayedRun{}, readErr
+		}
+		for _, output := range attemptManifest.Outputs {
+			store.provenance[cleanArtifactKey(output.SourcePath)] = output
+			store.provenance[cleanArtifactKey(filepath.Join(runDir, filepath.FromSlash(output.EvidencePath)))] = output
+		}
+	}
+	manifest.ConfigSnapshot = configData
+	manifest.WorkflowSnapshot = workflowData
+	return store, manifest, replayed, nil
+}
+
+func currentControllerIdentity() (ControllerIdentity, error) {
+	identity := ControllerIdentity{GoVersion: runtime.Version(), GOOS: runtime.GOOS, GOARCH: runtime.GOARCH}
+	executable, err := os.Executable()
+	if err != nil {
+		return identity, fmt.Errorf("controller executable: %w", err)
+	}
+	_, digest, err := hashFile(executable)
+	if err != nil {
+		return identity, fmt.Errorf("controller executable hash: %w", err)
+	}
+	identity.ExecutableSHA256 = digest
+	if info, ok := debug.ReadBuildInfo(); ok {
+		identity.ModuleVersion = info.Main.Version
+		for _, setting := range info.Settings {
+			switch setting.Key {
+			case "vcs.revision":
+				identity.VCSRevision = setting.Value
+			case "vcs.modified":
+				identity.VCSModified = setting.Value
+			}
+		}
+	}
+	return identity, nil
+}
+
+// CurrentControllerIdentity возвращает текущую identity исполняемого бинарника
+// контроллера (runtime identity для provenance/runtime digest, V0-2).
+func CurrentControllerIdentity() (ControllerIdentity, error) {
+	return currentControllerIdentity()
+}
+
+func sha256Bytes(data []byte) string {
+	digest := sha256.Sum256(data)
+	return hex.EncodeToString(digest[:])
+}
+
+func writeImmutableSnapshot(path string, data []byte) error {
+	if err := os.WriteFile(path, append([]byte(nil), data...), 0444); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Store) RunID() string { return s.runID }
+
+func (s *Store) RunDir() string { return filepath.Join(s.root, s.runID) }
+
+func (s *Store) LogDir() string { return filepath.Join(s.RunDir(), "logs") }
+
+func (s *Store) PublishReportTree(name, source string) error {
+	if name == "" || name == "." || name == ".." || filepath.Base(name) != name {
+		return fmt.Errorf("недопустимое имя report tree %q", name)
+	}
+	reportsDir := filepath.Join(s.RunDir(), "reports")
+	finalDir := filepath.Join(reportsDir, name)
+	if _, err := os.Stat(finalDir); err == nil {
+		return fmt.Errorf("report tree %s уже опубликован", name)
+	} else if !os.IsNotExist(err) {
+		return err
+	}
+	tmpDir, err := os.MkdirTemp(reportsDir, ".tmp-"+name+"-")
+	if err != nil {
+		return err
+	}
+	cleanup := true
+	defer func() {
+		if cleanup {
+			_ = os.RemoveAll(tmpDir)
+		}
+	}()
+	staged := filepath.Join(tmpDir, name)
+	if err := copyArtifact(source, staged); err != nil {
+		return err
+	}
+	if err := os.Rename(staged, finalDir); err != nil {
+		return err
+	}
+	cleanup = false
+	return os.Remove(tmpDir)
+}
+
+func (s *Store) NewAttemptID(stage string, ordinal int) string {
+	return fmt.Sprintf("%s-%03d-%s", s.runID, ordinal, sanitize(stage))
+}
+
+// SnapshotInputs copies the exact bytes that will be supplied to the runtime
+// into the controller-owned run directory before execution.
+func (s *Store) SnapshotInputs(attemptID string, inputs []Artifact) ([]Artifact, func() error, error) {
+	if attemptID == "" || filepath.Base(attemptID) != attemptID {
+		return nil, func() error { return nil }, fmt.Errorf("invalid attempt id %q", attemptID)
+	}
+	root := filepath.Join(s.RunDir(), "inflight-inputs", attemptID)
+	if err := os.Mkdir(root, 0700); err != nil {
+		return nil, func() error { return nil }, err
+	}
+	cleanup := func() error { return os.RemoveAll(root) }
+	result := make([]Artifact, 0, len(inputs))
+	for index, input := range inputs {
+		destination := filepath.Join(root, fmt.Sprintf("%03d-%s", index+1, sanitize(input.Name)), filepath.Base(input.Path))
+		if err := copyArtifact(input.Path, destination); err != nil {
+			cleanupErr := cleanup()
+			return nil, func() error { return nil }, errors.Join(fmt.Errorf("snapshot input %s: %w", input.Name, err), cleanupErr)
+		}
+		sourcePath := input.SourcePath
+		if sourcePath == "" {
+			sourcePath = input.Path
+		}
+		result = append(result, Artifact{Name: input.Name, Path: destination, SourcePath: sourcePath})
+	}
+	return result, cleanup, nil
+}
+
+// CleanupInflightInputSnapshots discards scratch input copies left by a
+// process that stopped before publishing its attempt manifest. A resumed run
+// has already verified its event log and published manifests, so those
+// manifests are the only durable authority for prior stage inputs.
+func CleanupInflightInputSnapshots(targetDir, runID string) error {
+	runDir, err := safeio.ExistingDir(targetDir, ".ai-team", "runs", runID)
+	if err != nil {
+		return fmt.Errorf("inflight input run directory: %w", err)
+	}
+	root := filepath.Join(runDir, "inflight-inputs")
+	info, err := os.Lstat(root)
+	if os.IsNotExist(err) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	if info.Mode()&os.ModeSymlink != 0 || !info.IsDir() {
+		return fmt.Errorf("inflight input root %s must be a directory without symlink", root)
+	}
+	entries, err := os.ReadDir(root)
+	if err != nil {
+		return err
+	}
+	for _, entry := range entries {
+		// RemoveAll unlinks a symlink entry itself and does not follow it.
+		// Individual entries are scratch; verified attempt inputs are stored
+		// separately under attempts/<attempt>/inputs.
+		if err := os.RemoveAll(filepath.Join(root, entry.Name())); err != nil {
+			return fmt.Errorf("remove orphaned inflight input %s: %w", entry.Name(), err)
+		}
+	}
+	return nil
+}
+
+// VerifyCheckEvidence confirms that a delivery provenance reference points to
+// a controller-published attempt in the named immutable run.
+func VerifyCheckEvidence(runsRoot, runID, checkDigest, workspaceDigest string) error {
+	attemptsDir := filepath.Join(runsRoot, runID, "attempts")
+	entries, err := os.ReadDir(attemptsDir)
+	if err != nil {
+		return fmt.Errorf("check evidence attempts: %w", err)
+	}
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+		runDir := filepath.Join(runsRoot, runID)
+		_, manifest, readErr := ReadAttemptManifest(nil, runDir, runID, entry.Name())
+		if readErr != nil {
+			return readErr
+		}
+		for _, check := range manifest.Checks {
+			if checks.VerifyResultDigest(check) && check.EvidenceDigest == checkDigest && check.WorkspaceDigestBefore == workspaceDigest && check.WorkspaceDigestAfter == workspaceDigest &&
+				checks.IsTestEvidence(check) {
+				return nil
+			}
+		}
+	}
+	return fmt.Errorf("check evidence %s для workspace %s не найдена в run %s", checkDigest, workspaceDigest, runID)
+}
+
+func (s *Store) PublishAttempt(manifest AttemptManifest, artifactRoot string, inputs, outputs []Artifact) error {
+	manifest.SchemaVersion = SchemaVersion
+	manifest.RunID = s.runID
+	if manifest.AttemptID == "" {
+		return fmt.Errorf("attempt_id обязателен")
+	}
+	attemptsDir := filepath.Join(s.RunDir(), "attempts")
+	finalDir := filepath.Join(attemptsDir, manifest.AttemptID)
+	if _, err := os.Stat(finalDir); err == nil {
+		return fmt.Errorf("attempt %s уже опубликован", manifest.AttemptID)
+	} else if !os.IsNotExist(err) {
+		return err
+	}
+	tmpDir, err := os.MkdirTemp(attemptsDir, ".tmp-"+manifest.AttemptID+"-")
+	if err != nil {
+		return err
+	}
+	cleanup := true
+	defer func() {
+		if cleanup {
+			_ = os.RemoveAll(tmpDir)
+		}
+	}()
+
+	for index, input := range inputs {
+		sourcePath := input.SourcePath
+		if sourcePath == "" {
+			sourcePath = input.Path
+		}
+		if _, relErr := confinedRelative(artifactRoot, sourcePath); relErr != nil {
+			if _, evidenceErr := confinedRelative(s.RunDir(), sourcePath); evidenceErr != nil {
+				return fmt.Errorf("input %s: path is neither artifact nor immutable run evidence: %w", input.Name, relErr)
+			}
+		}
+		inputName := fmt.Sprintf("%03d-%s", index+1, sanitize(input.Name))
+		destination := filepath.Join(tmpDir, "inputs", inputName, filepath.Base(sourcePath))
+		if err := copyArtifact(input.Path, destination); err != nil {
+			return fmt.Errorf("input %s immutable copy: %w", input.Name, err)
+		}
+		artifactType, size, digest, hashErr := hashArtifact(destination)
+		if hashErr != nil {
+			return fmt.Errorf("input %s evidence: %w", input.Name, hashErr)
+		}
+		evidenceRel := filepath.ToSlash(filepath.Join("attempts", manifest.AttemptID, "inputs", inputName, filepath.Base(sourcePath)))
+		record := ArtifactRecord{
+			Name: input.Name, Type: artifactType, SourcePath: sourcePath, EvidencePath: evidenceRel,
+			ConsumedByRunID: s.runID, ConsumedByAttemptID: manifest.AttemptID, Size: size, SHA256: digest,
+		}
+		s.provenanceMu.Lock()
+		producer, known := s.provenance[cleanArtifactKey(sourcePath)]
+		s.provenanceMu.Unlock()
+		if known {
+			if producer.SHA256 != digest || producer.Type != artifactType {
+				return fmt.Errorf("input %s provenance mismatch: live bytes/type no longer match producer %s/%s", input.Name, producer.ProducerRunID, producer.ProducerAttemptID)
+			}
+			record.ProducerStage = producer.ProducerStage
+			record.ProducerRunID = producer.ProducerRunID
+			record.ProducerAttemptID = producer.ProducerAttemptID
+		} else {
+			record.ExternalOrLegacyInput = true
+		}
+		manifest.Inputs = append(manifest.Inputs, record)
+	}
+	for _, output := range outputs {
+		rel, relErr := confinedRelative(artifactRoot, output.Path)
+		if relErr != nil {
+			return fmt.Errorf("output %s: %w", output.Name, relErr)
+		}
+		evidenceRel := filepath.ToSlash(filepath.Join("attempts", manifest.AttemptID, "artifacts", rel))
+		destination := filepath.Join(tmpDir, "artifacts", rel)
+		if _, statErr := os.Lstat(destination); os.IsNotExist(statErr) {
+			if err := copyArtifact(output.Path, destination); err != nil {
+				return fmt.Errorf("output %s: %w", output.Name, err)
+			}
+		} else if statErr != nil {
+			return fmt.Errorf("output %s evidence: %w", output.Name, statErr)
+		}
+		artifactType, size, digest, hashErr := hashArtifact(destination)
+		if hashErr != nil {
+			return fmt.Errorf("output %s evidence: %w", output.Name, hashErr)
+		}
+		manifest.Outputs = append(manifest.Outputs, ArtifactRecord{
+			Name: output.Name, Type: artifactType, SourcePath: output.Path, EvidencePath: evidenceRel,
+			ProducerStage: manifest.Stage, ProducerRunID: s.runID, ProducerAttemptID: manifest.AttemptID,
+			Size: size, SHA256: digest,
+		})
+	}
+	manifestData, err := json.MarshalIndent(manifest, "", "  ")
+	if err != nil {
+		return err
+	}
+	manifestData = append(manifestData, '\n')
+	if len(manifestData) > MaxAttemptManifestSize {
+		return fmt.Errorf("attempt manifest %s exceeds maximum size of %d bytes", manifest.AttemptID, MaxAttemptManifestSize)
+	}
+	if err := os.WriteFile(filepath.Join(tmpDir, "manifest.json"), manifestData, 0644); err != nil {
+		return err
+	}
+	if err := os.Rename(tmpDir, finalDir); err != nil {
+		return err
+	}
+	cleanup = false
+	s.provenanceMu.Lock()
+	for _, output := range manifest.Outputs {
+		s.provenance[cleanArtifactKey(output.SourcePath)] = output
+	}
+	s.provenanceMu.Unlock()
+	return nil
+}
+
+func cleanArtifactKey(path string) string {
+	absolute, err := filepath.Abs(path)
+	if err != nil {
+		return filepath.Clean(path)
+	}
+	return filepath.Clean(absolute)
+}
+
+func (s *Store) Append(event Event) error {
+	return s.append(event, false)
+}
+
+// AppendControllerEvent records events derived from trusted controller
+// decisions. Remote workers use a separate, validated controller API
+// capability; they cannot submit these events through Append.
+func (s *Store) AppendControllerEvent(event Event) error {
+	if event.Type != "description_missing" && event.Type != "auto_check_retry" &&
+		!(event.Type == "run_started" && event.Data["mode"] == "auto") {
+		return fmt.Errorf("unsupported controller-only event type %q", event.Type)
+	}
+	return s.append(event, true)
+}
+
+func (s *Store) append(event Event, controllerOnly bool) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.eventLog == nil {
+		return errors.New("event log is unavailable")
+	}
+	if !controllerOnly && (event.Type == "description_missing" || event.Type == "auto_check_retry" ||
+		(event.Type == "run_started" && event.Data != nil && event.Data["mode"] == "auto")) {
+		return fmt.Errorf("%s can only be appended through AppendControllerEvent", event.Type)
+	}
+	var appended Event
+	var err error
+	if controllerOnly {
+		controllerAppender, ok := s.eventLog.(controllerOnlyEventAppender)
+		if !ok {
+			return errors.New("event log does not support controller-only event appends")
+		}
+		appended, err = controllerAppender.AppendControllerEvent(s.runID, event, s.nextID, s.lastEventHash)
+	} else {
+		appended, err = s.eventLog.Append(s.runID, event, s.nextID, s.lastEventHash)
+	}
+	if err != nil {
+		return err
+	}
+	if appended.Sequence != s.nextID+1 || appended.RunID != s.runID || appended.PreviousSHA256 != s.lastEventHash {
+		return errors.New("event log append returned an invalid event")
+	}
+	s.nextID = appended.Sequence
+	s.lastEventHash = appended.SHA256
+	if isTerminalEventType(event.Type) {
+		events, readErr := s.eventLog.Read(s.runID)
+		if readErr != nil {
+			return fmt.Errorf("terminal event log read: %w", readErr)
+		}
+		if err := s.writeAnchor(appended.Type, events); err != nil {
+			return fmt.Errorf("запись anchor.json: %w", err)
+		}
+	}
+	return nil
+}
+
+// ReadEvents returns the verified event sequence for the run currently owned
+// by this store. It lets pipeline operations make idempotent, evidence-backed
+// decisions after a process restart.
+func (s *Store) ReadEvents() ([]Event, error) {
+	if s == nil || s.eventLog == nil || s.runID == "" {
+		return nil, errors.New("evidence event reader is unavailable")
+	}
+	return s.eventLog.Read(s.runID)
+}
+
+// VerifyEventLog validates strict JSON records, sequence and the complete hash
+// chain rooted in the run's own identity. Callers can deterministically detect
+// modification, removal, insertion or reordering of any persisted event, as
+// well as substitution of an intact log that belongs to a different run.
+func VerifyEventLog(path, runID string) ([]Event, error) {
+	if source, ok, err := defaultEventLogSource(path, runID); err != nil {
+		return nil, err
+	} else if ok {
+		return source.Read(runID)
+	}
+	f, unlock, err := openLockedEventLog(path, false, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = unlock() }()
+	return readEventLogFile(f, runID)
+}
+
+// VerifyEventLogWithSource validates a run journal using an injected scoped
+// source, such as the worker API. A nil source preserves local file behavior.
+func VerifyEventLogWithSource(path, runID string, source EventLog) ([]Event, error) {
+	if source == nil {
+		return VerifyEventLog(path, runID)
+	}
+	return source.Read(runID)
+}
+
+// VerifyEventLogBytes validates the existing strict JSON and hash-chain
+// contract for bytes received from a scoped source.
+func VerifyEventLogBytes(data []byte, runID string) ([]Event, error) {
+	if err := ValidateRunID(runID); err != nil {
+		return nil, err
+	}
+	if len(data) > maxEventLogSize {
+		return nil, fmt.Errorf("event log exceeds size limit")
+	}
+	return verifyEventLogBytes(data, runID)
+}
+
+func readEventLogFile(file *os.File, runID string) ([]Event, error) {
+	info, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+	if !info.Mode().IsRegular() || info.Size() > maxEventLogSize {
+		return nil, fmt.Errorf("event log is not a bounded regular file")
+	}
+	data, err := readEventLogBytes(file)
+	if err != nil {
+		return nil, err
+	}
+	return verifyEventLogBytes(data, runID)
+}
+
+func readEventLogBytes(file *os.File) ([]byte, error) {
+	info, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+	if !info.Mode().IsRegular() || info.Size() > maxEventLogSize {
+		return nil, fmt.Errorf("event log is not a bounded regular file")
+	}
+	if _, err := file.Seek(0, io.SeekStart); err != nil {
+		return nil, err
+	}
+	data, err := io.ReadAll(io.LimitReader(file, maxEventLogSize+1))
+	if err != nil {
+		return nil, err
+	}
+	if len(data) > maxEventLogSize {
+		return nil, fmt.Errorf("event log exceeds size limit")
+	}
+	return data, nil
+}
+
+func verifyEventLogBytes(data []byte, runID string) ([]Event, error) {
+	lines := bytes.Split(data, []byte{'\n'})
+	events := make([]Event, 0, len(lines))
+	previous := chainGenesis(runID)
+	for _, line := range lines {
+		if len(bytes.TrimSpace(line)) == 0 {
+			continue
+		}
+		decoder := json.NewDecoder(bytes.NewReader(line))
+		decoder.DisallowUnknownFields()
+		var event Event
+		if err := decoder.Decode(&event); err != nil {
+			return nil, fmt.Errorf("event %d JSON: %w", len(events)+1, err)
+		}
+		var trailing any
+		if err := decoder.Decode(&trailing); err == nil {
+			return nil, fmt.Errorf("event %d has trailing JSON", len(events)+1)
+		} else if !errors.Is(err, io.EOF) {
+			return nil, fmt.Errorf("event %d trailing data: %w", len(events)+1, err)
+		}
+		if event.SchemaVersion != SchemaVersion || event.Sequence != uint64(len(events)+1) ||
+			event.RunID != runID || event.Type == "" || event.Timestamp.IsZero() {
+			return nil, fmt.Errorf("event %d identity/sequence is invalid", len(events)+1)
+		}
+		// Первое звено сверяется с корнем, выведенным из run_id: расхождение
+		// здесь означает не порчу цепочки, а лог другого прогона — отдельная
+		// диагностика, иначе подмену не отличить от битого файла.
+		if len(events) == 0 && event.PreviousSHA256 != previous {
+			return nil, fmt.Errorf("event log не принадлежит run %s: корень цепочки выведен из другого run_id", runID)
+		}
+		if event.PreviousSHA256 != previous || !validSHA256(event.SHA256) {
+			return nil, fmt.Errorf("event %d chain link is invalid", event.Sequence)
+		}
+		digest, err := eventDigest(event)
+		if err != nil {
+			return nil, err
+		}
+		if digest != event.SHA256 {
+			return nil, fmt.Errorf("event %d hash mismatch", event.Sequence)
+		}
+		events = append(events, event)
+		previous = event.SHA256
+	}
+	return events, nil
+}
+
+func eventDigest(event Event) (string, error) {
+	event.SHA256 = ""
+	data, err := json.Marshal(event)
+	if err != nil {
+		return "", err
+	}
+	return sha256Bytes(data), nil
+}
+
+func validSHA256(value string) bool {
+	if len(value) != 64 {
+		return false
+	}
+	_, err := hex.DecodeString(value)
+	return err == nil
+}
+
+func confinedRelative(root, value string) (string, error) {
+	rootAbs, err := filepath.Abs(root)
+	if err != nil {
+		return "", err
+	}
+	valueAbs, err := filepath.Abs(value)
+	if err != nil {
+		return "", err
+	}
+	rel, err := filepath.Rel(rootAbs, valueAbs)
+	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		return "", fmt.Errorf("путь %s находится вне artifact root", value)
+	}
+	resolvedRoot, err := filepath.EvalSymlinks(rootAbs)
+	if err != nil {
+		return "", err
+	}
+	resolvedValue, err := filepath.EvalSymlinks(valueAbs)
+	if err != nil {
+		return "", err
+	}
+	resolvedRel, err := filepath.Rel(resolvedRoot, resolvedValue)
+	if err != nil || resolvedRel == ".." || strings.HasPrefix(resolvedRel, ".."+string(filepath.Separator)) {
+		return "", fmt.Errorf("путь %s разрешается вне artifact root", value)
+	}
+	return rel, nil
+}
+
+func hashArtifact(value string) (artifactType string, size int64, digest string, err error) {
+	info, err := os.Lstat(value)
+	if err != nil {
+		return "", 0, "", err
+	}
+	if info.Mode()&os.ModeSymlink != 0 {
+		return "", 0, "", fmt.Errorf("symbolic link %s не разрешён как evidence artifact", value)
+	}
+	if info.Mode().IsRegular() {
+		fileInfo, fileDigest, fileErr := hashFile(value)
+		if fileErr != nil {
+			return "", 0, "", fileErr
+		}
+		return "file", fileInfo.Size(), fileDigest, nil
+	}
+	if !info.IsDir() {
+		return "", 0, "", fmt.Errorf("%s имеет неподдерживаемый тип", value)
+	}
+
+	h := sha256.New()
+	err = filepath.WalkDir(value, func(path string, entry os.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		if path == value {
+			return nil
+		}
+		entryInfo, infoErr := entry.Info()
+		if infoErr != nil {
+			return infoErr
+		}
+		if entryInfo.Mode()&os.ModeSymlink != 0 {
+			return fmt.Errorf("symbolic link %s не разрешён как evidence artifact", path)
+		}
+		if entry.IsDir() {
+			return nil
+		}
+		if !entryInfo.Mode().IsRegular() {
+			return fmt.Errorf("%s имеет неподдерживаемый тип", path)
+		}
+		rel, relErr := filepath.Rel(value, path)
+		if relErr != nil {
+			return relErr
+		}
+		_, fileDigest, fileErr := hashFile(path)
+		if fileErr != nil {
+			return fileErr
+		}
+		// запись в hash.Hash: по контракту hash.Hash.Write никогда не возвращает ошибку.
+		_, _ = fmt.Fprintf(h, "%s\x00%d\x00%s\x00", filepath.ToSlash(rel), entryInfo.Size(), fileDigest)
+		size += entryInfo.Size()
+		return nil
+	})
+	if err != nil {
+		return "", 0, "", err
+	}
+	return "directory", size, hex.EncodeToString(h.Sum(nil)), nil
+}
+
+func hashFile(path string) (os.FileInfo, string, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, "", err
+	}
+	defer func() { _ = f.Close() }() // файл открыт на чтение: ошибка Close не меняет уже прочитанные данные.
+	info, err := f.Stat()
+	if err != nil {
+		return nil, "", err
+	}
+	if !info.Mode().IsRegular() {
+		return nil, "", fmt.Errorf("%s не является regular file", path)
+	}
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return nil, "", err
+	}
+	return info, hex.EncodeToString(h.Sum(nil)), nil
+}
+
+func copyArtifact(source, destination string) error {
+	linkInfo, err := os.Lstat(source)
+	if err != nil {
+		return err
+	}
+	if linkInfo.Mode()&os.ModeSymlink != 0 {
+		return fmt.Errorf("symbolic link %s не разрешён как evidence output", source)
+	}
+	if linkInfo.IsDir() {
+		return filepath.WalkDir(source, func(path string, entry os.DirEntry, walkErr error) error {
+			if walkErr != nil {
+				return walkErr
+			}
+			rel, relErr := filepath.Rel(source, path)
+			if relErr != nil {
+				return relErr
+			}
+			target := filepath.Join(destination, rel)
+			info, infoErr := entry.Info()
+			if infoErr != nil {
+				return infoErr
+			}
+			if info.Mode()&os.ModeSymlink != 0 {
+				return fmt.Errorf("symbolic link %s не разрешён как evidence output", path)
+			}
+			if entry.IsDir() {
+				return os.MkdirAll(target, info.Mode().Perm())
+			}
+			if !info.Mode().IsRegular() {
+				return fmt.Errorf("%s имеет неподдерживаемый тип", path)
+			}
+			return copyRegularFile(path, target)
+		})
+	}
+	return copyRegularFile(source, destination)
+}
+
+func copyRegularFile(source, destination string) error {
+	sourceFile, err := os.Open(source)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = sourceFile.Close() }() // файл открыт на чтение: ошибка Close не меняет уже прочитанные данные.
+	info, err := sourceFile.Stat()
+	if err != nil {
+		return err
+	}
+	if !info.Mode().IsRegular() {
+		return fmt.Errorf("%s не является regular file", source)
+	}
+	if err := os.MkdirAll(filepath.Dir(destination), 0755); err != nil {
+		return err
+	}
+	destinationFile, err := os.OpenFile(destination, os.O_CREATE|os.O_EXCL|os.O_WRONLY, info.Mode().Perm())
+	if err != nil {
+		return err
+	}
+	if _, err := io.Copy(destinationFile, sourceFile); err != nil {
+		_ = destinationFile.Close()
+		return err
+	}
+	if err := destinationFile.Sync(); err != nil {
+		_ = destinationFile.Close()
+		return err
+	}
+	return destinationFile.Close()
+}
+
+func writeJSON(path string, value any) error {
+	data, err := json.MarshalIndent(value, "", "  ")
+	if err != nil {
+		return err
+	}
+	data = append(data, '\n')
+	return os.WriteFile(path, data, 0644)
+}
+
+func sanitize(value string) string {
+	var result strings.Builder
+	for _, r := range strings.ToLower(value) {
+		if r >= 'a' && r <= 'z' || r >= '0' && r <= '9' || r == '-' || r == '_' {
+			result.WriteRune(r)
+		} else {
+			result.WriteByte('-')
+		}
+	}
+	clean := strings.Trim(result.String(), "-")
+	if clean == "" {
+		return "stage"
+	}
+	return clean
+}

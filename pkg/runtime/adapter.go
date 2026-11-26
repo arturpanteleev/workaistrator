@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-// RuntimeAdapter — тонкий контракт между ai-team контроллером и внешним
+// RuntimeAdapter — тонкий контракт между WorkAiStrator контроллером и внешним
 // CLI-харнессом. Контракт каноничен и НЕ содержит vendor-specific полей:
 // конкретика argv, env-изоляции, permission-формата и результата живёт
 // внутри реализации адаптера (например pkg/runtime/opencode.go).

@@ -29,7 +29,7 @@ leaking into a later loop or return to the same stage.
    `human_result_edited_agent` in run evidence, with the edited agent attempt
    identity in the human attempt manifest.
 4. Keep the CLI command aligned with the task-stage action interface introduced
-   by B-71: `ai-team task stage <stage-id> run-agent`. The current branch
+   by B-71: `WorkAiStrator task stage <stage-id> run-agent`. The current branch
    exposes the lifecycle/pipeline behavior and web API; CLI command wiring is
    an integration point for that interface.
 

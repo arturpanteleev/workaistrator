@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/arturpanteleev/ai-team/pkg/strictjson"
+	"github.com/arturpanteleev/workaistrator/pkg/strictjson"
 )
 
 // ResultPrefix маркирует единственную машиночитаемую строку результата,
-// которую `ai-team worker` печатает в stdout перед завершением.
+// которую `workaistrator worker` печатает в stdout перед завершением.
 const ResultPrefix = "ai-team-worker-result: "
 
 // ResultSchemaVersion — версия контракта строки результата.

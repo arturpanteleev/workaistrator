@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # run-real-clients.sh — подключает настоящие клиенты MCP (Claude Code и Codex CLI)
-# к локальному `ai-team web` и выполняет чтения и одно действие.
+# к локальному `workaistrator web` и выполняет чтения и одно действие.
 #
 #   bash scripts/demo/run-real-clients.sh <DEMO_HOME> <PORT>
 #
@@ -22,10 +22,10 @@ limit() { perl -e 'alarm shift; exec @ARGV' "$@"; }
 
 if command -v claude >/dev/null 2>&1; then
   cat >"$OUT/claude-mcp.json" <<EOF
-{"mcpServers":{"ai-team":{"type":"http","url":"$URL","headers":{"Authorization":"Bearer $TOKEN"}}}}
+{"mcpServers":{"WorkAiStrator":{"type":"http","url":"$URL","headers":{"Authorization":"Bearer $TOKEN"}}}}
 EOF
   echo "⟶ claude: whoami и list_projects"
-  if limit 180 claude -p "Вызови инструменты ai-team whoami и list_projects и коротко перечисли результат." \
+  if limit 180 claude -p "Вызови инструменты WorkAiStrator whoami и list_projects и коротко перечисли результат." \
       --mcp-config "$OUT/claude-mcp.json" --strict-mcp-config \
       --allowedTools mcp__ai-team__whoami mcp__ai-team__list_projects </dev/null >"$OUT/claude.txt" 2>&1; then
     cat "$OUT/claude.txt"
@@ -33,7 +33,7 @@ EOF
     echo "claude не смог выполнить запрос (см. $OUT/claude.txt):"; head -n 5 "$OUT/claude.txt"; status=3
   fi
   echo "⟶ claude: действие create_backlog_item (запись в журнал mcp_action)"
-  if limit 180 claude -p "Вызови инструмент ai-team create_backlog_item с project_id=2, title='Идея из Claude', idea='Проверка записи по MCP из настоящего клиента', feature='claude-idea' и выведи один ответ сервера." \
+  if limit 180 claude -p "Вызови инструмент WorkAiStrator create_backlog_item с project_id=2, title='Идея из Claude', idea='Проверка записи по MCP из настоящего клиента', feature='claude-idea' и выведи один ответ сервера." \
       --mcp-config "$OUT/claude-mcp.json" --strict-mcp-config \
       --allowedTools mcp__ai-team__create_backlog_item </dev/null >"$OUT/claude-action.txt" 2>&1; then
     cat "$OUT/claude-action.txt"
@@ -48,7 +48,7 @@ if command -v codex >/dev/null 2>&1; then
   echo "⟶ codex: whoami"
   export AI_TEAM_MCP_TOKEN="$TOKEN"
   if limit 180 codex exec --skip-git-repo-check --sandbox read-only -c "mcp_servers.ai_team.url=\"$URL\"" -c 'mcp_servers.ai_team.bearer_token_env_var="AI_TEAM_MCP_TOKEN"' \
-      "Вызови инструмент ai-team whoami и коротко перечисли результат." </dev/null >"$OUT/codex.txt" 2>&1; then
+      "Вызови инструмент WorkAiStrator whoami и коротко перечисли результат." </dev/null >"$OUT/codex.txt" 2>&1; then
     cat "$OUT/codex.txt"
   else
     echo "codex не смог выполнить запрос (см. $OUT/codex.txt):"; head -n 5 "$OUT/codex.txt"; status=3

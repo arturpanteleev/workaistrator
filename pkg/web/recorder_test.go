@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/evidence"
-	"github.com/arturpanteleev/ai-team/pkg/notifier"
-	"github.com/arturpanteleev/ai-team/pkg/verdict"
-	"github.com/arturpanteleev/ai-team/pkg/web/store"
+	"github.com/arturpanteleev/workaistrator/pkg/notifier"
+	"github.com/arturpanteleev/workaistrator/pkg/store/evidence"
+	"github.com/arturpanteleev/workaistrator/pkg/store/verdict"
+	"github.com/arturpanteleev/workaistrator/pkg/web/store"
 )
 
 func TestStoreRecorder_FullLifecycle(t *testing.T) {

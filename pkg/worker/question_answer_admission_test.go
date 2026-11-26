@@ -11,10 +11,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/approval"
-	"github.com/arturpanteleev/ai-team/pkg/evidence"
-	"github.com/arturpanteleev/ai-team/pkg/lifecycle"
-	"github.com/arturpanteleev/ai-team/pkg/pipeline"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/approval"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/pipeline"
+	"github.com/arturpanteleev/workaistrator/pkg/lifecycle"
+	"github.com/arturpanteleev/workaistrator/pkg/store/evidence"
 )
 
 func TestWorkerAPIQuestionAnswerAdmissionDefersStaleRunningClarificationToPipeline(t *testing.T) {

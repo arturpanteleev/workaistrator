@@ -11,11 +11,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/approval"
-	"github.com/arturpanteleev/ai-team/pkg/config"
-	"github.com/arturpanteleev/ai-team/pkg/lifecycle"
-	"github.com/arturpanteleev/ai-team/pkg/tracker"
-	"github.com/arturpanteleev/ai-team/pkg/web/store"
+	"github.com/arturpanteleev/workaistrator/pkg/config"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/approval"
+	"github.com/arturpanteleev/workaistrator/pkg/lifecycle"
+	"github.com/arturpanteleev/workaistrator/pkg/runtime/tracker"
+	"github.com/arturpanteleev/workaistrator/pkg/web/store"
 )
 
 // inboundController records what the tracker is allowed to cause: continuing
@@ -346,7 +346,7 @@ func TestInboundDoesNotLoopOnOwnOutboundTransition(t *testing.T) {
 	f := newInboundFixture(t, defaultInboundRules)
 	run := f.task(t, "inbound-echo", "APP-1", lifecycle.PhaseResumable, "implementation", "")
 	f.start(t)
-	// ai-team's own stage entry moves the card (on_enter: In Progress).
+	// WorkAiStrator's own stage entry moves the card (on_enter: In Progress).
 	trackerEvent(t, f.srv, run, "attempt_started", "implementation", "attempt-echo", `{}`)
 	eventually(t, "outbound transition", func() bool {
 		status, _ := f.fake.Status("APP-1")
@@ -357,7 +357,7 @@ func TestInboundDoesNotLoopOnOwnOutboundTransition(t *testing.T) {
 		t.Fatalf("own transition caused a request: %+v calls=%v", result, f.controller.agentCalls)
 	}
 	ignored := f.requests(t, "ignored")
-	if len(ignored) != 1 || ignored[0].Origin != tracker.OriginAITeam || !strings.Contains(ignored[0].Reason, "ai-team itself") {
+	if len(ignored) != 1 || ignored[0].Origin != tracker.OriginAITeam || !strings.Contains(ignored[0].Reason, "WorkAiStrator itself") {
 		t.Fatalf("ignored: %+v", ignored)
 	}
 }

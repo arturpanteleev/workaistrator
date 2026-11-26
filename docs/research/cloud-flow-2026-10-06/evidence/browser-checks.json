@@ -1,0 +1,16 @@
+{
+  "scheduler_page": {
+    "url": "http://127.0.0.1:18765",
+    "rendered_text": "",
+    "console_error": "Uncaught TypeError: Cannot read properties of null (reading 'map')"
+  },
+  "mobile_local_mode": {
+    "viewport_width": 390,
+    "new_run_button": {
+      "left": 570,
+      "right": 637.15625
+    },
+    "last_filter_right": 1217.015625,
+    "note": "Measured DOM bounds in Chromium device emulation; real mobile device not tested. Content overflows inside layout, not necessarily document."
+  }
+}

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arturpanteleev/ai-team/pkg/config"
+	"github.com/arturpanteleev/workaistrator/pkg/config"
 )
 
 // infraFileConfig is a file config with every infrastructure section a web

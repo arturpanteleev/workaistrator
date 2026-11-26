@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/evidence"
-	"github.com/arturpanteleev/ai-team/pkg/web/store"
+	"github.com/arturpanteleev/workaistrator/pkg/store/evidence"
+	"github.com/arturpanteleev/workaistrator/pkg/web/store"
 )
 
 func TestReconcileOrphanRunsRespectsWorkspaceLock(t *testing.T) {

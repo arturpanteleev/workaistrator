@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/delivery"
+	"github.com/arturpanteleev/workaistrator/pkg/delivery"
 )
 
 // lostTriggerDeploy runs a deploy whose trigger answer is lost, then retries

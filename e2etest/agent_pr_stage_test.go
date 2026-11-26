@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arturpanteleev/ai-team/pkg/delivery"
-	"github.com/arturpanteleev/ai-team/pkg/evidence"
+	"github.com/arturpanteleev/workaistrator/pkg/delivery"
+	"github.com/arturpanteleev/workaistrator/pkg/store/evidence"
 )
 
 // TestE2E_AgentImplementationStageDeliversControllerPR covers B-35 through the
@@ -86,7 +86,7 @@ cli: opencode
 		t.Fatalf("first run must execute the coder through the mock runtime:\n%s", out)
 	}
 	hashMatch := regexp.MustCompile(`Plan SHA-256: ([a-f0-9]{64})`).FindStringSubmatch(out)
-	resumeMatch := regexp.MustCompile(`ai-team run --resume ([^ ]+) --approve-plan`).FindStringSubmatch(out)
+	resumeMatch := regexp.MustCompile(`workaistrator run --resume ([^ ]+) --approve-plan`).FindStringSubmatch(out)
 	if len(hashMatch) != 2 || len(resumeMatch) != 2 {
 		t.Fatalf("awaiting_plan output lacks plan hash or resume command:\n%s", out)
 	}
@@ -213,7 +213,7 @@ func setupAgentPRGit(t *testing.T, dir string) string {
 	}{
 		{dir, []string{"init", "-b", "master"}},
 		{dir, []string{"config", "user.name", "AI Team E2E"}},
-		{dir, []string{"config", "user.email", "ai-team@example.test"}},
+		{dir, []string{"config", "user.email", "WorkAiStrator@example.test"}},
 		{dir, []string{"add", "."}},
 		{dir, []string{"commit", "-m", "initial"}},
 		{filepath.Dir(remote), []string{"init", "--bare", "-b", "master", remote}},

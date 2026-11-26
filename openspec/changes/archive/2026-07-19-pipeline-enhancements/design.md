@@ -44,7 +44,7 @@ Console-реализация — `ConsoleNotifier`. В будущем — `Email
 ### D3. Прогресс-бар: pkg/ui/progress.go
 Простейший прогресс-бар через `\r` (carriage return). Не библиотека (в Go нет стандартной), а ~30 строк:
 ```
-[ai-team] arcanoid | fix-game-start | coder (4/6) ████████░░
+[WorkAiStrator] arcanoid | fix-game-start | coder (4/6) ████████░░
 ```
 Отключается, если stdout не терминал.
 
@@ -83,7 +83,7 @@ effort: medium
 Обратная совместимость: старый формат `pipeline: [...]` → парсится как список имён с глобальными model/cli/effort.
 
 ### D6. Workflow rollback: --retry-from
-Новый флаг `ai-team run --retry-from <agent>`. Pipeline пропускает всех агентов до указанного и запускает с него. Артефакты предыдущих этапов уже существуют — проверка входов всё равно сработает.
+Новый флаг `workaistrator run --retry-from <agent>`. Pipeline пропускает всех агентов до указанного и запускает с него. Артефакты предыдущих этапов уже существуют — проверка входов всё равно сработает.
 
 ### D7. Отчёты генерирует Pipeline, не Runtime
 StageResult после этапа передаётся в:

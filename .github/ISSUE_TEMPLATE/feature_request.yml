@@ -1,16 +1,16 @@
 name: Предложить доработку
-description: Новая возможность или улучшение в ai-team
+description: Новая возможность или улучшение в WorkAiStrator
 labels: [enhancement, triage]
 body:
   - type: markdown
     attributes:
       value: |
-        Спасибо за предложение по ai-team.
-        Перед отправкой поищите дубликат среди [существующих issue](https://github.com/arturpanteleev/ai-team/issues).
+        Спасибо за предложение по WorkAiStrator.
+        Перед отправкой поищите дубликат среди [существующих issue](https://github.com/arturpanteleev/workaistrator/issues).
 
         **Пишите коротко.** Issue описывает проблему; подробная проработка, если
         она вообще понадобится, живёт в PR или в OpenSpec change. Заводить change
-        необязательно — см. [CONTRIBUTING.md](https://github.com/arturpanteleev/ai-team/blob/master/CONTRIBUTING.md).
+        необязательно — см. [CONTRIBUTING.md](https://github.com/arturpanteleev/workaistrator/blob/master/CONTRIBUTING.md).
   - type: textarea
     id: problem
     attributes:

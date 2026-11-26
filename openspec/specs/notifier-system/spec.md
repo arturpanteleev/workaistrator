@@ -16,8 +16,8 @@
 
 #### Scenario: ConsoleNotifier выводит уведомление
 - **КОГДА** этап завершается
-- **ТОГДА** `ConsoleNotifier` MUST вывести в stdout: `[ai-team] analyst completed ✓ (12.3s)`
-- **И** при ошибке: `[ai-team] coder failed ✗: error message`
+- **ТОГДА** `ConsoleNotifier` MUST вывести в stdout: `[WorkAiStrator] analyst completed ✓ (12.3s)`
+- **И** при ошибке: `[WorkAiStrator] coder failed ✗: error message`
 
 ### Requirement: Notifier цепочка
 Система MUST поддерживать цепочку из нескольких Notifier-ов.
@@ -97,13 +97,13 @@ of them.
 
 #### Scenario: Unknown subscription type
 
-- **WHEN** a channel lists an event type that ai-team does not emit
+- **WHEN** a channel lists an event type that WorkAiStrator does not emit
 - **THEN** configuration validation MUST fail
 
 ### Requirement: Notification delivery from every event writer
 
 Notifications MUST be delivered by every process that writes task events into
-the shared event store — the web server, a local `ai-team run` and the
+the shared event store — the web server, a local `workaistrator run` and the
 scheduler worker — through the same dispatcher, outside the task execution
 path, each with its own cursor. The web server and the scheduler
 worker MUST keep a durable cursor that starts at the event tail on first
@@ -117,13 +117,13 @@ handling before its final flush, so a second interrupt ends the process.
 
 #### Scenario: Local run sends a subscribed event
 
-- **WHEN** `ai-team run` records an event that a channel subscribes to
-- **THEN** the channel MUST receive the notification without `ai-team web` running
+- **WHEN** `workaistrator run` records an event that a channel subscribes to
+- **THEN** the channel MUST receive the notification without `workaistrator web` running
 
 #### Scenario: Local run without notifications
 
 - **WHEN** the template has no `notifications` section
-- **THEN** `ai-team run` MUST NOT start a notification worker
+- **THEN** `workaistrator run` MUST NOT start a notification worker
 
 ### Requirement: Durable, deduplicated notification delivery
 
@@ -139,7 +139,7 @@ pending. Final delivery records MAY be pruned after a retention period; live
 claims MUST NOT be pruned. A final record MUST NOT be pruned while its event is
 above the lowest durable notifier cursor in the shared database, so a cursor
 that lagged longer than the retention period still cannot replay a delivered
-event. The in-memory cursor of an `ai-team run` process is not durable and
+event. The in-memory cursor of an `workaistrator run` process is not durable and
 does not hold records back; it covers only the lifetime of that process.
 
 #### Scenario: Pruning keeps records above a lagging cursor
@@ -154,7 +154,7 @@ does not hold records back; it covers only the lifetime of that process.
 
 #### Scenario: Web server and local run share one database
 
-- **WHEN** `ai-team run` and `ai-team web` both read an event subscribed by a channel
+- **WHEN** `workaistrator run` and `workaistrator web` both read an event subscribed by a channel
 - **THEN** the channel MUST receive exactly one notification for it
 
 #### Scenario: Two processes race for one delivery

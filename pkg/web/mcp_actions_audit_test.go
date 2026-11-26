@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arturpanteleev/ai-team/pkg/lifecycle"
+	"github.com/arturpanteleev/workaistrator/pkg/lifecycle"
 )
 
 // grantedMCPActions lists the journal records of actions that were carried out,

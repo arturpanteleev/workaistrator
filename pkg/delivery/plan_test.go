@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/checks"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/stage/checks"
 )
 
 func TestPlanStrictValidationAndStableHash(t *testing.T) {
@@ -174,22 +174,22 @@ func TestPlanRejectsControlPaths(t *testing.T) {
 	}
 
 	rejected := map[string]string{
-		"git directory itself":   ".git",
-		"git hook":               ".git/hooks/pre-commit",
-		"git config":             ".git/config",
-		"git deep nesting":       ".git/modules/x/hooks/post-merge",
-		"ai-team directory":      ".ai-team",
-		"ai-team run state":      ".ai-team/runs/x.json",
-		"ai-team deep nesting":   ".ai-team/runs/2026/attempt/manifest.json",
-		"git in subdirectory":    "vendor/dep/.git/hooks/pre-commit",
-		"git as nested checkout": "sub/.git/config",
+		"git directory itself":       ".git",
+		"git hook":                   ".git/hooks/pre-commit",
+		"git config":                 ".git/config",
+		"git deep nesting":           ".git/modules/x/hooks/post-merge",
+		"WorkAiStrator directory":    ".ai-team",
+		"workaistrator run state":    ".ai-team/runs/x.json",
+		"WorkAiStrator deep nesting": ".ai-team/runs/2026/attempt/manifest.json",
+		"git in subdirectory":        "vendor/dep/.git/hooks/pre-commit",
+		"git as nested checkout":     "sub/.git/config",
 		// APFS на macOS и NTFS сравнивают имена без учёта регистра, поэтому
 		// ".GIT" открывает ту же директорию, что и ".git".
-		"git uppercase":      ".GIT/hooks/pre-commit",
-		"git mixed case":     ".Git/config",
-		"git odd case":       ".gIt/hooks/pre-commit",
-		"ai-team uppercase":  ".AI-TEAM/runs/x.json",
-		"ai-team title case": ".Ai-Team/state",
+		"git uppercase":            ".GIT/hooks/pre-commit",
+		"git mixed case":           ".Git/config",
+		"git odd case":             ".gIt/hooks/pre-commit",
+		"WorkAiStrator uppercase":  ".AI-TEAM/runs/x.json",
+		"WorkAiStrator title case": ".Ai-Team/state",
 		// Windows отбрасывает хвостовые точки и пробелы, открывает директорию
 		// через alternate data stream и знает её под 8.3-именем.
 		"git trailing dot":     ".git./hooks/pre-commit",
@@ -214,12 +214,12 @@ func TestPlanRejectsControlPaths(t *testing.T) {
 	// имя которых лишь начинается с ".git", и ".ai-team" вне корня рабочей
 	// копии — там это директория пользователя, а не состояние прогона.
 	for name, file := range map[string]string{
-		"gitignore":            ".gitignore",
-		"gitattributes":        ".gitattributes",
-		"gitignore in subtree": "docs/.gitignore",
-		"github workflows":     ".github/workflows/ci.yml",
-		"ai-team prefix":       ".ai-teamrc",
-		"ai-team below root":   "examples/.ai-team/config.yaml",
+		"gitignore":                ".gitignore",
+		"gitattributes":            ".gitattributes",
+		"gitignore in subtree":     "docs/.gitignore",
+		"github workflows":         ".github/workflows/ci.yml",
+		"WorkAiStrator prefix":     ".ai-teamrc",
+		"WorkAiStrator below root": "examples/.ai-team/config.yaml",
 	} {
 		t.Run("allowed "+name, func(t *testing.T) {
 			if err := planWithFile(file).Validate(); err != nil {
@@ -1314,7 +1314,7 @@ func setupRepository(t *testing.T) (string, string) {
 	repo, remote := t.TempDir(), filepath.Join(t.TempDir(), "remote.git")
 	git(t, repo, "init", "-b", "main")
 	git(t, repo, "config", "user.name", "AI Team Test")
-	git(t, repo, "config", "user.email", "ai-team@example.test")
+	git(t, repo, "config", "user.email", "WorkAiStrator@example.test")
 	writeFile(t, filepath.Join(repo, "a.go"), "package a\n")
 	writeFile(t, filepath.Join(repo, "unrelated.txt"), "clean\n")
 	git(t, repo, "add", "a.go", "unrelated.txt")

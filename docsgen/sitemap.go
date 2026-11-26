@@ -1,39 +1,39 @@
 package docsgen
 
-// Карта сайта документации ai-team. Её использует и команда docsgen, и
+// Карта сайта документации WorkAiStrator. Её использует и команда docsgen, и
 // сквозной тест сборки, поэтому новая страница добавляется только здесь.
 //
 // Разделы следуют схеме Django: знакомство, учебник (один сквозной пример),
 // руководства (как решить задачу), справочник (точные факты) и устройство
-// самого ai-team.
+// самого WorkAiStrator.
 const (
 	SectionStart     = "Знакомство"
 	SectionTutorial  = "Учебник"
 	SectionGuides    = "Руководства"
 	SectionReference = "Справочник"
-	SectionInside    = "Внутри ai-team"
+	SectionInside    = "Внутри WorkAiStrator"
 )
 
-// SiteConfig returns the ai-team documentation site configuration without
+// SiteConfig returns the WorkAiStrator documentation site configuration without
 // the machine-specific fields (Root, Output, Version, BasePath).
 func SiteConfig() Config {
 	return Config{
-		Title:        "ai-team",
-		GitHubRepo:   "arturpanteleev/ai-team",
+		Title:        "WorkAiStrator",
+		GitHubRepo:   "arturpanteleev/workaistrator",
 		SectionOrder: []string{SectionStart, SectionTutorial, SectionGuides, SectionReference, SectionInside},
 		Aliases:      map[string]string{"README.md": "/"},
 		HeaderLinks: []NavLink{
 			{Title: "Как это выглядит", URL: "/start/tour/"},
 			{Title: "Учебник", URL: "/tutorial/install/"},
 			{Title: "Сравнение", URL: "/start/compare/"},
-			{Title: "GitHub", URL: "https://github.com/arturpanteleev/ai-team"},
+			{Title: "GitHub", URL: "https://github.com/arturpanteleev/workaistrator"},
 		},
 		HeroActions: []NavLink{
 			{Title: "Пройти учебник", URL: "/tutorial/install/"},
 			{Title: "Посмотреть, как это работает", URL: "/start/tour/"},
 		},
 		Sources: []SourcedPage{
-			{Source: "docs/index.md", Title: "ai-team", URL: "/"},
+			{Source: "docs/index.md", Title: "WorkAiStrator", URL: "/"},
 
 			{Source: "docs/start/tour.md", Section: SectionStart, Weight: 0, URL: "/start/tour/",
 				Description: "Один прогон от задачи до pull request в скриншотах"},
@@ -43,6 +43,12 @@ func SiteConfig() Config {
 				Description: "Разработчику, команде и компании"},
 			{Source: "docs/start/compare.md", Section: SectionStart, Weight: 3, URL: "/start/compare/",
 				Description: "Bernstein, AI-SDLC, Spec Kit, LangGraph и другие"},
+			{Source: "docs/start/quickstart.md", Section: SectionStart, Weight: 4, URL: "/start/quickstart/",
+				Description: "От сборки и demo до первого подтверждённого delivery-плана"},
+			{Source: "docs/start/workflow-reference.md", Section: SectionStart, Weight: 5, URL: "/start/workflow-reference/",
+				Description: "Stages, transitions, гейты и loopback"},
+			{Source: "docs/start/deployment.md", Section: SectionStart, Weight: 6, URL: "/start/deployment/",
+				Description: "Один бинарник, дашборд, OIDC и архив evidence"},
 
 			{Source: "docs/tutorial/install.md", Section: SectionTutorial, Weight: 0, URL: "/tutorial/install/",
 				Description: "Бинарник с проверкой подписи или сборка из исходников"},
@@ -75,7 +81,7 @@ func SiteConfig() Config {
 			{Source: "docs/reference/statuses.md", Section: SectionReference, Weight: 3, URL: "/reference/statuses/",
 				Description: "Что значит каждый статус и код выхода"},
 			{Source: "docs/reference/security.md", Section: SectionReference, Weight: 4, URL: "/reference/security/",
-				Description: "Что ai-team гарантирует и чего не обещает"},
+				Description: "Что WorkAiStrator гарантирует и чего не обещает"},
 			{Source: "docs/reference/mcp.md", Section: SectionReference, Weight: 5, URL: "/reference/mcp/",
 				Description: "Сетевой MCP: инструменты, ресурсы, авторизация и матрица паритета"},
 			{Source: "docs/reference/gate-protocol.md", Section: SectionReference, Weight: 6, URL: "/reference/gate-protocol/",
@@ -85,7 +91,7 @@ func SiteConfig() Config {
 
 			{Source: "docs/ARCHITECTURE.md", Title: "Архитектура", Section: SectionInside, Weight: 0, URL: "/architecture/"},
 			{Source: "docs/MODULES.md", Title: "Карта модулей", Section: SectionInside, Weight: 1, URL: "/modules/"},
-			{Source: "docs/DEVELOPMENT.md", Title: "Разработка ai-team", Section: SectionInside, Weight: 2, URL: "/development/"},
+			{Source: "docs/DEVELOPMENT.md", Title: "Разработка WorkAiStrator", Section: SectionInside, Weight: 2, URL: "/development/"},
 			{Source: "CONTRIBUTING.md", Title: "Как участвовать", Section: SectionInside, Weight: 3, URL: "/contributing/"},
 			{Source: "SECURITY.md", Title: "Сообщить об уязвимости", Section: SectionInside, Weight: 4, URL: "/security/"},
 			{Source: "CODE_OF_CONDUCT.md", Title: "Кодекс поведения", Section: SectionInside, Weight: 5, URL: "/code-of-conduct/"},

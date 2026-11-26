@@ -8,7 +8,7 @@ state that this snapshot does not include run evidence, artifacts, or other
 filesystem state.
 
 #### Scenario: Snapshot of an active database
-- **WHEN** `ai-team db backup --db <source> --out <new path>` runs while the
+- **WHEN** `workaistrator db backup --db <source> --out <new path>` runs while the
   controller database is open
 - **THEN** the resulting SQLite file MUST open independently and contain the
   committed rows from the source, including rows not yet checkpointed from WAL

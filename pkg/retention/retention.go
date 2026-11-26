@@ -18,7 +18,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/safeio"
+	"github.com/arturpanteleev/workaistrator/pkg/safeio"
 	_ "modernc.org/sqlite"
 )
 

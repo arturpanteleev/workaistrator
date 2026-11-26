@@ -1,6 +1,6 @@
 ## Контекст
 
-Создаётся новый Go-проект — CLI-инструмент `ai-team`. Проект использует OpenSpec для собственной разработки. Инструмент запускается в любом целевом проекте и выполняет пайплайн AI-агентов.
+Создаётся новый Go-проект — CLI-инструмент `workaistrator`. Проект использует OpenSpec для собственной разработки. Инструмент запускается в любом целевом проекте и выполняет пайплайн AI-агентов.
 
 **Текущее состояние:** Пустой репозиторий, установлен OpenSpec CLI (`.opencode/`, `openspec/`).
 
@@ -28,8 +28,8 @@
 ## Решения
 
 ### Решение 1: Один Go-модуль, внутренние пакеты
-- Все пакеты в одном `go.mod` (`github.com/arturpanteleev/ai-team`)
-- `cmd/ai-team/main.go` — точка входа CLI
+- Все пакеты в одном `go.mod` (`github.com/arturpanteleev/workaistrator`)
+- `cmd/workaistrator/main.go` — точка входа CLI
 - `pkg/` — внутренние пакеты
 - **Почему:** простота разработки и сборки
 
@@ -60,7 +60,7 @@ type Runtime interface {
 ### Решение 5: Agent CLI runtime вызывает opencode с --message-file
 - Готовит промпт: system prompt + контекст из input-артефактов
 - Пишет во временный файл
-- Запускает: `opencode --resume --message-file /tmp/ai-team-xxx.md`
+- Запускает: `opencode --resume --message-file /tmp/workaistrator-xxx.md`
 - **Почему:** --message-file надёжнее stdin для длинных контекстов
 
 ## Риски / Компромиссы

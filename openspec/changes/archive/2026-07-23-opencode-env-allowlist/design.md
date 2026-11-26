@@ -36,7 +36,7 @@ allow-list itself never needs to be committed to the repo or shared).
 ## Risks / Trade-offs
 
 If a real opencode setup depends on some environment variable not in the
-baseline and the user hasn't set `AI_TEAM_OPENCODE_ENV_ALLOW`, `ai-team run`
+baseline and the user hasn't set `AI_TEAM_OPENCODE_ENV_ALLOW`, `workaistrator run`
 may start failing where it previously worked (e.g. opencode can't
 authenticate). This is the correct trade-off — implicit credential
 passthrough is exactly the problem being fixed — but it's a real, visible

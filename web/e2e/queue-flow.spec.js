@@ -169,7 +169,7 @@ test('real React dashboard shows durable scheduler queue, worker failure, reload
   test.skip(!bubblewrapBinary, 'trusted terminal recovery requires Linux bubblewrap')
   const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'ai-team-browser-e2e-'))
   const target = path.join(tempRoot, 'target')
-  const binary = path.join(tempRoot, 'ai-team')
+  const binary = path.join(tempRoot, 'WorkAiStrator')
   const port = await unusedPort()
   const baseURL = `http://127.0.0.1:${port}`
   let webServer
@@ -178,7 +178,7 @@ test('real React dashboard shows durable scheduler queue, worker failure, reload
   let captureConsoleErrors = false
 
   try {
-    run('go', ['build', '-o', binary, './cmd/ai-team'], { cwd: repoDir })
+    run('go', ['build', '-o', binary, './cmd/workaistrator'], { cwd: repoDir })
     await mkdir(target, { recursive: true })
     run(binary, ['init', '--target', target], { cwd: repoDir })
     webServer = start(binary, ['web', '--target', target, '--port', String(port), '--dist', path.join(webDir, 'dist'), '--scheduler-db', '.ai-team/scheduler.db'], { cwd: target })
@@ -311,14 +311,14 @@ test('real React dashboard shows durable scheduler queue, worker failure, reload
 test('authenticated cookie session survives reload and a second window for write commands', async ({ browser }) => {
   const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'ai-team-auth-browser-e2e-'))
   const target = path.join(tempRoot, 'target')
-  const binary = path.join(tempRoot, 'ai-team')
+  const binary = path.join(tempRoot, 'WorkAiStrator')
   const port = await unusedPort()
   const baseURL = `http://127.0.0.1:${port}`
   const secret = 'browser-e2e-signing-secret-that-is-long-enough'
   let webServer
 
   try {
-    run('go', ['build', '-o', binary, './cmd/ai-team'], { cwd: repoDir })
+    run('go', ['build', '-o', binary, './cmd/workaistrator'], { cwd: repoDir })
     const token = run(binary, ['auth-token', '--actor', 'browser-product-owner', '--roles', 'product_owner'], {
       cwd: repoDir,
       env: { ...process.env, AI_TEAM_AUTH_SECRET: secret },
@@ -398,7 +398,7 @@ test('authenticated cookie session survives reload and a second window for write
 test('Chromium viewport flow reads, decides, resumes and reloads the persisted initiative', async ({ page }) => {
   const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'ai-team-mobile-browser-e2e-'))
   const target = path.join(tempRoot, 'target')
-  const binary = path.join(tempRoot, 'ai-team')
+  const binary = path.join(tempRoot, 'WorkAiStrator')
   const mockBin = path.join(tempRoot, 'mockbin')
   const port = await unusedPort()
   const baseURL = `http://127.0.0.1:${port}`
@@ -409,7 +409,7 @@ test('Chromium viewport flow reads, decides, resumes and reloads the persisted i
   let pipelineListReads = 0
 
   try {
-    run('go', ['build', '-tags=e2etest', '-o', binary, './cmd/ai-team'], { cwd: repoDir })
+    run('go', ['build', '-tags=e2etest', '-o', binary, './cmd/workaistrator'], { cwd: repoDir })
     await mkdir(target, { recursive: true })
     const remoteDir = `${target}.origin.git`
     run('git', ['init', '--bare', '-b', 'master', remoteDir], { cwd: repoDir })
@@ -421,7 +421,7 @@ test('Chromium viewport flow reads, decides, resumes and reloads the persisted i
     run('git', ['add', 'README.md'], { cwd: target })
     run('git', ['commit', '-m', 'Initialize browser E2E target'], { cwd: target })
     run('git', ['push', '-u', 'origin', 'master'], { cwd: target })
-    // Initialize only after Git exists so ai-team can put .ai-team/ in the
+    // Initialize only after Git exists so WorkAiStrator can put .ai-team/ in the
     // repository-local exclude file. The first admitted run then starts from
     // a genuinely clean workspace, matching the server's real preflight.
     run(binary, ['init', '--target', target], { cwd: repoDir })

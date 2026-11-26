@@ -5,7 +5,7 @@ Deployer MUST NOT пушить в default-ветку репозитория.
 
 #### Scenario: Создание ветки перед коммитом
 - **КОГДА** deployer начинает работу и текущая ветка — default (master/main)
-- **ТОГДА** он MUST создать и переключиться на ветку `ai-team/{feature}` до `git add`
+- **ТОГДА** он MUST создать и переключиться на ветку `WorkAiStrator/{feature}` до `git add`
 
 #### Scenario: Уже на фиче-ветке
 - **КОГДА** текущая ветка не default

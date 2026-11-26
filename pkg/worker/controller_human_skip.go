@@ -11,11 +11,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/approval"
-	"github.com/arturpanteleev/ai-team/pkg/evidence"
-	"github.com/arturpanteleev/ai-team/pkg/safeio"
-	"github.com/arturpanteleev/ai-team/pkg/strictjson"
-	"github.com/arturpanteleev/ai-team/pkg/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/approval"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/safeio"
+	"github.com/arturpanteleev/workaistrator/pkg/store/evidence"
+	"github.com/arturpanteleev/workaistrator/pkg/strictjson"
 )
 
 type pinnedWorkerWorkflow struct {

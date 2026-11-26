@@ -17,7 +17,7 @@ name configured in `tracker.adapter` (or the only configured adapter block)
 through a registry. Built-in adapters are `jira` and `fake`. Adapter failures
 MUST be mapped onto the sentinel classes not-found, forbidden, invalid key and
 no-transition. Reading changes MUST report whether a change was made by
-ai-team's own account, and an empty cursor MUST start from the current tail.
+WorkAiStrator's own account, and an empty cursor MUST start from the current tail.
 
 #### Scenario: Adapter is selected by name
 
@@ -133,8 +133,8 @@ link MUST cause no tracker request.
 
 A comment MUST carry an idempotency key derived from the run and the event ID,
 and the adapter MUST NOT post a second comment with a key it has already
-posted. For Jira the key is a separate text node `ai-team event: <key>`, the
-attempt ID a separate node `ai-team attempt: <attempt_id>`, and the adapter MUST
+posted. For Jira the key is a separate text node `WorkAiStrator event: <key>`, the
+attempt ID a separate node `WorkAiStrator attempt: <attempt_id>`, and the adapter MUST
 page through the issue comments, newest first, until it finds the key or runs
 out of comments before posting (with a finite page limit); if that check fails
 or the limit is reached the comment MUST NOT be posted. A transition to the status the issue
@@ -308,7 +308,7 @@ The local state MUST never be replaced by the tracker's status.
 The trust for an inbound launch MUST come from the `tracker.inbound`
 configuration: the operator who lists a status in `rules` decides that this
 status may continue a ready stage. The external author MUST NOT be identified
-as an ai-team user and no stage permission (RBAC) MUST be evaluated against
+as an WorkAiStrator user and no stage permission (RBAC) MUST be evaluated against
 that author; the author's display name MUST be stored and shown only as
 untrusted information and MUST NOT be part of the actor. The actor in the
 audit trail is the adapter (`tracker:<adapter>`) together with the change ID.
@@ -374,7 +374,7 @@ not visible and are never replayed.
 
 ### Requirement: Inbound and outbound updates do not loop
 
-A change whose origin is ai-team's own account MUST be recorded as ignored and
+A change whose origin is WorkAiStrator's own account MUST be recorded as ignored and
 MUST NOT create a request. An adapter MUST fail the read, leaving the cursor
 unchanged, when it cannot determine its own account, instead of guessing the
 origin. An adapter MUST bound the size of one tracker query (Jira sends issue
@@ -383,7 +383,7 @@ external. A change for an issue that has no link MUST NOT be processed.
 
 #### Scenario: Own transition
 
-- **WHEN** ai-team moves the issue on stage entry and the next sync reads that
+- **WHEN** WorkAiStrator moves the issue on stage entry and the next sync reads that
   change
 - **THEN** it MUST be ignored as an echo and the controller MUST NOT be called
 

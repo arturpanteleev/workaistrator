@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arturpanteleev/ai-team/pkg/agent"
-	"github.com/arturpanteleev/ai-team/pkg/stageexec"
+	"github.com/arturpanteleev/workaistrator/pkg/agent"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/stage/exec"
 )
 
 // S09: an external adapter replaces model execution only; a controller

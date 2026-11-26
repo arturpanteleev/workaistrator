@@ -5,9 +5,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/arturpanteleev/ai-team/pkg/gatelib"
-	"github.com/arturpanteleev/ai-team/pkg/llmgate"
-	"github.com/arturpanteleev/ai-team/pkg/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/gate/lib"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/gate/llm"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/workflow"
 	"gopkg.in/yaml.v3"
 )
 
@@ -17,7 +17,7 @@ import (
 //     three unrelated stage fields: required_sections, check and confirm.
 //   - v6 (GateSchemaVersion) replaces all three with one explicit
 //     exit_gate_groups list of gate references into the versioned gate
-//     library (pkg/gatelib). The stage result type (result: md|link|approve)
+//     library (pkg/engine/gate/lib). The stage result type (result: md|link|approve)
 //     is the only thing left that describes the result itself.
 //   - v7 (WorkflowSchemaVersion) keeps everything v6 means for stages and adds
 //     the top-level `workflows` metadata block plus per-stage
@@ -28,7 +28,7 @@ import (
 // legacy fields stay authoritative and are translated on demand by
 // LegacyGateGroups, so a v5 `idea-to-prod` follows the same path and yields
 // the same verdicts as its v6 translation (TestIdeaToProdV5AndV6AreEquivalent).
-// The group scheduler (pkg/gatesched, wired in pkg/pipeline) executes the
+// The group scheduler (pkg/engine/gate/sched, wired in pkg/engine/pipeline) executes the
 // effective chain of either spelling; there is no engine-side projection of
 // a v6 chain back to the legacy fields.
 const (

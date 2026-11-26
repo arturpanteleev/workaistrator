@@ -1,7 +1,7 @@
 # Руководство разработчика
 
-Вы здесь, если меняете **сам ai-team**: Go-контроллер, runtime-адаптер,
-встроенного агента, dashboard или документацию. Для запуска ai-team над
+Вы здесь, если меняете **сам WorkAiStrator**: Go-контроллер, runtime-адаптер,
+встроенного агента, dashboard или документацию. Для запуска WorkAiStrator над
 своим продуктом начните с [учебника](tutorial/install.md) и [руководств](guides/troubleshooting.md).
 
 ## Поднять проект локально
@@ -11,14 +11,14 @@
 mock-opencode. Live runtime нужен только для отдельной интеграционной проверки.
 
 ```bash
-git clone https://github.com/arturpanteleev/ai-team.git
-cd ai-team
+git clone https://github.com/arturpanteleev/workaistrator.git
+cd WorkAiStrator
 make build
 make test
 make docs
 ```
 
-Собранный CLI: `bin/ai-team`. Документация: `docs/_site/index.html`.
+Собранный CLI: `bin/workaistrator`. Документация: `docs/_site/index.html`.
 Для локального просмотра с корректными абсолютными ссылками запустите
 статический HTTP-сервер (если установлен Python 3):
 
@@ -33,10 +33,10 @@ python3 -m http.server 8000 --bind 127.0.0.1 --directory docs/_site
 
 | Что меняете | Начните здесь | Что проверить рядом |
 |---|---|---|
-| Переход или исход стадии | `pkg/workflow`, `pkg/pipeline` | Resume, loopback, invalidation и attempts |
+| Переход или исход стадии | `pkg/engine/workflow`, `pkg/engine/pipeline` | Resume, loopback, invalidation и attempts |
 | Новый runtime | `pkg/runtime` | CLI argv, env isolation, project surface, process lifecycle |
-| Verification adapter | `pkg/checks`, `pkg/junit` | Required/optional, timeout, output bounds, workspace digest |
-| Approval или delivery | `pkg/approval`, `pkg/delivery`, pipeline delivery files | Exact plan hash, stale candidate, retry/lock, negative cases |
+| Verification adapter | `pkg/engine/stage/checks`, `pkg/junit` | Required/optional, timeout, output bounds, workspace digest |
+| Approval или delivery | `pkg/engine/approval`, `pkg/delivery`, pipeline delivery files | Exact plan hash, stale candidate, retry/lock, negative cases |
 | Агент / prompt | `agents/<name>/` | def.yaml contract, inputs/outputs, scope, verdict |
 | HTTP / dashboard | `pkg/web`, `web/` | Auth/RBAC, projections, frontend build parity |
 | Документация | `docs/`, `README.md`, `docsgen/` | Links, headings, search, base-path и runnable examples |
@@ -61,7 +61,7 @@ change. Полный нормативный процесс находится в
 Во время работы запускайте затронутый пакет:
 
 ```bash
-go test -count=1 ./pkg/pipeline/...
+go test -count=1 ./pkg/engine/pipeline/...
 go test -count=1 ./docsgen/...
 ```
 

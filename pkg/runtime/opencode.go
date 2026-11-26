@@ -341,6 +341,6 @@ func binaryDocsURL(binary string) string {
 	case "claude":
 		return "https://docs.anthropic.com/en/docs/claude-code"
 	default:
-		return "https://github.com/arturpanteleev/ai-team"
+		return "https://github.com/arturpanteleev/workaistrator"
 	}
 }

@@ -3,29 +3,29 @@
 Спринт реализует ТЗ владельца от 2026-10-15 (задачи S01–S17). Базовый процесс —
 девять этапов шаблона `idea-to-prod` из `pkg/config/load.go`; этапы графа остаются
 последовательными, параллельны только гейты одного выходного перехода (fan-out/join
-этапов — отдельная [задача #126](https://github.com/arturpanteleev/ai-team/issues/126)).
+этапов — отдельная [задача #126](https://github.com/arturpanteleev/workaistrator/issues/126)).
 Каждый смёрженный PR получал patch-релиз (v0.2.1–v0.2.16).
 
 ## Что реализовано
 
 | Задача | Итог | PR | Релиз |
 |---|---|---|---|
-| S01 | Проекты-папки, обязательный `project_id` у задач и backlog, проект «Основной» для старых записей, фильтр на доске, архивирование вместо удаления (SQLite v14) | [#313](https://github.com/arturpanteleev/ai-team/pull/313) | v0.2.2 |
-| S02 | Контракт гейта и версионированная библиотека `pkg/gatelib`, схема конфига v6 (v5 читается через явный перевод), каталог `GET /api/gates/catalog` | [#312](https://github.com/arturpanteleev/ai-team/pull/312) | v0.2.1 |
-| S03 | Планировщик групп `pkg/gatesched`: группы по очереди, гейты параллельно, durable-попытки, recovery после рестарта, хеш результата закреплён на волну | [#316](https://github.com/arturpanteleev/ai-team/pull/316) | v0.2.5 |
-| S04 | Встроенные кодовые гейты на общем контракте и новый `required_phrases` (`pkg/gatephrases`) | [#319](https://github.com/arturpanteleev/ai-team/pull/319) | v0.2.8 |
-| S05 | LLM-гейт (`agent_review@1/2`, `pkg/llmgate`) и человеческий гейт (`human_approval@1/2`), единый сервис решения `pkg/humandecision` | [#320](https://github.com/arturpanteleev/ai-team/pull/320) | v0.2.9 |
-| S06 | Рекомендательные гейты, технический повтор на той же версии, системное право `admin` и обход с красной отметкой (SQLite v17) | [#323](https://github.com/arturpanteleev/ai-team/pull/323) | v0.2.12 |
-| S07 | Гейт внешней программы `external_program@1` с JSON-контрактом (`pkg/gaterun`) | [#314](https://github.com/arturpanteleev/ai-team/pull/314) | v0.2.3 |
-| S08 | Docker-адаптер гейта `docker_program@1` (`pkg/dockerrun`) | [#318](https://github.com/arturpanteleev/ai-team/pull/318) | v0.2.7 |
-| S09 | Внешний исполнитель этапа (`executor_adapters`, `pkg/stageexec`) | [#315](https://github.com/arturpanteleev/ai-team/pull/315) | v0.2.4 |
-| S10 | Docker-исполнитель этапа `code_review` на том же контракте | [#322](https://github.com/arturpanteleev/ai-team/pull/322) | v0.2.11 |
-| S11 | Вычисляемые статусы этапов и история посещений (`pkg/stagestatus`), API, MCP и UI | [#326](https://github.com/arturpanteleev/ai-team/pull/326) | v0.2.14 |
-| S12 | Сетевой MCP (Streamable HTTP, личные токены, чтения; SQLite v15) | [#317](https://github.com/arturpanteleev/ai-team/pull/317) | v0.2.6 |
-| S13 | MCP: все действия, ключ запроса, матрица паритета с REST | [#325](https://github.com/arturpanteleev/ai-team/pull/325) | v0.2.15 |
-| S14 | Абстрактный трекер, связь 1:1 «задача — карточка», исходящие переходы `on_enter`/`on_pass` (SQLite v16) | [#321](https://github.com/arturpanteleev/ai-team/pull/321) | v0.2.10 |
-| S15 | Входящая синхронизация трекера через контроллер, курсор и «sync now» (SQLite v18) | [#324](https://github.com/arturpanteleev/ai-team/pull/324) | v0.2.13 |
-| S16 | Аудит и исправление Web UI: три зоны страницы задачи, один словарь действий, экраны трекера | [#327](https://github.com/arturpanteleev/ai-team/pull/327) | v0.2.16 |
+| S01 | Проекты-папки, обязательный `project_id` у задач и backlog, проект «Основной» для старых записей, фильтр на доске, архивирование вместо удаления (SQLite v14) | [#313](https://github.com/arturpanteleev/workaistrator/pull/313) | v0.2.2 |
+| S02 | Контракт гейта и версионированная библиотека `pkg/gatelib`, схема конфига v6 (v5 читается через явный перевод), каталог `GET /api/gates/catalog` | [#312](https://github.com/arturpanteleev/workaistrator/pull/312) | v0.2.1 |
+| S03 | Планировщик групп `pkg/gatesched`: группы по очереди, гейты параллельно, durable-попытки, recovery после рестарта, хеш результата закреплён на волну | [#316](https://github.com/arturpanteleev/workaistrator/pull/316) | v0.2.5 |
+| S04 | Встроенные кодовые гейты на общем контракте и новый `required_phrases` (`pkg/gatephrases`) | [#319](https://github.com/arturpanteleev/workaistrator/pull/319) | v0.2.8 |
+| S05 | LLM-гейт (`agent_review@1/2`, `pkg/llmgate`) и человеческий гейт (`human_approval@1/2`), единый сервис решения `pkg/humandecision` | [#320](https://github.com/arturpanteleev/workaistrator/pull/320) | v0.2.9 |
+| S06 | Рекомендательные гейты, технический повтор на той же версии, системное право `admin` и обход с красной отметкой (SQLite v17) | [#323](https://github.com/arturpanteleev/workaistrator/pull/323) | v0.2.12 |
+| S07 | Гейт внешней программы `external_program@1` с JSON-контрактом (`pkg/gaterun`) | [#314](https://github.com/arturpanteleev/workaistrator/pull/314) | v0.2.3 |
+| S08 | Docker-адаптер гейта `docker_program@1` (`pkg/dockerrun`) | [#318](https://github.com/arturpanteleev/workaistrator/pull/318) | v0.2.7 |
+| S09 | Внешний исполнитель этапа (`executor_adapters`, `pkg/stageexec`) | [#315](https://github.com/arturpanteleev/workaistrator/pull/315) | v0.2.4 |
+| S10 | Docker-исполнитель этапа `code_review` на том же контракте | [#322](https://github.com/arturpanteleev/workaistrator/pull/322) | v0.2.11 |
+| S11 | Вычисляемые статусы этапов и история посещений (`pkg/stagestatus`), API, MCP и UI | [#326](https://github.com/arturpanteleev/workaistrator/pull/326) | v0.2.14 |
+| S12 | Сетевой MCP (Streamable HTTP, личные токены, чтения; SQLite v15) | [#317](https://github.com/arturpanteleev/workaistrator/pull/317) | v0.2.6 |
+| S13 | MCP: все действия, ключ запроса, матрица паритета с REST | [#325](https://github.com/arturpanteleev/workaistrator/pull/325) | v0.2.15 |
+| S14 | Абстрактный трекер, связь 1:1 «задача — карточка», исходящие переходы `on_enter`/`on_pass` (SQLite v16) | [#321](https://github.com/arturpanteleev/workaistrator/pull/321) | v0.2.10 |
+| S15 | Входящая синхронизация трекера через контроллер, курсор и «sync now» (SQLite v18) | [#324](https://github.com/arturpanteleev/workaistrator/pull/324) | v0.2.13 |
+| S16 | Аудит и исправление Web UI: три зоны страницы задачи, один словарь действий, экраны трекера | [#327](https://github.com/arturpanteleev/workaistrator/pull/327) | v0.2.16 |
 | S17 | Сквозная демонстрация (PR `sprint/s17-demo-docs`) и сверка документации (PR `sprint/s17-docs-reconcile`) | см. ниже | — |
 
 Для S17 релиз назначается после слияния обоих PR; в таблице он намеренно не указан.
@@ -112,14 +112,14 @@ failed: stages.attempt_uid` на успешном демо-сценарии. П�
 
 Остаточное по S18: хранилище версий шаблонов не фиксирует происхождение версии (файл или
 веб), поэтому запуск по сохранённой версии с чужими командами не блокируется, а
-предупреждение печатается при старте `ai-team web`; право `template.edit` по-прежнему
+предупреждение печатается при старте `workaistrator web`; право `template.edit` по-прежнему
 меняет роли этапов, `forbid_self_approval` и выбор объявленного адаптера или MCP-сервера
 для этапа (это процесс).
 
-Расхождения справочных текстов `ai-team --help` с документацией (в справке нет
+Расхождения справочных текстов `workaistrator --help` с документацией (в справке нет
 `--mcp-allowed-origins` и права `admin` в списке ролей `auth-token`) — в коде, не в
 документации; код в этом PR не менялся. Исправлено в S23: справка упоминает оба, тест
-в `cmd/ai-team/cli_contract_test.go`.
+в `cmd/workaistrator/cli_contract_test.go`.
 
 ## Как повторить демонстрацию
 

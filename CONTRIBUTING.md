@@ -1,8 +1,8 @@
-# Участие в разработке ai-team
+# Участие в разработке WorkAiStrator
 
 Этот файл — для человека (или агента вне Claude Code), который хочет
-предложить изменение в сам ai-team. Он описывает **процесс**. Если вы работаете
-через Claude Code, разработка ai-team, а не пользователей ai-team, поэтому
+предложить изменение в сам WorkAiStrator. Он описывает **процесс**. Если вы работаете
+через Claude Code, разработка WorkAiStrator, а не пользователей WorkAiStrator, поэтому
 инструкции для агента лежат в [`CLAUDE.md`](CLAUDE.md) (маппинг на конкретные
 инструменты); этот файл — тот же цикл, но без привязки к инструменту.
 
@@ -66,11 +66,11 @@ change без хотя бы одной delta-спеки не проходит `m
 ### Runtime-инвариант продукта
 
 К процессу разработки отношения не имеет и не ослабляется: подтверждение
-checkpoint во время `ai-team run` никогда не разрешает delivery —
+checkpoint во время `workaistrator run` никогда не разрешает delivery —
 commit/push/PR выполняет контроллер только после deterministic checks и
 approval точного SHA-256 canonical plan (`--approve-plan`). Это два независимых
-уровня контроля: один над тем, как разрабатывается сам ai-team, другой над тем,
-что делает собранный ai-team с пользовательским репозиторием.
+уровня контроля: один над тем, как разрабатывается сам WorkAiStrator, другой над тем,
+что делает собранный WorkAiStrator с пользовательским репозиторием.
 
 ### Валидация
 
@@ -97,7 +97,7 @@ PR. PR закрывает issue строкой `Closes #<номер>`.
 | Go | 1.26.11+ (точный пин сборки — в [`.tool-versions`](.tool-versions)) | сборка и тесты ядра |
 | Node.js + npm | 22+ (npm 10+) | сборка/тест web-фронтенда (`web/`) |
 | OpenSpec CLI | через `npx` автоматически | строгая валидация specs (`make specs`) |
-| `opencode` | в `PATH` | только для запуска полного `ai-team run` (LLM-артефакты) |
+| `opencode` | в `PATH` | только для запуска полного `workaistrator run` (LLM-артефакты) |
 
 Go-модуль и веб-фронтенд — два независимых сопрягаемых блока:
 `cmd/` + `pkg/` собираются как обычный Go-бинарник, а `web/` — отдельный
@@ -108,7 +108,7 @@ npm-проект, чья прод-сборка (`web/dist`) встраивает
 
 ```bash
 # 1. Ядро
-make build                  # go build -o bin/ai-team ./cmd/ai-team
+make build                  # go build -o bin/workaistrator ./cmd/workaistrator
 make test                   # go test ./...
 make test-coverage          # coverage-гейт 60% + per-package floors
 
@@ -145,7 +145,7 @@ make test-e2e              # go test -run TestE2E ./e2etest/...
 ## Make-таргеты
 
 ```bash
-make build           # сборка cmd/ai-team
+make build           # сборка cmd/workaistrator
 make test            # go test ./... (все пакеты)
 make test-coverage   # coverage gate: total 60% + per-package floors
                      # (scripts/coverage-floors.env)
@@ -208,14 +208,14 @@ frontend audit/lint/tests/build с проверкой, что встроенны
 > вокруг `uses:`). Делать это надо иначе: workflow — YAML-парсером, а состав
 > `verify` — из `make -n verify`, а не чтением Makefile глазами. Это отдельная
 > работа со своими тестами:
-> [#139](https://github.com/arturpanteleev/ai-team/issues/139), где перечислены
+> [#139](https://github.com/arturpanteleev/workaistrator/issues/139), где перечислены
 > все подтверждённые дыры с мутациями. Пока задача не сделана — правя
 > `Makefile` или версию Go, пройдитесь по списку выше руками.
 >
 > Как выглядит рабочий подход, видно на соседних сторожах:
 > `TestCLIReferenceMatchesDispatcher` и `TestUsageTextMatchesDispatcher`
-> (`docs/docs_test.go`) сверяют справочник `docs/reference/cli.md` и текст `ai-team help` с
-> диспетчером команд, разбирая `cmd/ai-team/main.go` через `go/parser`. Они
+> (`docs/docs_test.go`) сверяют справочник `docs/reference/cli.md` и текст `workaistrator help` с
+> диспетчером команд, разбирая `cmd/workaistrator/main.go` через `go/parser`. Они
 > смотрят на AST, а не на форматирование, и поэтому выдержали три круга
 > мутационных проверок. Сторожа из #139 имеет смысл строить так же.
 
@@ -240,7 +240,7 @@ go test -run TestRun_Loopback_DefaultTargetIsMetadataDrivenNotNamedCoder ./pkg/p
 
 Зелёный тест не означает, что проверка работает: он означает, что вход был
 отвергнут. Кем именно — тест обычно не утверждает. Мутационный прогон
-([#164](https://github.com/arturpanteleev/ai-team/issues/164)) показал, что
+([#164](https://github.com/arturpanteleev/workaistrator/issues/164)) показал, что
 проверки безопасности выживают при удалении в двух повторяющихся формах:
 
 1. **Проверка, которая срабатывает второй.** Два guard'а защищают одно
@@ -316,7 +316,7 @@ Built-in агенты лежат в `agents/{name}/` и встраиваются
    место, которое перечисляет built-in порядок стадий; `config.Default()`
    строит имена стадий из этого списка, а не дублирует его.
 
-4. Проверьте: `ai-team list` должен показать нового агента с источником
+4. Проверьте: `workaistrator list` должен показать нового агента с источником
    `embedded`; `go test ./pkg/agent/... ./pkg/config/...` — что registry и
    default-конфиг видят его корректно.
 

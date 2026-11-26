@@ -11,18 +11,18 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/approval"
-	"github.com/arturpanteleev/ai-team/pkg/delivery"
-	"github.com/arturpanteleev/ai-team/pkg/evidence"
+	"github.com/arturpanteleev/workaistrator/pkg/delivery"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/approval"
+	"github.com/arturpanteleev/workaistrator/pkg/store/evidence"
 )
 
 func TestNewProcessEngineRejectsMissingTargetAndEmptyAgentRegistryPath(t *testing.T) {
 	missing := filepath.Join(t.TempDir(), "missing-target")
-	if _, err := NewProcessEngine([]string{"ai-team"}, missing, filepath.Join(t.TempDir(), "db.sqlite")); err == nil {
+	if _, err := NewProcessEngine([]string{"WorkAiStrator"}, missing, filepath.Join(t.TempDir(), "db.sqlite")); err == nil {
 		t.Fatal("worker engine accepted a target that cannot be canonicalized")
 	}
 	target := t.TempDir()
-	_, err := NewProcessEngine([]string{"ai-team"}, target, filepath.Join(target, "db.sqlite"),
+	_, err := NewProcessEngine([]string{"WorkAiStrator"}, target, filepath.Join(target, "db.sqlite"),
 		WithAgentRegistryPaths([]string{filepath.Join(target, "agents"), ""}))
 	if err == nil || !strings.Contains(err.Error(), "agent registry") {
 		t.Fatalf("empty agent registry path error = %v, want rejection", err)

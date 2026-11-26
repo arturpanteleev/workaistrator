@@ -9,8 +9,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/arturpanteleev/ai-team/pkg/runtime"
-	"github.com/arturpanteleev/ai-team/pkg/scope"
+	"github.com/arturpanteleev/workaistrator/pkg/runtime"
+	"github.com/arturpanteleev/workaistrator/pkg/scope"
 	"gopkg.in/yaml.v3"
 )
 
@@ -333,7 +333,7 @@ type LoadFailure struct {
 
 // List перечисляет все обнаруживаемые агенты across layers. Каталог, который
 // не смог загрузиться, не пропускается молча — он возвращается в failures,
-// чтобы вызывающий код (например, `ai-team list`) мог сообщить об этом, а не
+// чтобы вызывающий код (например, `workaistrator list`) мог сообщить об этом, а не
 // показать пустое место без следа ошибки.
 func (r *Registry) List() (agents []*Agent, failures []LoadFailure) {
 	names := make(map[string]bool)

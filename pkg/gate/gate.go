@@ -1,6 +1,6 @@
-// Package gate реализует `ai-team gate` MVP (V0-5): детерминированный diff-
+// Package gate реализует `workaistrator gate` MVP (V0-5): детерминированный diff-
 // policy вердикт по trusted local base/candidate, typed checks (переиспользует
-// pkg/checks Runner с evidence digests) и самодостаточный attestation bundle со
+// pkg/engine/stage/checks Runner с evidence digests) и самодостаточный attestation bundle со
 // стабильными exit codes. Gate работает без .ai-team и без runtime: это дешёвый
 // вход для внешних проектов. untrusted mode (сетевые refs/нелокальное
 // содержимое) запрещён до P1-4 — gate всегда fail-closed при невозможности
@@ -25,13 +25,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/checks"
-	"github.com/arturpanteleev/ai-team/pkg/containment"
-	"github.com/arturpanteleev/ai-team/pkg/dsse"
-	"github.com/arturpanteleev/ai-team/pkg/risk"
-	"github.com/arturpanteleev/ai-team/pkg/safeio"
+	"github.com/arturpanteleev/workaistrator/pkg/containment"
+	"github.com/arturpanteleev/workaistrator/pkg/dsse"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/stage/checks"
+	"github.com/arturpanteleev/workaistrator/pkg/risk"
+	"github.com/arturpanteleev/workaistrator/pkg/safeio"
 
-	"github.com/arturpanteleev/ai-team/pkg/scope"
+	"github.com/arturpanteleev/workaistrator/pkg/scope"
 	"gopkg.in/yaml.v3"
 )
 

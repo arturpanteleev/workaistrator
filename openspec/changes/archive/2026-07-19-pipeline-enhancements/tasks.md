@@ -7,7 +7,7 @@
 ## 2. pkg/notifier — Notifier System
 
 - [x] 2.1 Создать `pkg/notifier/notifier.go` с интерфейсом `Notifier { Notify(ctx, StageResult) error }` и структурой `StageResult`
-- [x] 2.2 Создать `pkg/notifier/console.go` с `ConsoleNotifier` — вывод в stdout: `[ai-team] <agent> <status> (<duration>)`
+- [x] 2.2 Создать `pkg/notifier/console.go` с `ConsoleNotifier` — вывод в stdout: `[WorkAiStrator] <agent> <status> (<duration>)`
 - [x] 2.3 Создать `pkg/notifier/chain.go` с `NotifierChain` для композиции нескольких notifier-ов
 
 ## 3. pkg/report — HTML Reports
@@ -24,10 +24,10 @@
 - [x] 4.3 Сохранить обратную совместимость: старый формат `pipeline: [list]` → `PipelineAgents` с глобальными model/cli/effort
 - [x] 4.4 Добавить поле `Effort string` в глобальный конфиг
 
-## 5. cmd/ai-team — CLI Flags and Colored Output
+## 5. cmd/workaistrator — CLI Flags and Colored Output
 
 - [x] 5.1 Добавить флаг `--retry-from <agent>` в команду `run`
-- [x] 5.2 Перевести вывод `ai-team run` на цветной через `pkg/ui/color.go`
+- [x] 5.2 Перевести вывод `workaistrator run` на цветной через `pkg/ui/color.go`
 - [x] 5.3 Добавить отображение прогресс-бара во время выполнения
 
 ## 6. pkg/pipeline — Orchestration Integration
@@ -44,8 +44,8 @@
 
 - [x] 7.1 `make test` — все тесты проходят
 - [x] 7.2 `make build` — бинарник собирается
-- [x] 7.3 Проверить `ai-team init` — создаётся `.ai-team/reports/`
-- [x] 7.4 Проверить `ai-team run --retry-from <agent>` — корректный пропуск этапов
+- [x] 7.3 Проверить `workaistrator init` — создаётся `.ai-team/reports/`
+- [x] 7.4 Проверить `workaistrator run --retry-from <agent>` — корректный пропуск этапов
 - [x] 7.5 Проверить цветной вывод в терминале и его отсутствие в pipe
 - [x] 7.6 Проверить старый формат config.yaml — обратная совместимость
 - [x] 7.7 Проверить HTML-отчёты — открываются в браузере, ссылки работают

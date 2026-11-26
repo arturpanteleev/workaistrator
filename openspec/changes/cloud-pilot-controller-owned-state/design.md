@@ -4,7 +4,7 @@
 
 Публичный control plane `web` в scheduler режиме пишет задания в SQLite.
 `scheduler-worker` читает эту очередь и передаёт задание `worker.ProcessEngine`.
-`ai-team worker` затем создаёт обычный `pipeline.RunEngine` и запускает pipeline
+`workaistrator worker` затем создаёт обычный `pipeline.RunEngine` и запускает pipeline
 изнутри worker process. Раньше в web и scheduler режимах approvals записывались
 в SQLite `web.db`, который был доступен worker напрямую. Теперь штатные web и
 scheduler launchers пересылают worker recorder/approval операции через
@@ -356,7 +356,7 @@ second writes are rejected. A later Resume/Recover invocation may atomically
 advance the envelope because an interrupted finalization can be retried after
 an earlier summary was written.
 Before worker spawn, the controller creates an immutable per-run reservation
-beside the envelope. `ai-team usage` uses that reservation to select controller
+beside the envelope. `workaistrator usage` uses that reservation to select controller
 state for one run and fails closed if its envelope is missing or corrupt;
 unrelated reservations do not affect legacy local runs.
 Bubblewrap masks the usage state directory with a namespace-local tmpfs, while
@@ -367,7 +367,7 @@ read or arbitrary-path operation. This boundary protects against the sandboxed
 child of that invocation; a process or user with direct write access to the
 target can alter its files. Envelope values remain worker-supplied and
 untrusted. Local CLI runs continue writing
-`{RunDir}/usage.json`; `ai-team usage` checks controller state first and then
+`{RunDir}/usage.json`; `workaistrator usage` checks controller state first and then
 supports the local/legacy evidence location. Missing or corrupt authoritative
 controller state is an error, not a reason to fall back to worker-visible
 evidence.

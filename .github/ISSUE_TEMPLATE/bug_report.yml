@@ -1,20 +1,20 @@
 name: Сообщить об ошибке
-description: Ошибка в работе ai-team
+description: Ошибка в работе WorkAiStrator
 labels: [bug, triage]
 body:
   - type: markdown
     attributes:
       value: |
-        Спасибо, что нашли время сообщить об ошибке в ai-team.
-        Перед отправкой поищите дубликат среди [существующих issue](https://github.com/arturpanteleev/ai-team/issues).
+        Спасибо, что нашли время сообщить об ошибке в WorkAiStrator.
+        Перед отправкой поищите дубликат среди [существующих issue](https://github.com/arturpanteleev/workaistrator/issues).
 
         Опишите наблюдение, а не предлагайте здесь исправление — оно обсуждается
         в PR.
   - type: input
     id: version
     attributes:
-      label: Версия ai-team
-      description: Вывод `ai-team version` (или коммит, из которого собирали).
+      label: Версия WorkAiStrator
+      description: Вывод `workaistrator version` (или коммит, из которого собирали).
       placeholder: v0.1.0
     validations:
       required: true
@@ -46,8 +46,8 @@ body:
       label: Как воспроизвести
       description: Минимальный набор команд и конфигурации, приводящий к ошибке.
       placeholder: |
-        1. `ai-team init` в чистом репозитории
-        2. `ai-team run --feature x --task "..." --approve-gates`
+        1. `workaistrator init` в чистом репозитории
+        2. `workaistrator run --feature x --task "..." --approve-gates`
         3. Возникает ошибка...
     validations:
       required: true
@@ -55,7 +55,7 @@ body:
     id: evidence
     attributes:
       label: Вывод и логи
-      description: Относящийся к делу вывод `ai-team`, коды выхода или файлы из `.ai-team/runs/`. Без секретов.
+      description: Относящийся к делу вывод `workaistrator`, коды выхода или файлы из `.ai-team/runs/`. Без секретов.
       render: shell
   - type: textarea
     id: config

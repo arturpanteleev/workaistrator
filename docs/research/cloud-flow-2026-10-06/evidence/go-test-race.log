@@ -1,0 +1,47 @@
+?   	github.com/arturpanteleev/workaistrator	[no test files]
+ok  	github.com/arturpanteleev/workaistrator/cmd/workaistrator	37.372s
+ok  	github.com/arturpanteleev/workaistrator/docs	2.961s
+ok  	github.com/arturpanteleev/workaistrator/docsgen	4.463s
+?   	github.com/arturpanteleev/workaistrator/docsgen/cmd/docsgen	[no test files]
+ok  	github.com/arturpanteleev/workaistrator/e2etest	83.258s
+ok  	github.com/arturpanteleev/workaistrator/pkg/agent	3.852s
+ok  	github.com/arturpanteleev/workaistrator/pkg/approval	2.547s
+ok  	github.com/arturpanteleev/workaistrator/pkg/artifactstore	5.493s
+ok  	github.com/arturpanteleev/workaistrator/pkg/attest	4.907s
+ok  	github.com/arturpanteleev/workaistrator/pkg/candidate	3.392s
+ok  	github.com/arturpanteleev/workaistrator/pkg/checks	9.411s
+ok  	github.com/arturpanteleev/workaistrator/pkg/ciimport	3.325s
+ok  	github.com/arturpanteleev/workaistrator/pkg/cloudidentity	3.143s
+ok  	github.com/arturpanteleev/workaistrator/pkg/config	3.798s
+ok  	github.com/arturpanteleev/workaistrator/pkg/containment	4.141s
+ok  	github.com/arturpanteleev/workaistrator/pkg/control	4.267s
+ok  	github.com/arturpanteleev/workaistrator/pkg/delivery	23.332s
+ok  	github.com/arturpanteleev/workaistrator/pkg/dsse	4.261s
+ok  	github.com/arturpanteleev/workaistrator/pkg/eval	5.739s
+ok  	github.com/arturpanteleev/workaistrator/pkg/evidence	7.178s
+ok  	github.com/arturpanteleev/workaistrator/pkg/export	4.056s
+ok  	github.com/arturpanteleev/workaistrator/pkg/gate	5.232s
+ok  	github.com/arturpanteleev/workaistrator/pkg/junit	3.098s
+ok  	github.com/arturpanteleev/workaistrator/pkg/lifecycle	3.013s
+ok  	github.com/arturpanteleev/workaistrator/pkg/logging	3.315s
+ok  	github.com/arturpanteleev/workaistrator/pkg/metrics	2.788s
+ok  	github.com/arturpanteleev/workaistrator/pkg/notifier	2.374s
+ok  	github.com/arturpanteleev/workaistrator/pkg/pipeline	55.809s
+ok  	github.com/arturpanteleev/workaistrator/pkg/preflight	3.722s
+ok  	github.com/arturpanteleev/workaistrator/pkg/process	3.377s
+ok  	github.com/arturpanteleev/workaistrator/pkg/provenance	3.672s
+ok  	github.com/arturpanteleev/workaistrator/pkg/redact	13.381s
+ok  	github.com/arturpanteleev/workaistrator/pkg/report	3.194s
+ok  	github.com/arturpanteleev/workaistrator/pkg/retention	3.716s
+ok  	github.com/arturpanteleev/workaistrator/pkg/risk	3.242s
+ok  	github.com/arturpanteleev/workaistrator/pkg/runtime	6.960s
+ok  	github.com/arturpanteleev/workaistrator/pkg/safeio	2.173s
+ok  	github.com/arturpanteleev/workaistrator/pkg/scheduler	3.584s
+ok  	github.com/arturpanteleev/workaistrator/pkg/scope	2.484s
+ok  	github.com/arturpanteleev/workaistrator/pkg/strictjson	2.894s
+?   	github.com/arturpanteleev/workaistrator/pkg/ui	[no test files]
+ok  	github.com/arturpanteleev/workaistrator/pkg/verdict	3.013s
+ok  	github.com/arturpanteleev/workaistrator/pkg/web	4.976s
+ok  	github.com/arturpanteleev/workaistrator/pkg/web/store	3.636s
+ok  	github.com/arturpanteleev/workaistrator/pkg/worker	7.305s
+ok  	github.com/arturpanteleev/workaistrator/pkg/workflow	3.297s

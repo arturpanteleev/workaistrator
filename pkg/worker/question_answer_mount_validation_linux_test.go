@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arturpanteleev/ai-team/pkg/approval"
-	"github.com/arturpanteleev/ai-team/pkg/pipeline"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/approval"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/pipeline"
 )
 
 func TestBubblewrapBuilderRejectsQuestionAnswerMountOutsideRunIdentity(t *testing.T) {

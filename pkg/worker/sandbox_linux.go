@@ -12,8 +12,8 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/arturpanteleev/ai-team/pkg/evidence"
-	"github.com/arturpanteleev/ai-team/pkg/safeio"
+	"github.com/arturpanteleev/workaistrator/pkg/safeio"
+	"github.com/arturpanteleev/workaistrator/pkg/store/evidence"
 )
 
 func checkBubblewrapAvailable() error {

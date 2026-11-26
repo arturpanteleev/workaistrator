@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/arturpanteleev/ai-team/pkg/gatelib"
-	"github.com/arturpanteleev/ai-team/pkg/safeio"
-	"github.com/arturpanteleev/ai-team/pkg/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/gate/lib"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/safeio"
 	"gopkg.in/yaml.v3"
 )
 

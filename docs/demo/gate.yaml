@@ -1,4 +1,4 @@
-# ai-team gate config для демо на не-Go стеке (Python/питоновские тесты).
+# workaistrator gate config для демо на не-Go стеке (Python/питоновские тесты).
 # Diff-policy: изменение source без изменения тестов блокирует gate (required).
 # Typed check junit-xml читает отчёт тестов и дигирует исходный файл.
 #

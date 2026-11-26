@@ -1,0 +1,12 @@
+
+> web@0.0.0 test
+> vitest run
+
+
+ RUN  v4.1.10 /Users/arturpanteleev/Projects/ai-team/web
+
+
+ Test Files  6 passed (6)
+      Tests  21 passed (21)
+   Start at  21:43:05
+   Duration  795ms (transform 344ms, setup 499ms, import 589ms, tests 238ms, environment 2.07s)

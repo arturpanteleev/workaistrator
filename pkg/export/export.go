@@ -23,14 +23,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/attest"
-	"github.com/arturpanteleev/ai-team/pkg/containment"
-	"github.com/arturpanteleev/ai-team/pkg/delivery"
-	"github.com/arturpanteleev/ai-team/pkg/dsse"
-	"github.com/arturpanteleev/ai-team/pkg/evidence"
-	"github.com/arturpanteleev/ai-team/pkg/provenance"
-	"github.com/arturpanteleev/ai-team/pkg/retention"
-	"github.com/arturpanteleev/ai-team/pkg/safeio"
+	"github.com/arturpanteleev/workaistrator/pkg/attest"
+	"github.com/arturpanteleev/workaistrator/pkg/containment"
+	"github.com/arturpanteleev/workaistrator/pkg/delivery"
+	"github.com/arturpanteleev/workaistrator/pkg/dsse"
+	"github.com/arturpanteleev/workaistrator/pkg/provenance"
+	"github.com/arturpanteleev/workaistrator/pkg/retention"
+	"github.com/arturpanteleev/workaistrator/pkg/safeio"
+	"github.com/arturpanteleev/workaistrator/pkg/store/evidence"
 )
 
 // BundleSchema — версия контракта portable bundle.
@@ -672,7 +672,7 @@ func VerifyBundle(bundleDir string, keyVerify ...ed25519.PublicKey) error {
 		return fmt.Errorf("verify: bundle index decode: %w", err)
 	}
 	if index.SchemaVersion != BundleSchema || index.Type != BundleType {
-		return fmt.Errorf("verify: bundle index не является supported ai-team run bundle")
+		return fmt.Errorf("verify: bundle index не является supported workaistrator run bundle")
 	}
 	if index.RunID == "" || len(index.Records) == 0 || len(index.Records) > maxBundleIndexFiles {
 		return fmt.Errorf("verify: bundle index повреждён")
@@ -795,7 +795,7 @@ func ensureNoExtraneousFiles(bundleDir string, index *Index) error {
 
 // VerifyEvidence — полная semantic-проверка live run evidence (та же логика,
 // что и bundle-verify, но против каталога run без index.json). Используется
-// `ai-team verify <run_id>`.
+// `workaistrator verify <run_id>`.
 func VerifyEvidence(runDir string) error {
 	manifest, err := readRunManifest(runDir)
 	if err != nil {

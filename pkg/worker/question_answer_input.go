@@ -9,11 +9,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/arturpanteleev/ai-team/pkg/approval"
-	"github.com/arturpanteleev/ai-team/pkg/candidate"
-	"github.com/arturpanteleev/ai-team/pkg/pipeline"
-	"github.com/arturpanteleev/ai-team/pkg/runtime"
-	"github.com/arturpanteleev/ai-team/pkg/safeio"
+	"github.com/arturpanteleev/workaistrator/pkg/candidate"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/approval"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/pipeline"
+	"github.com/arturpanteleev/workaistrator/pkg/runtime"
+	"github.com/arturpanteleev/workaistrator/pkg/safeio"
 )
 
 type workerReadOnlyInputMount struct {

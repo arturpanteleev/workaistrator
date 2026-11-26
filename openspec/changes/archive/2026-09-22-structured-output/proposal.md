@@ -3,7 +3,7 @@
 ## Why
 
 CI/агент/внешний оркестратор должны уметь **машиночитаемо** потреблять результат
-команд `ai-team` (run/verify/export/gate) — стабильный JSON с полями, а не только
+команд `workaistrator` (run/verify/export/gate) — стабильный JSON с полями, а не только
 человеко-ориентированные цвета/formatted строки. Сейчас результат — свободный
 текст на stdout/err; разобрать его надёжно нельзя, что ломает автоматизацию
 («запусти gate и оцени вердикт в коде»). Также отсутствует тихий режим для
@@ -30,10 +30,10 @@ stdout) и `--quiet/-q` (подавить второстепенный чело�
 
 ## Acceptance Criteria
 
-1. `ai-team gate --json ...` выводит на stdout ровно один JSON object
+1. `workaistrator gate --json ...` выводит на stdout ровно один JSON object
    (`{"level":"ok","cmd":"gate","type":"gate",...}` с `status`, `policy`,
    `bundle_sha256`, `exit_code`), парсимый `encoding/json`.
-2. `ai-team verify --json <bundle>` выводит JSON record `{"level":"ok",
+2. `workaistrator verify --json <bundle>` выводит JSON record `{"level":"ok",
    "cmd":"verify","type":"gate_bundle"|"run_bundle"|"run",...}`.
 3. `--json` и `--quiet/-q` работают и до, и после имени подкоманды; подкоманда
    не падает на неизвестном флаге.

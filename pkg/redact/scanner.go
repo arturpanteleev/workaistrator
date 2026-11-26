@@ -15,7 +15,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/arturpanteleev/ai-team/pkg/safeio"
+	"github.com/arturpanteleev/workaistrator/pkg/safeio"
 )
 
 // jsonSecretReason — причина находки для секретных полей в JSON/JSONL.

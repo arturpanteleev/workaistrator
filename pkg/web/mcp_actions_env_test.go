@@ -18,12 +18,12 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/arturpanteleev/ai-team/pkg/approval"
-	"github.com/arturpanteleev/ai-team/pkg/cloudidentity"
-	"github.com/arturpanteleev/ai-team/pkg/delivery"
-	"github.com/arturpanteleev/ai-team/pkg/lifecycle"
-	"github.com/arturpanteleev/ai-team/pkg/tracker"
-	"github.com/arturpanteleev/ai-team/pkg/web/store"
+	"github.com/arturpanteleev/workaistrator/pkg/cloudidentity"
+	"github.com/arturpanteleev/workaistrator/pkg/delivery"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/approval"
+	"github.com/arturpanteleev/workaistrator/pkg/lifecycle"
+	"github.com/arturpanteleev/workaistrator/pkg/runtime/tracker"
+	"github.com/arturpanteleev/workaistrator/pkg/web/store"
 )
 
 // controllerCall is one stage action that reached the task controller.

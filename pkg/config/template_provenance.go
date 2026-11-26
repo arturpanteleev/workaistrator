@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/arturpanteleev/ai-team/pkg/safeio"
+	"github.com/arturpanteleev/workaistrator/pkg/safeio"
 )
 
 // Provenance of the active template.
@@ -31,11 +31,11 @@ import (
 // treatment; any edit, even a comment, lifts it.
 //
 // Limitation: a file the web wrote before this registry existed has no record
-// and is treated as a file configuration. Review it with `ai-team template
+// and is treated as a file configuration. Review it with `workaistrator template
 // audit`.
 
 // The re-save anchor (trusted-versions) is the counterpart for stored versions.
-// `ai-team template audit --rewrite` writes a marker under trusted-versions for
+// `workaistrator template audit --rewrite` writes a marker under trusted-versions for
 // the exact bytes an operator reviewed; that marker is the trusted file anchor
 // for that version, the same decision as a person editing config.yaml but
 // scoped to those bytes. It never changes the active file configuration and

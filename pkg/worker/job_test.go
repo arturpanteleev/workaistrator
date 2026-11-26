@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/control"
-	"github.com/arturpanteleev/ai-team/pkg/pipeline"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/control"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/pipeline"
 )
 
 func TestDecodeJobStrictAndExactTarget(t *testing.T) {

@@ -62,7 +62,7 @@ export function McpAccess() {
     <section className={styles.page}>
       <h1>Доступ MCP</h1>
       <p>
-        Личный токен подключает Claude или Codex к ai-team по адресу <code>{endpoint}</code>. Агент действует от вашего имени
+        Личный токен подключает Claude или Codex к WorkAiStrator по адресу <code>{endpoint}</code>. Агент действует от вашего имени
         с вашими ролями и видит только то, что доступно вам. Токен можно выпустить только для себя; при отзыве доступа к команде он перестаёт работать сразу.
       </p>
       {error && <p role="alert" className={styles.error}>{error}</p>}

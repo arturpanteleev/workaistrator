@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/agent"
-	"github.com/arturpanteleev/ai-team/pkg/config"
-	"github.com/arturpanteleev/ai-team/pkg/web/store"
+	"github.com/arturpanteleev/workaistrator/pkg/agent"
+	"github.com/arturpanteleev/workaistrator/pkg/config"
+	"github.com/arturpanteleev/workaistrator/pkg/web/store"
 )
 
 const architectAnalystTemplateYAML = `schema_version: 5

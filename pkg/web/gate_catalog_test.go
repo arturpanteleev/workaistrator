@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/autopickup"
+	"github.com/arturpanteleev/workaistrator/pkg/autopickup"
 )
 
 func TestGateCatalogIsReadOnlyAndListsPinnedDefinitions(t *testing.T) {

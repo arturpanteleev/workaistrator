@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // run-ui.mjs — сквозная демонстрация S17 через настоящий Web UI (Playwright,
-// Chromium) поверх настоящего `ai-team web` в локальном режиме.
+// Chromium) поверх настоящего `workaistrator web` в локальном режиме.
 //
 //   node scripts/demo/run-ui.mjs --home <DEMO_HOME> --port <PORT> [--screens <dir>]
 //
@@ -240,7 +240,7 @@ await wait(atStage('qa', 'results'))
 await submitMarkdown('# Отчёт QA\n\nНайдено два дефекта в кодировке.\n', 'Прогон вручную')
 await wait(hasPending('check_decision', 'stage_check'))
 
-log('Трекер → ai-team: преждевременный «Done» не обходит провал гейта')
+log('Трекер → WorkAiStrator: преждевременный «Done» не обходит провал гейта')
 appendFileSync(path.join(home, 'tracker/inbox.jsonl'), `${JSON.stringify({ key: 'DEMO-1', status: 'Done', author: 'Иван (в трекере)' })}\n`)
 await openTask('Трекер')
 await click('Синхронизировать сейчас')
@@ -355,7 +355,7 @@ await shot('tracker-overview')
 
 log('Доставка (delivery): ветка запушена контроллером в локальный bare-репозиторий')
 const remoteBranches = (await import('node:child_process')).execFileSync('git', ['--git-dir', path.join(home, 'state/origin.git'), 'branch', '--list', 'ai-team/*'], { encoding: 'utf8' })
-checks.check('в origin появилась ветка ai-team/csv-export', remoteBranches.includes('ai-team/csv-export'), remoteBranches.trim())
+checks.check('в origin появилась ветка WorkAiStrator/csv-export', remoteBranches.includes('WorkAiStrator/csv-export'), remoteBranches.trim())
 const runEvents = readFileSync(path.join(home, 'repo/.ai-team/runs', runId, 'events.jsonl'), 'utf8')
 checks.check('в неизменяемом журнале run есть delivery_plan_approved', runEvents.includes('"type":"delivery_plan_approved"'))
 }

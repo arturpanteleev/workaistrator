@@ -6,8 +6,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/arturpanteleev/ai-team/pkg/gatelib"
-	"github.com/arturpanteleev/ai-team/pkg/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/gate/lib"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/workflow"
 )
 
 // ErrCodeTrustedConfigOnly is the machine-readable code the web API returns

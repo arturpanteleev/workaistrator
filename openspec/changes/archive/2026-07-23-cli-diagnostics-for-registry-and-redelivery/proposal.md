@@ -3,12 +3,12 @@
 Независимый аудит (`INDEPENDENT_AUDIT_2026-07-23.md`, находки 9 и 10) выявил
 две связанные проблемы наблюдаемости CLI, каждая воспроизведена вживую:
 
-- `ai-team list` тихо роняет агентов с невалидным `def.yaml`: `Registry.List()`
+- `workaistrator list` тихо роняет агентов с невалидным `def.yaml`: `Registry.List()`
   добавляет результат `Load(name)` в список только при `err == nil`, ошибка
   нигде не логируется. Пользователь, расширяющий систему через
   `.ai-team/agents/`, не получает вообще никакого сигнала о том, что его
   агент не подхватился.
-- Повторный `ai-team run --feature F ...` после успешной доставки `F` тихо
+- Повторный `workaistrator run --feature F ...` после успешной доставки `F` тихо
   перезапускает analyst/architect (перезаписывая их артефакты на месте) и
   падает на coder с сообщением «агент coder не создал изменений в коде» —
   которое вне контекста читается как баг агента, а не как «вы уже доставили
@@ -22,10 +22,10 @@ guard и так не даёт доставить пустой diff дважды)
 
 - `agent.Registry.List()` возвращает `(agents []*Agent, failures []LoadFailure)`
   вместо одного среза; невалидный, не-shadowing agent definition больше не
-  пропадает молча. `ai-team list` печатает failures в stderr.
+  пропадает молча. `workaistrator list` печатает failures в stderr.
 - Новая `evidence.FindDelivered(runsRoot, feature)` ищет среди прошлых run'ов
   такой, что довёл `feature` до успешной deployer delivery (записанный
-  `CommitSHA` и/или `PRURL`). `ai-team run` (только для свежего запуска, не
+  `CommitSHA` и/или `PRURL`). `workaistrator run` (только для свежего запуска, не
   для `--retry-from`) печатает non-blocking предупреждение в stderr, если
   находит такой run, — до того, как analyst перезапишет артефакты.
 - Предупреждение не блокирует новый run: повторное использование того же
@@ -44,8 +44,8 @@ guard и так не даёт доставить пустой diff дважды)
 ## Impact
 
 - `pkg/agent/registry.go` — `List()` signature изменился (единственный
-  вызывающий код внутри репозитория — `cmd/ai-team/main.go` — обновлён)
-- `cmd/ai-team/main.go` — `cmdList()` печатает failures; `cmdRun()` вызывает
+  вызывающий код внутри репозитория — `cmd/workaistrator/main.go` — обновлён)
+- `cmd/workaistrator/main.go` — `cmdList()` печатает failures; `cmdRun()` вызывает
   новую `warnIfAlreadyDelivered`
 - `pkg/evidence/query.go` — новый файл, `FindDelivered`
 - Никаких изменений в delivery guarantees, mutation policy или verdict

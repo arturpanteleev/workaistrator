@@ -10,7 +10,7 @@ interface ThemeValue {
 }
 
 const ThemeContext = createContext<ThemeValue | null>(null);
-const storageKey = 'ai-team:theme';
+const storageKey = 'WorkAiStrator:theme';
 const themeTransitionClass = 'theme-transition';
 /* Должен быть не меньше --duration-theme из index.css. */
 const themeTransitionMs = 300;

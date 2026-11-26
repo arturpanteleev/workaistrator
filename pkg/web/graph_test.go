@@ -10,9 +10,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/arturpanteleev/ai-team/pkg/lifecycle"
-	"github.com/arturpanteleev/ai-team/pkg/stagestatus"
-	"github.com/arturpanteleev/ai-team/pkg/web/store"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/stage/status"
+	"github.com/arturpanteleev/workaistrator/pkg/lifecycle"
+	"github.com/arturpanteleev/workaistrator/pkg/web/store"
 )
 
 const graphAPITemplate = `schema_version: 7

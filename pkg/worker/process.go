@@ -17,11 +17,11 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/arturpanteleev/ai-team/pkg/candidate"
-	"github.com/arturpanteleev/ai-team/pkg/lifecycle"
-	"github.com/arturpanteleev/ai-team/pkg/pipeline"
-	"github.com/arturpanteleev/ai-team/pkg/strictjson"
-	"github.com/arturpanteleev/ai-team/pkg/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/candidate"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/pipeline"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/lifecycle"
+	"github.com/arturpanteleev/workaistrator/pkg/strictjson"
 )
 
 const maxDiagnostics = 64 << 10

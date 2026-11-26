@@ -13,10 +13,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/autopickup"
-	"github.com/arturpanteleev/ai-team/pkg/tokenbudget"
-	"github.com/arturpanteleev/ai-team/pkg/web/store"
-	"github.com/arturpanteleev/ai-team/pkg/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/autopickup"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/tokenbudget"
+	"github.com/arturpanteleev/workaistrator/pkg/web/store"
 )
 
 // fixedLedger — фейковый ledger; параллельные тики подборщика зовут его

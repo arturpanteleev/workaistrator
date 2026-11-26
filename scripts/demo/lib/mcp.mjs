@@ -1,4 +1,4 @@
-// Тонкий клиент сетевого MCP ai-team (stateless Streamable HTTP, версия 2026-07-28)
+// Тонкий клиент сетевого MCP WorkAiStrator (stateless Streamable HTTP, версия 2026-07-28)
 // для демо-скриптов: JSON-RPC по POST /mcp с Bearer-токеном. Это не замена
 // настоящим клиентам (claude, codex — см. run-real-clients.sh), а способ повторить
 // те же вызовы в скрипте и проверить ответы.

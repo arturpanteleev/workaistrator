@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{if eq .Current.URL "/"}}{{.Title}} — AI-агенты пишут код, вы решаете, что попадёт в репозиторий{{else}}{{.Current.Title}} — {{.Title}}{{end}}</title>
-<meta name="description" content="{{if .Current.Description}}{{.Current.Description}}{{else}}Документация ai-team: процесс разработки с AI-агентами для команды — проверки без модели, подтверждение человеком и веб-дашборд.{{end}}">
-<meta name="generator" content="ai-team docsgen">
+<meta name="description" content="{{if .Current.Description}}{{.Current.Description}}{{else}}Документация WorkAiStrator: процесс разработки с AI-агентами для команды — проверки без модели, подтверждение человеком и веб-дашборд.{{end}}">
+<meta name="generator" content="WorkAiStrator docsgen">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2311795f'/%3E%3Ctext x='32' y='43' font-family='monospace' font-size='30' font-weight='bold' text-anchor='middle' fill='white'%3Eai%3C/text%3E%3C/svg%3E">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="{{.Title}}">
 <meta property="og:title" content="{{if eq .Current.URL "/"}}{{.Title}} — AI-агенты пишут код, вы решаете, что попадёт в репозиторий{{else}}{{.Current.Title}} — {{.Title}}{{end}}">
-<meta property="og:description" content="{{if .Current.Description}}{{.Current.Description}}{{else}}Документация ai-team: процесс разработки с AI-агентами для команды — проверки без модели, подтверждение человеком и веб-дашборд.{{end}}">
+<meta property="og:description" content="{{if .Current.Description}}{{.Current.Description}}{{else}}Документация WorkAiStrator: процесс разработки с AI-агентами для команды — проверки без модели, подтверждение человеком и веб-дашборд.{{end}}">
 <meta name="twitter:card" content="summary">
 <link rel="stylesheet" href="{{link "/assets/site.css"}}">
 <script defer src="{{link "/assets/search-index.js"}}"></script>
@@ -48,7 +48,7 @@
       {{end}}
       </nav>
     </details>
-    <p class="revision">Ревизия <code>{{.Version}}</code><br><a href="https://github.com/arturpanteleev/ai-team/releases">Релизы на GitHub</a></p>
+    <p class="revision">Ревизия <code>{{.Version}}</code><br><a href="https://github.com/arturpanteleev/workaistrator/releases">Релизы на GitHub</a></p>
   </aside>
 
   <main id="main" class="content" tabindex="-1">
@@ -56,7 +56,7 @@
     <section class="hero" aria-labelledby="hero-title">
       <p class="eyebrow">Open source · для команды · сервер или облако</p>
       <h1 id="hero-title">AI-агенты пишут код.<br>Вы решаете, что попадёт в&nbsp;репозиторий.</h1>
-      <p class="hero-lead">ai-team проводит задачу через команду агентов: аналитик, архитектор, разработчик, ревьюер, тестировщик. Каждый шаг проверяет обычная программа, а не модель. Коммит и pull request появляются только после того, как вы подтвердите точный delivery-план. Команда работает через веб-дашборд на своём сервере или в облаке.</p>
+      <p class="hero-lead">WorkAiStrator проводит задачу через команду агентов: аналитик, архитектор, разработчик, ревьюер, тестировщик. Каждый шаг проверяет обычная программа, а не модель. Коммит и pull request появляются только после того, как вы подтвердите точный delivery-план. Команда работает через веб-дашборд на своём сервере или в облаке.</p>
       <div class="hero-actions">
         {{range $i, $a := .HeroActions}}<a class="button{{if $i}} secondary{{end}}" href="{{link $a.URL}}">{{$a.Title}}</a>
         {{end}}
@@ -92,7 +92,7 @@
     {{end}}
   {{end}}
     <footer class="page-footer">
-      <p>Нашли ошибку или чего-то не хватает? <a href="https://github.com/arturpanteleev/ai-team/issues/new?template=documentation.yml">Напишите нам</a>{{if ne .Current.URL "/"}} или <a href="https://github.com/arturpanteleev/ai-team/edit/master/{{.Current.Source}}">поправьте страницу</a>{{end}}.</p>
+      <p>Нашли ошибку или чего-то не хватает? <a href="https://github.com/arturpanteleev/workaistrator/issues/new?template=documentation.yml">Напишите нам</a>{{if ne .Current.URL "/"}} или <a href="https://github.com/arturpanteleev/workaistrator/edit/master/{{.Current.Source}}">поправьте страницу</a>{{end}}.</p>
     </footer>
   </main>
 

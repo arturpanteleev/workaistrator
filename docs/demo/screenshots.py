@@ -28,7 +28,7 @@ import subprocess
 import sys
 import termios
 
-DEMO = os.environ.get("AI_TEAM_DEMO_DIR", "/tmp/ai-team-demo")
+DEMO = os.environ.get("AI_TEAM_DEMO_DIR", "/tmp/workaistrator-demo")
 COLORS = {"31": "#ff7b72", "32": "#7ee2a8", "33": "#e5c07b", "34": "#79c0ff",
           "35": "#d2a8ff", "36": "#56d4dd"}
 

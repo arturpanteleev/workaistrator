@@ -3,7 +3,7 @@
 ## Why
 
 README и ARCHITECTURE честно фиксируют разрыв: **integrity** гарантируется
-цепочкой хэшей (`ai-team verify` подтверждает, что записи не тронуты), но
+цепочкой хэшей (`workaistrator verify` подтверждает, что записи не тронуты), но
 **authenticity** — нет: у bundle нет подписи автора. Digest — это контроль
 целостности (факт «не изменено»), а не доказательство авторства («кто создал»).
 Доверие к создателю — out-of-band решение человека/CI.
@@ -22,9 +22,9 @@ bundle из «целостность без автора» в «подписан
 - **Подпись run- и gate-bundle**: sign детерминированного `BundleDigest`
   (канонический index.json) в момент финализации bundle.
 - **CLI**: ключи через флаги/окружение (без коммита секретов):
-  - `ai-team export --sign-key <path>` / `ai-team gate --sign-key <path>` —
+  - `workaistrator export --sign-key <path>` / `workaistrator gate --sign-key <path>` —
     подписать bundle;
-  - `ai-team verify --verify-key <path>` — верифицировать подпись (fail-closed:
+  - `workaistrator verify --verify-key <path>` — верифицировать подпись (fail-closed:
     если signature-файл есть, а ключ задан и не совпадает → ошибка).
 - **Evidence**: signature записывается отдельным файлом bundle
   (`dsse.json` / `.sig`) и перечисляется в index.Records, чтобы она сама
@@ -36,7 +36,7 @@ bundle из «целостность без автора» в «подписан
 - [green] `pkg/dsse` unit-тесты: PAE roundtrip, sign/verify, tampered signature
   ловится, wrong key ловится (fail-closed).
 - [green] export/gate подписывают bundle — signature-файл появляется и попадает
-  в index.Records; `ai-team verify --verify-key` проверяет.
+  в index.Records; `workaistrator verify --verify-key` проверяет.
 - [negative] Подмена payload / подпись другим ключом / отсутствие подписи при
   заданном `--verify-key` → verify FAIL (закрытие authenticity gAP).
 - README «integrity vs authenticity» обновлён (заголовок сохранить как строку —

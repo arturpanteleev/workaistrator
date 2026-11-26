@@ -24,9 +24,9 @@
 
 ## D3. CLI
 
-- [x] `cmd/ai-team/export.go`, `cmd/gate.go`: `--sign-key <path>` load key &
+- [x] `cmd/workaistrator/export.go`, `cmd/gate.go`: `--sign-key <path>` load key &
       `SignBundle` after write.
-- [x] `cmd/ai-team/main.go` cmdVerify: `--verify-key <path>`, wire into
+- [x] `cmd/workaistrator/main.go` cmdVerify: `--verify-key <path>`, wire into
       export/gate VerifyBundle; gate/run dir branches.
 
 ## D4. Тесты + доки

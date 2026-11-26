@@ -563,7 +563,7 @@ the exact subject hash of the approval.
 ### Requirement: One service path for human decisions
 
 A decision on a stage transition MUST be made through one service
-(`pkg/humandecision`) used by Web, REST and MCP. The service MUST, in order:
+(`pkg/engine/gate/human`) used by Web, REST and MCP. The service MUST, in order:
 find a pending transition approval; accept only an action the approval offers;
 require the subject hash of the request to equal the hash of the approval (a
 request without hash or with a stale one MUST be refused); require that the
@@ -698,7 +698,7 @@ shown only as `legacy` history and MUST NOT extend any right). The right MUST be
 enforced where the decision is taken, not only at the HTTP layer: the approval
 store MUST accept `override` of a `check_decision` only with the authority
 `system_admin` set by the authenticated controller, and the pipeline MUST refuse
-to apply an override decision without it; the CLI `ai-team decision` MUST refuse
+to apply an override decision without it; the CLI `workaistrator decision` MUST refuse
 `override` and `retry_gate`. Retries of one stage attempt MUST be bounded (10
 rounds), after which a retry MUST be refused with a reason.
 

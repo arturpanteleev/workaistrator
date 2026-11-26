@@ -1,0 +1,396 @@
+package pipeline
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
+
+	"github.com/arturpanteleev/workaistrator/pkg/config"
+	"github.com/arturpanteleev/workaistrator/pkg/delivery"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/lifecycle"
+	"github.com/arturpanteleev/workaistrator/pkg/store/evidence"
+)
+
+// RunEngine — process-independent entrypoint жизненного цикла run. Pipeline
+// исполняет stages, а engine различает создание новой identity и resume
+// существующей.
+type RunEngine struct {
+	pipeline *Pipeline
+}
+
+type ResumeConfig struct {
+	RunID           string
+	TargetDir       string
+	RuntimeUpgrade  bool
+	RetryCheck      bool
+	ApproveGates    bool
+	ApprovePlanHash string
+	CancelRequested func() bool
+	// BudgetAllowance — явное решение человека выдать задаче новый бюджет
+	// после остановки по бюджету задачи. nil — resume без выдачи: задача
+	// продолжает считать расход от прежней точки отсчёта и снова встанет на
+	// паузу, если бюджет исчерпан. Дневной бюджет выдача не затрагивает.
+	BudgetAllowance *BudgetAllowanceGrant
+}
+
+type CancelConfig struct {
+	RunID     string
+	TargetDir string
+	Reason    string
+}
+
+type SkipStageConfig struct {
+	RunID     string
+	TargetDir string
+	StageID   string
+	Reason    string
+}
+
+func NewRunEngine(pipeline *Pipeline) *RunEngine {
+	return &RunEngine{pipeline: pipeline}
+}
+
+// SupportsRunMode reports whether the engine applies the requested run mode
+// itself. RunEngine owns auto-mode template pinning; queue and process engines
+// enqueue jobs without mode semantics and must fail closed instead.
+func (e *RunEngine) SupportsRunMode(mode string) bool {
+	return mode == "" || mode == "manual" || mode == "auto"
+}
+
+func (e *RunEngine) Start(ctx context.Context, config RunConfig) (RunResult, error) {
+	if config.ResumeRunID != "" {
+		return RunResult{}, errors.New("RunEngine.Start не принимает resume_run_id")
+	}
+	if config.RunID == "" {
+		runID, err := evidence.NewRunID(time.Now().UTC())
+		if err != nil {
+			return RunResult{}, err
+		}
+		config.RunID = runID
+	}
+	if err := e.pinRunMode(config.RunID, config.TargetDir, config.Mode); err != nil {
+		return RunResult{RunID: config.RunID, Outcome: workflow.RunFailed}, err
+	}
+	runPipeline, err := e.pipelineForTask(config.RunID, config.TargetDir, true)
+	if err != nil {
+		return RunResult{RunID: config.RunID, Outcome: workflow.RunFailed}, err
+	}
+	return runPipeline.RunWithResult(ctx, config)
+}
+
+func (e *RunEngine) pinRunMode(runID, targetDir, mode string) error {
+	if mode == "" {
+		return nil
+	}
+	if mode != "auto" {
+		return fmt.Errorf("unsupported run mode %q", mode)
+	}
+	if e == nil || e.pipeline == nil || e.pipeline.cfg == nil || targetDir == "" {
+		return errors.New("auto mode требует доступного template pipeline и target")
+	}
+	data, err := e.pipeline.cfg.Marshal()
+	if err != nil {
+		return fmt.Errorf("serialize auto template: %w", err)
+	}
+	cfg, err := config.ParseYAML(data)
+	if err != nil {
+		return fmt.Errorf("copy auto template: %w", err)
+	}
+	if cfg.Template == "" || len(cfg.Stages) == 0 {
+		return errors.New("auto mode поддерживается только для шаблона этапов")
+	}
+	for index := range cfg.Stages {
+		stage := &cfg.Stages[index]
+		if stage.Agent != "" {
+			stage.Executor = "agent"
+		}
+		stage.DisableConfirmation()
+	}
+	var registry config.AgentLookup
+	if e.pipeline.reg != nil {
+		registry = e.pipeline.reg
+	}
+	if err := cfg.Validate(registry); err != nil {
+		return fmt.Errorf("auto template validation: %w", err)
+	}
+	data, err = cfg.Marshal()
+	if err != nil {
+		return fmt.Errorf("serialize auto template: %w", err)
+	}
+	store, err := config.NewTemplateStore(targetDir)
+	if err != nil {
+		return fmt.Errorf("open auto template store: %w", err)
+	}
+	if _, err := store.PinDataForRun(runID, runID, data); err != nil {
+		return fmt.Errorf("pin auto template for run: %w", err)
+	}
+	pinned, _, found, err := store.ReadPinnedRun(runID)
+	if err != nil {
+		return fmt.Errorf("verify auto template pin: %w", err)
+	}
+	if !found || string(pinned) != string(data) {
+		return errors.New("auto template pin conflicts with an existing run template")
+	}
+	return nil
+}
+
+func (e *RunEngine) Resume(ctx context.Context, config ResumeConfig) (RunResult, error) {
+	if config.RunID == "" {
+		return RunResult{}, errors.New("RunEngine.Resume требует run_id")
+	}
+	runPipeline, err := e.pipelineForTask(config.RunID, config.TargetDir, false)
+	if err != nil {
+		return RunResult{RunID: config.RunID, Outcome: workflow.RunFailed}, err
+	}
+	return runPipeline.RunWithResult(ctx, RunConfig{
+		ResumeRunID:     config.RunID,
+		TargetDir:       config.TargetDir,
+		RuntimeUpgrade:  config.RuntimeUpgrade,
+		RetryCheck:      config.RetryCheck,
+		ApproveGates:    config.ApproveGates,
+		ApprovePlanHash: config.ApprovePlanHash,
+		CancelRequested: config.CancelRequested,
+		budgetAllowance: config.BudgetAllowance,
+	})
+}
+
+// SkipStage resumes a run at its current stage and records a skipped attempt.
+// Human stages waiting for input resolve their stage-bound approval with the
+// explicit skip action; agent stages can be skipped from a resumable checkpoint.
+func (e *RunEngine) SkipStage(ctx context.Context, config SkipStageConfig) (RunResult, error) {
+	if config.RunID == "" || config.TargetDir == "" || config.StageID == "" {
+		return RunResult{}, errors.New("RunEngine.SkipStage требует run_id, target и stage_id")
+	}
+	reason := strings.TrimSpace(config.Reason)
+	if reason == "" {
+		return RunResult{}, errors.New("пропуск этапа требует причину")
+	}
+	if err := evidence.ValidateRunID(config.RunID); err != nil {
+		return RunResult{}, fmt.Errorf("skip stage run id: %w", err)
+	}
+	runPipeline, err := e.pipelineForTask(config.RunID, config.TargetDir, false)
+	if err != nil {
+		return RunResult{RunID: config.RunID, Outcome: workflow.RunFailed}, err
+	}
+	stage, exists := runPipeline.templateStage(config.StageID)
+	if !exists || !stage.Skippable {
+		return RunResult{RunID: config.RunID, Outcome: workflow.RunFailed}, fmt.Errorf("stage %q is not configured as skippable", config.StageID)
+	}
+	return runPipeline.RunWithResult(ctx, RunConfig{
+		ResumeRunID: config.RunID, TargetDir: config.TargetDir,
+		skipStageID: config.StageID, skipReason: reason,
+	})
+}
+
+func (e *RunEngine) pipelineForTask(runID, targetDir string, createPin bool) (*Pipeline, error) {
+	return e.resolvePipelineForTask(runID, targetDir, createPin, false)
+}
+
+// pipelineForPinnedDelivery resolves the immutable pin even when the engine
+// was constructed with a legacy in-memory config. Retry and recovery must
+// retain the originating run's delivery timeout; Start/Resume must retain an
+// explicitly supplied legacy workflow override.
+func (e *RunEngine) pipelineForPinnedDelivery(runID, targetDir string) (*Pipeline, error) {
+	return e.resolvePipelineForTask(runID, targetDir, false, true)
+}
+
+func (e *RunEngine) resolvePipelineForTask(runID, targetDir string, createPin, forcePinned bool) (*Pipeline, error) {
+	if targetDir == "" || runID == "" || e == nil || e.pipeline == nil {
+		if e == nil || e.pipeline == nil {
+			return nil, errors.New("RunEngine pipeline is unavailable")
+		}
+		return e.pipeline, nil
+	}
+	cfg := e.pipeline.cfg
+	if cfg == nil {
+		cfg = config.Default()
+	}
+	// Preserve explicit legacy in-memory configuration overrides across Start
+	// and Resume. Delivery recovery opts into pinned resolution separately so a
+	// default CLI engine can still honor an existing task pin.
+	if cfg.Template == "" && !forcePinned {
+		return e.pipeline, nil
+	}
+	store, err := config.NewTemplateStore(targetDir)
+	if err != nil {
+		return nil, fmt.Errorf("template task pin store: %w", err)
+	}
+	data, _, found, err := store.ReadRunnablePinnedRun(runID)
+	if err != nil {
+		return nil, fmt.Errorf("read template task pin: %w", err)
+	}
+	if !found && createPin {
+		data, _, err = store.ReadCurrent()
+		if errors.Is(err, os.ErrNotExist) {
+			data, err = cfg.Marshal()
+		}
+		if err != nil {
+			return nil, fmt.Errorf("resolve template for new task: %w", err)
+		}
+		if _, err := store.PinDataForRun(runID, runID, data); err != nil {
+			return nil, fmt.Errorf("pin template for new task: %w", err)
+		}
+		data, _, found, err = store.ReadRunnablePinnedRun(runID)
+		if err != nil || !found {
+			if err == nil {
+				err = errors.New("task template pin was not created")
+			}
+			return nil, fmt.Errorf("read created template task pin: %w", err)
+		}
+	}
+	if !found {
+		// Existing pre-editor runs have no task pin. Preserve their historical
+		// resume behavior, whose evidence digest still rejects config drift.
+		return e.pipeline, nil
+	}
+	pinned, err := config.ParseYAML(data)
+	if err != nil {
+		return nil, fmt.Errorf("pinned task template YAML: %w", err)
+	}
+	var registry config.AgentLookup
+	if e.pipeline.reg != nil {
+		registry = e.pipeline.reg
+	}
+	if err := pinned.Validate(registry); err != nil {
+		return nil, fmt.Errorf("pinned task template validation: %w", err)
+	}
+	markQuestionStages(pinned, e.pipeline.reg)
+	runPipeline := *e.pipeline
+	runPipeline.cfg = pinned
+	return &runPipeline, nil
+}
+
+// RecoverInitialLifecycle reconstructs the lifecycle checkpoint when a worker
+// died after durable run_started evidence was written but before lifecycle
+// creation. It accepts only the exact initial evidence prefix, so later or
+// ambiguous run state is never mistaken for a fresh admission.
+func (e *RunEngine) RecoverInitialLifecycle(runID, targetDir, feature, task string) error {
+	return e.pipeline.recoverInitialLifecycle(runID, targetDir, feature, task)
+}
+
+// ReconcileTerminalDelivery verifies that a terminal run's approved deferred
+// delivery reached its durable terminal record. If delivery was interrupted,
+// it resumes through the same validated delivery state machine.
+func (e *RunEngine) ReconcileTerminalDelivery(ctx context.Context, runID, targetDir string) error {
+	runPipeline, err := e.pipelineForPinnedDelivery(runID, targetDir)
+	if err != nil {
+		return fmt.Errorf("resolve template for delivery recovery: %w", err)
+	}
+	return runPipeline.ReconcileTerminalDelivery(ctx, runID, targetDir)
+}
+
+// DeliverDeferred retries terminal delivery using the run's immutable task
+// template when one exists. Legacy runs without a task pin keep the engine's
+// configured delivery timeout.
+func (e *RunEngine) DeliverDeferred(ctx context.Context, runID, targetDir string) (delivery.TerminalRecord, error) {
+	return e.DeliverDeferredForFeature(ctx, runID, "", targetDir)
+}
+
+// DeliverDeferredForFeature preserves the legacy feature override accepted by
+// the CLI while resolving the immutable template pin in the same way.
+func (e *RunEngine) DeliverDeferredForFeature(ctx context.Context, runID, feature, targetDir string) (delivery.TerminalRecord, error) {
+	if err := evidence.ValidateRunID(runID); err != nil {
+		return delivery.TerminalRecord{}, fmt.Errorf("deliver: invalid run id: %w", err)
+	}
+	runPipeline, err := e.pipelineForPinnedDelivery(runID, targetDir)
+	if err != nil {
+		return delivery.TerminalRecord{}, fmt.Errorf("resolve template for deferred delivery: %w", err)
+	}
+	runDir := filepath.Join(targetDir, ".ai-team", "runs", runID)
+	return runPipeline.DeliverDeferred(ctx, runDir, feature, targetDir)
+}
+
+func (e *RunEngine) Cancel(config CancelConfig) (RunResult, error) {
+	if config.RunID == "" {
+		return RunResult{}, errors.New("RunEngine.Cancel требует run_id")
+	}
+	lock, err := evidence.AcquireWorkspaceLock(config.TargetDir)
+	if err != nil {
+		return RunResult{}, err
+	}
+	defer func() { _ = lock.Close() }() // снятие файловой блокировки: значимый результат уже посчитан.
+	stateStore := e.pipeline.lifecycle
+	if stateStore == nil {
+		stateStore, err = lifecycle.NewStore(config.TargetDir)
+		if err != nil {
+			return RunResult{}, err
+		}
+	}
+	state, err := stateStore.Load(config.RunID)
+	if err != nil {
+		return RunResult{}, err
+	}
+	if state.Phase == lifecycle.PhaseTerminal {
+		return RunResult{}, fmt.Errorf("run %s уже terminal", config.RunID)
+	}
+	evidenceStore, _, replayed, err := e.pipeline.resumeEvidence(
+		filepath.Join(config.TargetDir, ".ai-team", "runs"), config.RunID,
+	)
+	if err != nil {
+		return RunResult{}, err
+	}
+	now := time.Now().UTC()
+	reason := strings.TrimSpace(config.Reason)
+	if reason == "" {
+		reason = "human_cancel"
+	}
+	if err := evidenceStore.Append(evidence.Event{
+		Type: "run_canceled", Timestamp: now,
+		Data: map[string]any{"reason": reason},
+	}); err != nil {
+		return RunResult{}, err
+	}
+	if err := evidenceStore.Append(evidence.Event{
+		Type: "run_finished", Timestamp: now,
+		Data: map[string]any{"status": string(workflow.RunCanceled), "stage_attempts": len(replayed.Attempts)},
+	}); err != nil {
+		return RunResult{}, err
+	}
+	terminal := state
+	terminal.Phase = lifecycle.PhaseTerminal
+	terminal.NextStage = ""
+	terminal.PendingApprovalID = ""
+	terminal.ActiveApprovalID = ""
+	terminal.AttemptOrdinal = len(replayed.Attempts)
+	if err := stateStore.Save(state, terminal); err != nil {
+		return RunResult{}, err
+	}
+	if e.pipeline.recorder != nil {
+		e.pipeline.recorder.ReconcileInterrupted(now)
+		e.pipeline.recorder.RunAttached(config.RunID)
+		e.pipeline.recorder.RunCanceled(config.RunID, now)
+		e.pipeline.recorder.RunFinished(config.RunID, string(workflow.RunCanceled), now)
+	}
+	return RunResult{RunID: config.RunID, Outcome: workflow.RunCanceled}, nil
+}
+
+// LoadLifecycle and SaveLifecycle expose the same narrow
+// checkpoint port to the worker recovery dispatcher without opening the
+// lifecycle directory in the child process.
+func (e *RunEngine) LoadLifecycle(targetDir, runID string) (lifecycle.State, error) {
+	store, err := e.lifecycleStore(targetDir)
+	if err != nil {
+		return lifecycle.State{}, err
+	}
+	return store.Load(runID)
+}
+
+func (e *RunEngine) SaveLifecycle(targetDir string, previous, next lifecycle.State) error {
+	store, err := e.lifecycleStore(targetDir)
+	if err != nil {
+		return err
+	}
+	return store.Save(previous, next)
+}
+
+func (e *RunEngine) lifecycleStore(targetDir string) (lifecycle.StorePort, error) {
+	if e.pipeline.lifecycle != nil {
+		return e.pipeline.lifecycle, nil
+	}
+	return lifecycle.NewStore(targetDir)
+}

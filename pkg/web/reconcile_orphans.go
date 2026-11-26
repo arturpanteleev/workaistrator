@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/evidence"
+	"github.com/arturpanteleev/workaistrator/pkg/store/evidence"
 )
 
 // reconcileOrphanRuns turns runs left in "running" by a process that has since

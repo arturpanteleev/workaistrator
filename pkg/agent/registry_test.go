@@ -7,7 +7,7 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/arturpanteleev/ai-team/pkg/stagecheck"
+	"github.com/arturpanteleev/workaistrator/pkg/stagecheck"
 )
 
 func TestRegistry_Load(t *testing.T) {
@@ -275,7 +275,7 @@ func TestRegistry_RejectsUnsafeOrInconsistentDefinitions(t *testing.T) {
 		{"inputs-only source mutation", "name: sample\nruntime: agentcli\nread_scope: inputs-only\nmutation: source\nallowed_paths: ['**']\n", "несовместим с mutation \"source\""},
 		{"inputs-only tests mutation", "name: sample\nruntime: agentcli\nread_scope: inputs-only\nmutation: tests\nallowed_paths: ['**/*_test.go']\n", "несовместим с mutation \"tests\""},
 		{"inputs-only delivery kind", "name: sample\nruntime: agentcli\nread_scope: inputs-only\nkind: delivery\nmutation: external\n", "kind delivery не поддерживает read_scope"},
-		{"reserved ai-team scope", "name: sample\nruntime: agentcli\nmutation: source\nallowed_paths: ['.ai-team/config.yaml']\n", "reserved controller"},
+		{"reserved WorkAiStrator scope", "name: sample\nruntime: agentcli\nmutation: source\nallowed_paths: ['.ai-team/config.yaml']\n", "reserved controller"},
 		{"reserved git scope", "name: sample\nruntime: agentcli\nmutation: source\nallowed_paths: ['.git/config']\n", "reserved controller"},
 		{"diff without mutation", "name: sample\nruntime: agentcli\nmutation: none\nrequire_diff: true\n", "require_diff требует"},
 		{"verdict without markdown", "name: sample\nruntime: agentcli\nmutation: none\nverdict:\n  required: true\n  marker: Result\n  values: [PASS, FAIL]\noutputs: {}\n", "markdown output"},

@@ -13,10 +13,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/agent"
-	"github.com/arturpanteleev/ai-team/pkg/config"
-	"github.com/arturpanteleev/ai-team/pkg/runtime"
-	"github.com/arturpanteleev/ai-team/pkg/stageexec"
+	"github.com/arturpanteleev/workaistrator/pkg/agent"
+	"github.com/arturpanteleev/workaistrator/pkg/config"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/stage/exec"
+	"github.com/arturpanteleev/workaistrator/pkg/runtime"
 )
 
 const maxCommandOutput = 4096

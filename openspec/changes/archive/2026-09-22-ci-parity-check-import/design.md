@@ -41,7 +41,7 @@ adopter-форматы (GitLab CI, CircleCI) — отдельные преобр
 
 ## CLI
 
-`ai-team ci-import` — импорт и показ только (checks НЕ запускаются командой).
+`workaistrator ci-import` — импорт и показ только (checks НЕ запускаются командой).
 Это отдельный read-only шаг: adopter видит suite до того, как смонтировать её
 в pipeline. Вывод — через `logging.Emit` (OPS-6): JSON-стабильный record с
 `data.fingerprint`, `data.checks`, `data.skipped`.

@@ -18,7 +18,7 @@ go.mod содержит только `gopkg.in/yaml.v3`.
 - SQLite для хранения истории pipeline runs (modernc.org/sqlite — чистый Go, без CGO)
 - WebSocket для live updates (stage_started, stage_completed, pipeline_completed)
 - WebNotifier — запись в SQLite + push через WebSocket
-- CLI команда: `ai-team web --port 8080`
+- CLI команда: `workaistrator web --port 8080`
 - Статический файл serving для frontend (build из web/)
 
 **Non-Goals:**

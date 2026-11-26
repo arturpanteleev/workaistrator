@@ -22,7 +22,7 @@ envelopes remain readable, but their run totals are unknown because they only
 record whether any adapter reported usage and may contain partial sums.
 
 Restore report counts and attempt pages from manifests, render report times in
-UTC, and narrow `ai-team usage` to input/output/total tokens plus an optional
+UTC, and narrow `workaistrator usage` to input/output/total tokens plus an optional
 approximate subscription allocation. Do not show API price estimates; show
 `нет данных` or `оценка недоступна` when required inputs are missing.
 

@@ -7,7 +7,7 @@
 ## 2. Execution
 
 - [x] 2.1 Реализовать process-backed RunEngine без shell
-- [x] 2.2 Добавить `ai-team worker` для одного stdin job
+- [x] 2.2 Добавить `workaistrator worker` для одного stdin job
 - [x] 2.3 Подключить worker к existing config, candidate, evidence и recorder
 - [x] 2.4 Добавить opt-in worker command в web control plane
 

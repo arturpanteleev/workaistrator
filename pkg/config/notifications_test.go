@@ -16,7 +16,7 @@ func notificationTestConfig(t *testing.T) *Config {
 		Channels: []NotificationChannelConfig{
 			{Name: "ops-hook", Type: NotificationWebhook, URLEnv: "AI_TEAM_NOTIFY_WEBHOOK_URL", Events: []string{"stage_stalled"}},
 			{Name: "team-slack", Type: NotificationSlack, URLEnv: "AI_TEAM_SLACK_WEBHOOK_URL", Events: []string{"check_overridden", "attempt_finished"}, Functions: []string{"developer", "qa"}},
-			{Name: "leads", Type: NotificationEmail, SMTPURLEnv: "AI_TEAM_SMTP_URL", From: "ai-team <bot@example.test>", To: []string{"lead@example.test"}, Events: []string{"integration_error"}},
+			{Name: "leads", Type: NotificationEmail, SMTPURLEnv: "AI_TEAM_SMTP_URL", From: "WorkAiStrator <bot@example.test>", To: []string{"lead@example.test"}, Events: []string{"integration_error"}},
 		},
 	}
 	return cfg
@@ -56,7 +56,7 @@ func TestNotificationsConfigRejectsInvalidSubscriptions(t *testing.T) {
 		{"email without recipients", func(n *NotificationsConfig) { n.Channels[2].To = nil }, "to должен содержать"},
 		{"email header injection", func(n *NotificationsConfig) { n.Channels[2].From = "bot@example.test\r\nBcc: x@example.test" }, "from должен быть"},
 		{"smtp on webhook", func(n *NotificationsConfig) { n.Channels[0].SMTPURLEnv = "AI_TEAM_SMTP_URL" }, "только для type: email"},
-		{"web base with credentials", func(n *NotificationsConfig) { n.WebBaseURL = "https://u:p@ai-team.example" }, "web_base_url"},
+		{"web base with credentials", func(n *NotificationsConfig) { n.WebBaseURL = "https://u:p@WorkAiStrator.example" }, "web_base_url"},
 		{"no channels", func(n *NotificationsConfig) { n.Channels = nil }, "хотя бы один канал"},
 	}
 	for _, tc := range cases {

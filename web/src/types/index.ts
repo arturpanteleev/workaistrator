@@ -1,5 +1,5 @@
 // Статусы синхронизированы с backend:
-// run: running/completed/failed/blocked/stopped (pkg/pipeline.runStatus)
+// run: running/completed/failed/blocked/stopped (pkg/engine/pipeline.runStatus)
 // stage: running/passed/failed/blocked (pkg/notifier.Status*)
 export type PipelineStatus = 'queued' | 'running' | 'waiting_for_approval' | 'completed' | 'completed_with_warnings' | 'failed' | 'blocked' | 'stopped' | 'canceled' | 'interrupted';
 

@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/safeio"
+	"github.com/arturpanteleev/workaistrator/pkg/safeio"
 )
 
 // terminal.go (V0-9/B-35): post-finalize run-level delivery record. For the

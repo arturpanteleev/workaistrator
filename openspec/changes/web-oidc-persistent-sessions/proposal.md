@@ -3,7 +3,7 @@
 ## Why
 
 Решение D19: в пилоте вход по токенам, SSO подключается позже. Browser
-sessions жили в памяти процесса `ai-team web` (`pkg/web/server.go`): перезапуск
+sessions жили в памяти процесса `workaistrator web` (`pkg/web/server.go`): перезапуск
 выкидывал всех пользователей, отзыв при выходе отсутствовал, а несколько
 экземпляров над одной базой не видели сессий друг друга.
 
@@ -19,7 +19,7 @@ sessions жили в памяти процесса `ai-team web` (`pkg/web/serve
 - `pkg/oidc`: discovery, authorization code + PKCE S256, проверка `id_token`
   (RS256/ES256 по JWKS, issuer, audience/azp, exp/iat/nbf, nonce) без
   сторонних зависимостей. `pkg/oidc/oidctest` — заглушка провайдера для тестов.
-- `ai-team web`: `--oidc-issuer`, `--oidc-client-id`, `--oidc-redirect-url`,
+- `workaistrator web`: `--oidc-issuer`, `--oidc-client-id`, `--oidc-redirect-url`,
   `--oidc-client-secret-env`; секрет клиента только из окружения. OIDC
   включается только вместе с облачной аутентификацией.
 - UI: кнопка «Войти через SSO» при включённом SSO и «Выйти».

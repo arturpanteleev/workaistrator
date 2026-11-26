@@ -75,7 +75,7 @@ export function Layout({ children, teamManagementEnabled, trackerEnabled = false
       <aside className={styles.sidebar}>
         <div className={styles.logo}>
           <span className={styles.logoMark} aria-hidden="true" />
-          ai-team
+          WorkAiStrator
         </div>
         <nav className={styles.nav} aria-label="Разделы">
           <NavItem to="/" end name="tasks">Очередь</NavItem>

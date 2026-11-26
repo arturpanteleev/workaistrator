@@ -16,7 +16,7 @@
       the completion event remains unavailable, without starting downstream work.
 - [x] Add pipeline, lifecycle, and web tests for visit identity and agent
       execution/refinement.
-- [ ] Wire the CLI action `ai-team task stage <stage-id> run-agent` through
+- [ ] Wire the CLI action `WorkAiStrator task stage <stage-id> run-agent` through
       the B-71 task-stage action interface after that branch lands; this branch
       provides the engine/API behavior only.
 - [x] Run full `GOTOOLCHAIN=go1.26.9 make verify` on the revised implementation tree.

@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arturpanteleev/ai-team/pkg/checks"
-	"github.com/arturpanteleev/ai-team/pkg/delivery"
+	"github.com/arturpanteleev/workaistrator/pkg/delivery"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/stage/checks"
 )
 
 const testRepository = "github.com/example/project"

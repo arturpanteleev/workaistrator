@@ -27,7 +27,7 @@ jobs:
           go-version: '1.26.11'
           check-latest: true
       - name: Build docs site
-        run: go run ./docsgen/cmd/docsgen --out docs/_site --base-path /ai-team --github-repo arturpanteleev/ai-team
+        run: go run ./docsgen/cmd/docsgen --out docs/_site --base-path /workaistrator --github-repo arturpanteleev/workaistrator
       - name: Setup Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
       - name: Upload Pages artifact

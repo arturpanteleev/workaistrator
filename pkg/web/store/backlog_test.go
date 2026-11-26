@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/autopickup"
+	"github.com/arturpanteleev/workaistrator/pkg/autopickup"
 )
 
 func newBacklogStore(t *testing.T) *Store {

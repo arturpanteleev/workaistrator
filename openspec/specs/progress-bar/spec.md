@@ -8,7 +8,7 @@
 
 #### Scenario: Прогресс-бар содержит проект, фичу и агента
 - **КОГДА** пайплайн запущен
-- **ТОГДА** в терминале MUST отображаться строка: `[ai-team] project: <name> | feature: <feature> | agent: <current-agent> (N/M) <progress-bar>`
+- **ТОГДА** в терминале MUST отображаться строка: `[WorkAiStrator] project: <name> | feature: <feature> | agent: <current-agent> (N/M) <progress-bar>`
 - **И** строка MUST обновляться после каждого завершённого этапа
 
 ### Requirement: Отключение прогресс-бара

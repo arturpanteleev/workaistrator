@@ -147,7 +147,7 @@ func (c *EmailChannel) deliver(ctx context.Context, endpoint smtpEndpoint, from 
 		return step("greeting", err)
 	}
 	defer func() { _ = client.Close() }()
-	if err := step("hello", client.Hello("ai-team")); err != nil {
+	if err := step("hello", client.Hello("WorkAiStrator")); err != nil {
 		return err
 	}
 	if !endpoint.implicitTLS {
@@ -243,7 +243,7 @@ func (c *EmailChannel) message(n Notification) ([]byte, string, []string, error)
 	header("To", strings.Join(recipients, ", "))
 	header("Subject", mime.QEncoding.Encode("utf-8", n.Summary()))
 	header("Date", timestamp.UTC().Format(time.RFC1123Z))
-	header("Message-ID", "<ai-team-event-"+strconv.FormatInt(n.EventID, 10)+"@ai-team.invalid>")
+	header("Message-ID", "<ai-team-event-"+strconv.FormatInt(n.EventID, 10)+"@WorkAiStrator.invalid>")
 	header("MIME-Version", "1.0")
 	header("Content-Type", "text/plain; charset=utf-8")
 	header("Content-Transfer-Encoding", "8bit")

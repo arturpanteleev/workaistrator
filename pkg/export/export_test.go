@@ -14,13 +14,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/attest"
-	"github.com/arturpanteleev/ai-team/pkg/containment"
-	"github.com/arturpanteleev/ai-team/pkg/delivery"
-	"github.com/arturpanteleev/ai-team/pkg/dsse"
-	"github.com/arturpanteleev/ai-team/pkg/evidence"
-	"github.com/arturpanteleev/ai-team/pkg/provenance"
-	"github.com/arturpanteleev/ai-team/pkg/retention"
+	"github.com/arturpanteleev/workaistrator/pkg/attest"
+	"github.com/arturpanteleev/workaistrator/pkg/containment"
+	"github.com/arturpanteleev/workaistrator/pkg/delivery"
+	"github.com/arturpanteleev/workaistrator/pkg/dsse"
+	"github.com/arturpanteleev/workaistrator/pkg/provenance"
+	"github.com/arturpanteleev/workaistrator/pkg/retention"
+	"github.com/arturpanteleev/workaistrator/pkg/store/evidence"
 )
 
 const (

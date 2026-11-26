@@ -1,28 +1,31 @@
-# ai-team — проект
+# WorkAiStrator — проект
 
 ## Структура
 
-- `cmd/ai-team/main.go` — точка входа CLI
+Три слоя с однонаправленными зависимостями: `engine/` (ядро) определяет
+интерфейсы, `runtime/` и `store/` их реализуют, `web/` — тонкий слой поверх ядра.
+
+- `cmd/workaistrator/main.go` — точка входа CLI
 - `pkg/` — внутренние пакеты
+  - `engine/` — ядро графовых workflow: `engine.go`, `registry.go` (`Executor`,
+    `GateRunner`, `EventSink`, `StageContext`, `Result`), машина состояний
+  - `engine/pipeline/` — оркестрация, enforcement вердиктов, гейты, loopback
+  - `engine/workflow/` — доменные state/outcome типы и чистые переходы
+  - `engine/control/`, `engine/approval/` — управление переходами и подтверждения
+  - `engine/gate/{lib,run,sched,phrases,llm,human}/` — каталог гейтов,
+    планировщик, внешние программы, LLM и человеческие решения; `gate/adapter.go`
+    сводит их к единому `GateRunner` с четырьмя типами: `program`, `llm`,
+    `human`, `required_phrases`
+  - `engine/stage/{exec,status,dockerrun,checks}/` — исполнители этапов,
+    проекция статусов, Docker и детерминированные проверки
+  - `runtime/` — Runtime interface + AgentCLI (промпт, логи, model/effort)
+  - `runtime/tracker/` — трекер задач, адаптеры jira/fake, входящие и исходящие операции
+  - `store/{evidence,verdict,runid}/` — immutable manifests, append-only events,
+    verdict-контракт, идентификаторы прогонов
   - `config/` — конфигурация + валидация
-  - `checks/` — deterministic verification runner и evidence
   - `scope/` — repository-relative mutation path policy (glob-матчинг)
   - `delivery/` — строгий plan и controller-owned executor
-  - `evidence/` — immutable run/attempt manifests и append-only events
-  - `gatelib/` — версионированная библиотека определений гейтов (каталог)
-  - `gatesched/` — планировщик групп гейтов: параллельные гейты, журнал, recovery
-  - `gaterun/` — гейт внешней программы: JSON-протокол, запуск без shell, Docker-адаптер
-  - `gatephrases/` — логика гейта `required_phrases`
-  - `llmgate/` — контракт LLM-гейта; `humandecision/` — единый сервис решения человека
-  - `dockerrun/` — запуск программы в контейнере через docker CLI
-  - `stageexec/` — исполнитель этапа (внутренний агент, внешняя программа, Docker)
-  - `stagestatus/` — проекция статусов этапов и истории посещений
-  - `tracker/` — абстрактный трекер задач, адаптеры jira/fake, исходящие и входящие операции
-  - `verdict/` — verdict-контракт (парсер вердиктов, BLOCKED-протокол)
-  - `runtime/` — Runtime interface + AgentCLI (промпт, логи, model/effort)
   - `agent/` — Agent struct + Registry
-  - `pipeline/` — оркестрация, enforcement вердиктов, гейты, loopback
-  - `workflow/` — доменные state/outcome типы и чистые переходы
   - `safeio/` — no-follow filesystem primitives (symlink rejection)
   - `process/` — process-group supervision и kill (Unix/Windows/plan9)
   - `notifier/`, `report/`, `ui/` — уведомления, HTML-отчёты, консоль
@@ -59,7 +62,7 @@ change без delta-спеки не проходит `make specs`, поэтом�
 прямо, без обряда с change.
 
 Runtime-инвариант продукта к этому отношения не имеет и не ослабляется:
-commit/push/PR внутри `ai-team run` выполняет только контроллер после
+commit/push/PR внутри `workaistrator run` выполняет только контроллер после
 deterministic checks и approval точного SHA-256 canonical plan через
 `--approve-plan <sha256>`.
 

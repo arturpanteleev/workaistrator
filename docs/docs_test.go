@@ -16,7 +16,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/config"
+	"github.com/arturpanteleev/workaistrator/pkg/config"
 )
 
 func readRepoFile(t *testing.T, relPath string) string {
@@ -74,8 +74,8 @@ var referencePages = map[string][]string{
 	},
 	"reference/statuses.md": {
 		"# Статусы и коды выхода",
-		"## ai-team run",
-		"## ai-team gate",
+		"## workaistrator run",
+		"## workaistrator gate",
 	},
 	"reference/security.md": {
 		"# Граница безопасности",
@@ -229,15 +229,15 @@ const cliReferencePath = "reference/cli.md"
 // Имя команды — [a-z] и далее буквы, цифры, «-» и «_»: диспетчер цифры
 // допускает, и запрет на них делал бы тест неисправимо красным для команды
 // вроде `gc2`, описанной везде корректно.
-var cliTableCellRe = regexp.MustCompile("^\\s*`ai-team ([a-z][a-z0-9_-]*)`\\s*$")
+var cliTableCellRe = regexp.MustCompile("^\\s*`workaistrator ([a-z][a-z0-9_-]*)`\\s*$")
 
-// cliHeadingRe — заголовок раздела команды: «### ai-team <команда>» и ничего
+// cliHeadingRe — заголовок раздела команды: «### WorkAiStrator <команда>» и ничего
 // больше в строке. Прозаические упоминания и примеры в коде не считаются.
-var cliHeadingRe = regexp.MustCompile(`^### ai-team ([a-z][a-z0-9_-]*)\s*$`)
+var cliHeadingRe = regexp.MustCompile(`^### workaistrator ([a-z][a-z0-9_-]*)\s*$`)
 
-const mainSourcePath = "../cmd/ai-team/main.go"
+const mainSourcePath = "../cmd/workaistrator/main.go"
 
-// parseMainSource разбирает cmd/ai-team/main.go один раз: и диспетчер, и текст
+// parseMainSource разбирает cmd/workaistrator/main.go один раз: и диспетчер, и текст
 // справки живут в этом файле, и обоим сторожам нужен один и тот же AST.
 func parseMainSource(t *testing.T) (*token.FileSet, *ast.File) {
 	t.Helper()
@@ -250,11 +250,11 @@ func parseMainSource(t *testing.T) (*token.FileSet, *ast.File) {
 }
 
 // dispatcherCommands извлекает множество команд из самого диспетчера
-// cmd/ai-team/main.go.
+// cmd/workaistrator/main.go.
 //
 // ПОЧЕМУ разбор исходника, а не литеральный список в тесте: список,
 // продублированный в тесте, разойдётся с кодом ровно так же, как разошёлся
-// прежний README, — сторож тогда охраняет сам себя. Вариант «прогнать `ai-team help`»
+// прежний README, — сторож тогда охраняет сам себя. Вариант «прогнать `workaistrator help`»
 // отвергнут: он требует собранного бинарника (go build внутри docs-теста), то
 // есть делает документационный тест зависимым от сборки и медленным, а
 // печатаемая справка — это тоже текст, который может отстать от switch.
@@ -389,7 +389,7 @@ func cliReferenceTableCommands(t *testing.T) map[string]bool {
 }
 
 // cliReferenceSectionCommands собирает команды, у которых на странице
-// справочника есть собственный раздел «### ai-team <команда>».
+// справочника есть собственный раздел «### WorkAiStrator <команда>».
 func cliReferenceSectionCommands(t *testing.T) map[string]bool {
 	t.Helper()
 	commands := map[string]bool{}
@@ -423,10 +423,10 @@ func compareWithDispatcher(t *testing.T, where string, dispatcher, documented ma
 	sort.Strings(missing)
 	sort.Strings(extra)
 	if len(missing) > 0 {
-		t.Errorf("%s: команды есть в cmd/ai-team/main.go, но не описаны: %v", where, missing)
+		t.Errorf("%s: команды есть в cmd/workaistrator/main.go, но не описаны: %v", where, missing)
 	}
 	if len(extra) > 0 {
-		t.Errorf("%s: описаны команды, которых нет в диспетчере cmd/ai-team/main.go: %v", where, extra)
+		t.Errorf("%s: описаны команды, которых нет в диспетчере cmd/workaistrator/main.go: %v", where, extra)
 	}
 }
 
@@ -437,22 +437,22 @@ func compareWithDispatcher(t *testing.T, where string, dispatcher, documented ma
 func TestCLIReferenceMatchesDispatcher(t *testing.T) {
 	dispatcher := dispatcherCommands(t)
 	compareWithDispatcher(t, "docs/"+cliReferencePath+" «Все команды»", dispatcher, cliReferenceTableCommands(t))
-	compareWithDispatcher(t, "docs/"+cliReferencePath+" разделы «### ai-team …»", dispatcher, cliReferenceSectionCommands(t))
+	compareWithDispatcher(t, "docs/"+cliReferencePath+" разделы «### workaistrator …»", dispatcher, cliReferenceSectionCommands(t))
 }
 
 // usageCommandRe — строка справки, НАЧИНАЮЩАЯСЯ с имени команды.
 //
 // Что якорь даёт и чего не даёт: он отсекает упоминания в середине строки
-// («…продолжите: ai-team run --resume …»), но НЕ отличает блок списка команд
+// («…продолжите: workaistrator run --resume …»), но НЕ отличает блок списка команд
 // от примера, который сам начинается с новой строки, — строка вида
-// «  ai-team gc --dry-run» в разделе флагов засчиталась бы как документирование
+// «  workaistrator gc --dry-run» в разделе флагов засчиталась бы как документирование
 // команды. Разбор справки на секции сюда не заводим: это тот же класс задач,
 // что и #139.
 //
 // Имя команды — [a-z] и далее буквы, цифры, «-» и «_»: диспетчер цифры
 // допускает, и запрет на них делал бы тест неисправимо красным для команды
 // вроде `gc2`, описанной везде корректно.
-var usageCommandRe = regexp.MustCompile(`(?m)^\s*ai-team ([a-z][a-z0-9_-]*)`)
+var usageCommandRe = regexp.MustCompile(`(?m)^\s*workaistrator ([a-z][a-z0-9_-]*)`)
 
 // isFmtPrintCall — вызов вида fmt.Print*/fmt.Fprint*; только его аргументы и
 // попадают в вывод справки.
@@ -473,7 +473,7 @@ func isFmtPrintCall(call *ast.CallExpr) bool {
 // синтаксический, а не «попало в вывод»: писатель у Fprint* не проверяется
 // (подойдёт любой, включая io.Discard), и вызов под условием — например в
 // ветке за env-флагом — засчитывается наравне с безусловным. То есть литерал,
-// который пользователь в `ai-team help` не увидит, может быть засчитан.
+// который пользователь в `workaistrator help` не увидит, может быть засчитан.
 //
 // Текст берётся из AST, а не из запуска бинарника, поэтому сторож не зависит
 // от сборки. Цена — он не исполняет код, и гарантии по направлениям РАЗНЫЕ:
@@ -482,7 +482,7 @@ func isFmtPrintCall(call *ast.CallExpr) bool {
 //     чтобы пройти, имя команды обязано быть в литерале-аргументе fmt.Print*;
 //   - «справка описывает команду, которой нет в диспетчере» — ловится только
 //     когда строка справки является голым литералом. Конкатенация
-//     («"  ai-team frobnicate" + "   Фробницировать"»), Sprintf или сборка
+//     («"  WorkAiStrator frobnicate" + "   Фробницировать"»), Sprintf или сборка
 //     строки в рантайме делают сторож слепым: справка рекламирует
 //     несуществующую команду, а тест молчит.
 //
@@ -556,10 +556,10 @@ func TestUsageTextMatchesDispatcher(t *testing.T) {
 	sort.Strings(extra)
 
 	if len(missing) > 0 {
-		t.Errorf("printUsage в cmd/ai-team/main.go: команды есть в диспетчере, но не описаны в справке: %v", missing)
+		t.Errorf("printUsage в cmd/workaistrator/main.go: команды есть в диспетчере, но не описаны в справке: %v", missing)
 	}
 	if len(extra) > 0 {
-		t.Errorf("printUsage в cmd/ai-team/main.go: справка описывает команды, которых нет в диспетчере: %v", extra)
+		t.Errorf("printUsage в cmd/workaistrator/main.go: справка описывает команды, которых нет в диспетчере: %v", extra)
 	}
 }
 

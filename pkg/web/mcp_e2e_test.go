@@ -2,24 +2,24 @@ package web
 
 import (
 	"encoding/json"
-	"github.com/arturpanteleev/ai-team/pkg/approval/approvaltest"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/approval/approvaltest"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/approval"
-	"github.com/arturpanteleev/ai-team/pkg/config"
-	"github.com/arturpanteleev/ai-team/pkg/control"
-	"github.com/arturpanteleev/ai-team/pkg/evidence"
-	"github.com/arturpanteleev/ai-team/pkg/gatelib"
-	"github.com/arturpanteleev/ai-team/pkg/gatesched"
-	"github.com/arturpanteleev/ai-team/pkg/humandecision"
-	"github.com/arturpanteleev/ai-team/pkg/lifecycle"
-	"github.com/arturpanteleev/ai-team/pkg/pipeline"
-	"github.com/arturpanteleev/ai-team/pkg/runtime"
-	"github.com/arturpanteleev/ai-team/pkg/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/config"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/approval"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/control"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/gate/human"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/gate/lib"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/gate/sched"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/pipeline"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/lifecycle"
+	"github.com/arturpanteleev/workaistrator/pkg/runtime"
+	"github.com/arturpanteleev/workaistrator/pkg/store/evidence"
 )
 
 // mcp_e2e_test.go — the S13 acceptance scenarios against the real run engine,

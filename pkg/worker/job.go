@@ -9,10 +9,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/arturpanteleev/ai-team/pkg/evidence"
-	"github.com/arturpanteleev/ai-team/pkg/pipeline"
-	"github.com/arturpanteleev/ai-team/pkg/strictjson"
-	"github.com/arturpanteleev/ai-team/pkg/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/pipeline"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/store/evidence"
+	"github.com/arturpanteleev/workaistrator/pkg/strictjson"
 )
 
 const SchemaVersion = 2

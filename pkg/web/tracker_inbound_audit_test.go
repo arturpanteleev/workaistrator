@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/lifecycle"
-	"github.com/arturpanteleev/ai-team/pkg/tracker"
-	"github.com/arturpanteleev/ai-team/pkg/web/store"
+	"github.com/arturpanteleev/workaistrator/pkg/lifecycle"
+	"github.com/arturpanteleev/workaistrator/pkg/runtime/tracker"
+	"github.com/arturpanteleev/workaistrator/pkg/web/store"
 )
 
 func inboundEvents(t *testing.T, f *inboundFixture, runID, eventType string) []map[string]any {

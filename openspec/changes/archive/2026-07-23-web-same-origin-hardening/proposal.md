@@ -4,11 +4,11 @@ The web dashboard's REST API (`/api/*`) had no origin check at all — only the
 WebSocket upgrade path did, and that check (`Origin.Host == r.Host`) doesn't
 actually defeat DNS rebinding: during a rebind, a browser's Origin and Host
 headers both reflect the attacker's domain and agree with each other, even
-though the TCP connection lands on loopback. `cmd/ai-team`'s own fatal
+though the TCP connection lands on loopback. `cmd/workaistrator`'s own fatal
 message for non-loopback `--host` says outright that the web UI has no
 authentication — bind-to-loopback plus a *correct* origin check is the only
 real boundary. Independent audit Finding 4 (High): with a running
-`ai-team web`, a malicious webpage the user happens to visit could read
+`workaistrator web`, a malicious webpage the user happens to visit could read
 pipeline/run/artifact data via the unprotected REST API, or via rebinding
 past the WebSocket check.
 

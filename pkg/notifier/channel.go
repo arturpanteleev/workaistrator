@@ -64,7 +64,7 @@ type Notification struct {
 // Summary renders a short single-line human summary without control
 // characters, suitable for chat text and e-mail subjects.
 func (n Notification) Summary() string {
-	parts := []string{"[ai-team] " + n.Type}
+	parts := []string{"[WorkAiStrator] " + n.Type}
 	if n.TaskID > 0 {
 		parts = append(parts, "task #"+strconv.FormatInt(n.TaskID, 10))
 	} else if n.RunID != "" {
@@ -162,7 +162,7 @@ const (
 )
 
 // ErrDeliveryInProgress keeps an event pending while another process (for
-// example `ai-team web` next to `ai-team run`) is sending the same
+// example `workaistrator web` next to `workaistrator run`) is sending the same
 // channel/event pair. It is an expected state, not a failure.
 var ErrDeliveryInProgress = errors.New("notification delivery is in progress in another process")
 

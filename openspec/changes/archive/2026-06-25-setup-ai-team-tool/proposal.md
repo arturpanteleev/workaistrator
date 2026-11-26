@@ -1,10 +1,10 @@
 ## Зачем
 
-Создать CLI-инструмент `ai-team`, который запускает пайплайн AI-агентов (System Analyst → Architect → Coder → Reviewer → Tester → Deployer) в любом целевом проекте. Агенты общаются через артефакты в формате OpenSpec. Сам инструмент разрабатывается через OpenSpec.
+Создать CLI-инструмент `workaistrator`, который запускает пайплайн AI-агентов (System Analyst → Architect → Coder → Reviewer → Tester → Deployer) в любом целевом проекте. Агенты общаются через артефакты в формате OpenSpec. Сам инструмент разрабатывается через OpenSpec.
 
 ## Что меняется
 
-- Go-модуль `github.com/arturpanteleev/ai-team` со структурой `cmd/`, `pkg/`, `agents/`
+- Go-модуль `github.com/arturpanteleev/workaistrator` со структурой `cmd/`, `pkg/`, `agents/`
 - CLI с командами `init`, `run`, `list`, `version`
 - Пакеты: `pkg/config`, `pkg/artifact`, `pkg/runtime`, `pkg/agent`, `pkg/pipeline`
 - 6 встроенных агентов с `def.yaml` и `prompt.md`

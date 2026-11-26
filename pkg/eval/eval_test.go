@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	aiteamruntime "github.com/arturpanteleev/ai-team/pkg/runtime"
+	aiteamruntime "github.com/arturpanteleev/workaistrator/pkg/runtime"
 )
 
 // testJudgeAdapter — test-only RuntimeAdapter: позволяет unit-тестам eval

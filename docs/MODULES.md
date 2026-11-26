@@ -30,9 +30,9 @@ subject. Delivery исполняет уже проверенный план. Н�
 | Где | Ответственность | Когда открывать |
 |---|---|---|
 | [`pkg/config`](../pkg/config/) (`workflow_meta.go`) | Схема v7: `Workflows`, `WorkflowGraph.Stages`, наследование цепочек, `entry_gate_groups`, pin'ы гейтов | Меняется каталог сценариев или правила сборки цепочек |
-| `pkg/gatesched/entry.go` | `GuardExecute`: входные гейты проверяют входы до исполнителя, verdict-only, `human_approval` запрещён | Нужно понять, почему этап не запустился |
+| `pkg/engine/gate/sched/entry.go` | `GuardExecute`: входные гейты проверяют входы до исполнителя, verdict-only, `human_approval` запрещён | Нужно понять, почему этап не запустился |
 | [`pkg/web`](../pkg/web/) (`workflows.go`) и `web/src/pages/Workflows.tsx`, `WorkflowGraph.tsx` | Карточки сценариев и графов, process-only patch `title`/`description` с `expected_version` | Меняется страница workflow или её API |
-| `pkg/control` (self-approval) | `Controller.ReturnStage` проверяет `forbid_self_approval` закреплённого шаблона, даже когда возврат идёт напрямую | Возврат этапа не должен обходить запрет самоподтверждения |
+| `pkg/engine/control` (self-approval) | `Controller.ReturnStage` проверяет `forbid_self_approval` закреплённого шаблона, даже когда возврат идёт напрямую | Возврат этапа не должен обходить запрет самоподтверждения |
 | [`pkg/safeio`](../pkg/safeio/) | no-follow filesystem primitives: symlink rejection при чтении и immutable write | Нужна граница файловой системы без доверия к симлинкам |
 
 Подробности — в [руководстве по workflows](guides/workflows.md) и
@@ -42,7 +42,7 @@ subject. Delivery исполняет уже проверенный план. Н�
 
 | Каталог | Ответственность | Когда открывать |
 |---|---|---|
-| [cmd/ai-team](../cmd/ai-team/) | CLI parsing, composition, exit codes | Меняется команда или её вывод |
+| [cmd/workaistrator](../cmd/workaistrator/) | CLI parsing, composition, exit codes | Меняется команда или её вывод |
 | [agents](../agents/) | Встроенные def.yaml и prompt.md | Меняется контракт или инструкция роли |
 | [web](../web/) | React dashboard, встроенный dist | Меняется операторский UI |
 | [docsgen](../docsgen/) | Markdown → статический сайт, навигация и поиск | Меняется GitHub Pages документация |
@@ -62,7 +62,7 @@ subject. Delivery исполняет уже проверенный план. Н�
 
 Хранит pending/resolved approvals, subjects, роли и решения. Pipeline связывает решение с конкретным переходом или планом.
 
-Исходники: [pkg/approval](../pkg/approval/).
+Исходники: [pkg/engine/approval](../pkg/engine/approval/).
 
 ### artifactstore — Content-addressed storage
 
@@ -92,7 +92,7 @@ subject. Delivery исполняет уже проверенный план. Н�
 
 Принимает typed definitions, запускает argv с timeout и bounds, фиксирует outcome и workspace digest. Required failure сильнее verdict LLM.
 
-Исходники: [pkg/checks](../pkg/checks/).
+Исходники: [pkg/engine/stage/checks](../pkg/engine/stage/checks/).
 
 ### ciimport — Импорт checks из CI
 
@@ -122,7 +122,7 @@ subject. Delivery исполняет уже проверенный план. Н�
 
 Связывает долговечный engine и process-local workers, preflight, start/resume/stop. Не вычисляет доменные verdict вместо pipeline. `Controller.ReturnStage` дополнительно проверяет `forbid_self_approval` по закреплённому шаблону run: возврат этапа не обходит запрет самоподтверждения, даже если решение пришло напрямую через контроллер, а не через сервис решения человека.
 
-Исходники: [pkg/control](../pkg/control/).
+Исходники: [pkg/engine/control](../pkg/engine/control/).
 
 ### delivery — Canonical plan и Git-эффекты
 
@@ -146,7 +146,7 @@ subject. Delivery исполняет уже проверенный план. Н�
 
 Публикует run/attempt manifests, append-only hash-chained events, проверяет целостность и последовательность. Источник исторических фактов, не mutable checkpoint.
 
-Исходники: [pkg/evidence](../pkg/evidence/).
+Исходники: [pkg/store/evidence](../pkg/store/evidence/).
 
 ### export — Portable bundle
 
@@ -194,7 +194,7 @@ subject. Delivery исполняет уже проверенный план. Н�
 
 Соединяет graph, runtime, scope, checks, verdict, approvals и delivery. Владеет attempts, loopback, candidate evidence, enforcement и post-terminal hook.
 
-Исходники: [pkg/pipeline](../pkg/pipeline/).
+Исходники: [pkg/engine/pipeline](../pkg/engine/pipeline/).
 
 ### preflight — Предварительная диагностика
 
@@ -246,21 +246,21 @@ subject. Delivery исполняет уже проверенный план. Н�
 
 ### stageexec — Исполнитель этапа
 
-Интерфейс `StageExecutor` создаёт результат этапа: `InternalAgent` оборачивает `runtime.Runtime`, `External` запускает доверенный argv из `executor_adapters` по JSON-контракту (лимиты времени и вывода, allowlist окружения, redaction лога); при `docker:` в адаптере тот же контракт исполняет `DockerLauncher` (pkg/dockerrun: входы только на чтение, приватный каталог результата, сеть none, образ по digest). Отделён от гейтов: исполнитель только создаёт выходы, а тип результата, mutation scope и verdict проверяет контроллер.
+Интерфейс `StageExecutor` создаёт результат этапа: `InternalAgent` оборачивает `runtime.Runtime`, `External` запускает доверенный argv из `executor_adapters` по JSON-контракту (лимиты времени и вывода, allowlist окружения, redaction лога); при `docker:` в адаптере тот же контракт исполняет `DockerLauncher` (`pkg/engine/stage/dockerrun`: входы только на чтение, приватный каталог результата, сеть none, образ по digest). Отделён от гейтов: исполнитель только создаёт выходы, а тип результата, mutation scope и verdict проверяет контроллер.
 
-Исходники: [pkg/stageexec](../pkg/stageexec/).
+Исходники: [pkg/engine/stage/exec](../pkg/engine/stage/exec/).
 
 ### llmgate — Контракт LLM-гейта
 
 Вызов агента-проверяющего с фиксированным входом и объявленной схемой вердикта (`verdict_marker` или `json`). Ответ вне схемы и отказ рантайма — техническая ошибка, а не `pass`/`fail`; `max_attempts` повторяют только такие сбои, каждая попытка остаётся в трассе. Не зависит от режима `grill`.
 
-Исходники: [pkg/llmgate](../pkg/llmgate/).
+Исходники: [pkg/engine/gate/llm](../pkg/engine/gate/llm/).
 
 ### humandecision — Решение человека
 
 Единый сервисный путь решения о переходе этапа для Web, REST и MCP: действие из разрешённых, точный хеш предмета, роль, запрет самоподтверждения, сохранение решения и аудит `human_gate_decided`; повтор доставки — `human_gate_decision_replayed`, а не второе решение.
 
-Исходники: [pkg/humandecision](../pkg/humandecision/).
+Исходники: [pkg/engine/gate/human](../pkg/engine/gate/human/).
 
 ### safeio — Файловые primitives
 
@@ -302,7 +302,7 @@ subject. Delivery исполняет уже проверенный план. Н�
 
 Извлекает канонический verdict или BLOCKED-протокол из артефакта. Отсутствующий/неоднозначный marker не подменяется догадкой.
 
-Исходники: [pkg/verdict](../pkg/verdict/).
+Исходники: [pkg/store/verdict](../pkg/store/verdict/).
 
 ### web — HTTP control plane
 
@@ -320,7 +320,7 @@ subject. Delivery исполняет уже проверенный план. Н�
 
 Определяет state/outcome, graph и чистые решения переходов. Не вызывает LLM или Git; pipeline исполняет принятое решение.
 
-Исходники: [pkg/workflow](../pkg/workflow/).
+Исходники: [pkg/engine/workflow](../pkg/engine/workflow/).
 
 ### cicd — CI/CD deploy-адаптеры
 
@@ -332,31 +332,31 @@ Controller-owned адаптеры доставки (TeamCity): запуск сб
 
 Один примитив `docker run` без shell с безопасными умолчаниями (сеть none, вход только на чтение, без Docker socket, образ по digest, удаление контейнера по имени). Его используют Docker-адаптер гейта (`gaterun`) и Docker-исполнитель этапа (`stageexec`); о гейтах и этапах пакет ничего не знает.
 
-Исходники: [pkg/dockerrun](../pkg/dockerrun/).
+Исходники: [pkg/engine/stage/dockerrun](../pkg/engine/stage/dockerrun/).
 
 ### gatelib — Библиотека гейтов
 
 Версионированный реестр определений гейтов (`required_sections`, `verdict_marker`, `pr_*`, `project_checks`, `required_phrases@1/2`, `agent_review@1/2`, `human_approval@1/2`, `external_program`, `docker_program`). Меняется только через PR; определение неизменяемо, новая семантика — новая версия. Каталог читают UI, REST (`GET /api/gates/catalog`) и MCP.
 
-Исходники: [pkg/gatelib](../pkg/gatelib/).
+Исходники: [pkg/engine/gate/lib](../pkg/engine/gate/lib/).
 
 ### gatephrases — Гейт required_phrases
 
 Детерминированная проверка наличия слов и фрагментов в Markdown-результате: регистр, область (весь результат или раздел) и правило совпадения (все, любое, не менее N; подстрока или слово) заданы явно, RE2 только по флагу.
 
-Исходники: [pkg/gatephrases](../pkg/gatephrases/).
+Исходники: [pkg/engine/gate/phrases](../pkg/engine/gate/phrases/).
 
 ### gaterun — Раннер гейта внешней программы
 
 JSON-протокол гейта (вход, результат, строгая валидация), запуск доверенной команды без shell под лимитами времени и вывода, evidence; Docker-адаптер `docker_program` использует тот же протокол. Валидный `fail` — успешный ответ процесса; ненулевой код, неверный JSON и потеря процесса — техническая ошибка.
 
-Исходники: [pkg/gaterun](../pkg/gaterun/).
+Исходники: [pkg/engine/gate/run](../pkg/engine/gate/run/).
 
 ### gatesched — Планировщик групп гейтов
 
 Исполняет цепочку гейтов выхода: группы последовательно, гейты внутри группы параллельно с пределом конкуренции. Каждая попытка и переход пишутся в журнал до и после запуска, поэтому после рестарта завершённый вызов не повторяется, а прерванный честно учитывается. На `fail` следующие группы не стартуют. `gatesched/entry.go` добавляет входной контур `GuardExecute`: волна фазы `entry` проверяет разрешённые входы и вызывает исполнителя только при агрегированном статусе `passed`; технический сбой или ожидание блокируют запуск, а `human_approval` как входной гейт отклоняется валидацией.
 
-Исходники: [pkg/gatesched](../pkg/gatesched/).
+Исходники: [pkg/engine/gate/sched](../pkg/engine/gate/sched/).
 
 ### humanartifact — Правки человека
 
@@ -380,7 +380,7 @@ Controller-side проверки, которые привязывают PR к н
 
 Общая валидация run ID для хранилищ, которыми владеет контроллер.
 
-Исходники: [pkg/runid](../pkg/runid/).
+Исходники: [pkg/store/runid](../pkg/store/runid/).
 
 ### stagecheck — Декларативные проверки этапа
 
@@ -392,13 +392,13 @@ Controller-side проверки, которые привязывают PR к н
 
 Единственная серверная проекция «где стоит каждый этап» (S11): чистая функция от durable-журнала событий, approvals, checkpoint жизненного цикла и закреплённого шаблона. Ничего не хранится и не редактируется вручную; API, MCP и UI показывают одну и ту же проекцию.
 
-Исходники: [pkg/stagestatus](../pkg/stagestatus/).
+Исходники: [pkg/engine/stage/status](../pkg/engine/stage/status/).
 
 ### tracker — Трекер задач
 
 Абстрактный `Tracker` (Jira и подобные), адаптеры `jira` и `fake`, чистое планирование исходящих операций из событий этапов (`on_enter`/`on_pass`) и входящих изменений. Связь «задача — карточка» 1:1, журнал доставок и курсор принадлежат web-слою; изменение статуса в трекере двигает граф только через штатный контроллер.
 
-Исходники: [pkg/tracker](../pkg/tracker/).
+Исходники: [pkg/runtime/tracker](../pkg/runtime/tracker/).
 
 ## Где искать конкретный инвариант
 

@@ -4,7 +4,7 @@
 Конфиг по умолчанию MUST включать `effort`, stage timeout и стек-специфичные deterministic checks.
 
 #### Scenario: Структура конфига
-- **КОГДА** `ai-team init` запускается
+- **КОГДА** `workaistrator init` запускается
 - **ТОГДА** config.yaml MUST содержать:
   - `pipeline:` с именами агентов
   - `cli: opencode`

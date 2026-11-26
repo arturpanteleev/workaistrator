@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/checks"
-	"github.com/arturpanteleev/ai-team/pkg/dsse"
+	"github.com/arturpanteleev/workaistrator/pkg/dsse"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/stage/checks"
 )
 
 // PDD-25: все файлы bundle (index.json наравне с gate.json, checks/*.json и

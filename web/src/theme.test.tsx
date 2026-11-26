@@ -65,7 +65,7 @@ describe('ThemeProvider', () => {
   });
 
   it('applies the saved theme and keeps meta theme-color equal to its canvas', () => {
-    window.localStorage.setItem('ai-team:theme', 'dark');
+    window.localStorage.setItem('WorkAiStrator:theme', 'dark');
     render(<ThemeProvider><Probe /></ThemeProvider>);
 
     expect(screen.getByTestId('current')).toHaveTextContent('dark');
@@ -76,7 +76,7 @@ describe('ThemeProvider', () => {
   });
 
   it('switches themes, updates the meta colour and persists the choice', () => {
-    window.localStorage.setItem('ai-team:theme', 'light');
+    window.localStorage.setItem('WorkAiStrator:theme', 'light');
     render(<ThemeProvider><Probe /></ThemeProvider>);
     expect(themeColor()).toBe('#fbf8f3');
 
@@ -85,12 +85,12 @@ describe('ThemeProvider', () => {
     expect(screen.getByTestId('current')).toHaveTextContent('dark');
     expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
     expect(themeColor()).toBe('#120f1c');
-    expect(window.localStorage.getItem('ai-team:theme')).toBe('dark');
+    expect(window.localStorage.getItem('WorkAiStrator:theme')).toBe('dark');
   });
 
   it('adds the smooth-transition class only while the theme changes', () => {
     vi.useFakeTimers();
-    window.localStorage.setItem('ai-team:theme', 'light');
+    window.localStorage.setItem('WorkAiStrator:theme', 'light');
     render(<ThemeProvider><Probe /></ThemeProvider>);
     expect(hasTransitionClass()).toBe(false);
 
@@ -104,7 +104,7 @@ describe('ThemeProvider', () => {
   it('skips the transition when reduced motion is preferred', () => {
     vi.useFakeTimers();
     setMedia({ '(prefers-reduced-motion: reduce)': true });
-    window.localStorage.setItem('ai-team:theme', 'light');
+    window.localStorage.setItem('WorkAiStrator:theme', 'light');
     render(<ThemeProvider><Probe /></ThemeProvider>);
 
     fireEvent.click(screen.getByRole('button', { name: 'toggle' }));

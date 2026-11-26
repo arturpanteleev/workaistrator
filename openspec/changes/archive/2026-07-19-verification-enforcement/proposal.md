@@ -42,4 +42,4 @@
 
 ## Impact
 
-- Новый пакет `pkg/verdict`; `pkg/pipeline` (enforcement, blocked, loopback, таймауты, декомпозиция Run); `pkg/runtime` (служебная секция промпта, model/effort, логи); `pkg/config` (валидация, новые поля, сериализация Default); `cmd/ai-team` (exit-коды, сигналы, usage, валидация feature); `pkg/eval` (захват+парсинг); `pkg/web` (StoreRecorder вместо нерабочего WebNotifier, безопасность artifact-endpoint); `agents/*/prompt.md` и `agents/verifier/def.yaml`; `e2etest` (честные сценарии rejected/fail/blocked); `.github/workflows/ci.yaml`; `web/src` (контракты API/WS, статусы).
+- Новый пакет `pkg/verdict`; `pkg/pipeline` (enforcement, blocked, loopback, таймауты, декомпозиция Run); `pkg/runtime` (служебная секция промпта, model/effort, логи); `pkg/config` (валидация, новые поля, сериализация Default); `cmd/workaistrator` (exit-коды, сигналы, usage, валидация feature); `pkg/eval` (захват+парсинг); `pkg/web` (StoreRecorder вместо нерабочего WebNotifier, безопасность artifact-endpoint); `agents/*/prompt.md` и `agents/verifier/def.yaml`; `e2etest` (честные сценарии rejected/fail/blocked); `.github/workflows/ci.yaml`; `web/src` (контракты API/WS, статусы).

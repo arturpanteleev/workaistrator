@@ -5,6 +5,6 @@
 workspace lock и использовать одну immutable run_id на весь долговечный run.
 
 #### Scenario: Resume
-- **КОГДА** пользователь запускает `ai-team run --resume <run_id>`
+- **КОГДА** пользователь запускает `workaistrator run --resume <run_id>`
 - **ТОГДА** CLI MUST восстановить feature, task и next stage
 - **И** MUST продолжить ту же run identity после fail-closed проверок

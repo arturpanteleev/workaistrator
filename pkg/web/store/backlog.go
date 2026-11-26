@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/autopickup"
+	"github.com/arturpanteleev/workaistrator/pkg/autopickup"
 )
 
 // ErrBacklogTransition — недопустимая смена статуса элемента бэклога.

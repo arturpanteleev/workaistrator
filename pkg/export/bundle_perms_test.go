@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/arturpanteleev/ai-team/pkg/dsse"
+	"github.com/arturpanteleev/workaistrator/pkg/dsse"
 )
 
 // PDD-25: все файлы run bundle (index.json наравне со скопированными records

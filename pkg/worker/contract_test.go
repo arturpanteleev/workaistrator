@@ -12,9 +12,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/approval"
-	"github.com/arturpanteleev/ai-team/pkg/pipeline"
-	"github.com/arturpanteleev/ai-team/pkg/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/approval"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/pipeline"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/workflow"
 )
 
 // contract_test.go — issue #119: worker исполняет задания в многопользовательском
@@ -289,7 +289,7 @@ func TestNewProcessEngineRejectsUnusableConfig(t *testing.T) {
 	if _, err := NewProcessEngine([]string{""}, target, db); err == nil {
 		t.Fatal("пустая команда обязана отклоняться")
 	}
-	if _, err := NewProcessEngine([]string{"ai-team"}, filepath.Join(target, "absent"), db); err == nil {
+	if _, err := NewProcessEngine([]string{"WorkAiStrator"}, filepath.Join(target, "absent"), db); err == nil {
 		t.Fatal("несуществующий target обязан отклоняться")
 	}
 }
@@ -333,7 +333,7 @@ func TestProcessEngineRejectsControllerLifecycleStoreBeforeSpawn(t *testing.T) {
 }
 
 // newTestEngine — ProcessEngine, запускающий helper-тест этого пакета в роли
-// `ai-team worker`.
+// `workaistrator worker`.
 func newTestEngine(t *testing.T, target string) *ProcessEngine {
 	t.Helper()
 	allowWorkerTestEnvironment(t, "AI_TEAM_WORKER_TEST_MODE", "AI_TEAM_WORKER_TEST_MARKER", "AI_TEAM_WORKER_REPLAY_ID")
@@ -957,7 +957,7 @@ func readMarkerJob(t *testing.T, marker string) Job {
 }
 
 // TestWorkerProtocolHelper — точка входа дочернего процесса в роли
-// `ai-team worker`. Поведение выбирается AI_TEAM_WORKER_TEST_MODE.
+// `workaistrator worker`. Поведение выбирается AI_TEAM_WORKER_TEST_MODE.
 func TestWorkerProtocolHelper(t *testing.T) {
 	if !strings.Contains(strings.Join(os.Args, " "), " worker ") {
 		return

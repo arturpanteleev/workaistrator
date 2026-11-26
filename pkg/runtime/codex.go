@@ -13,7 +13,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/arturpanteleev/ai-team/pkg/safeio"
+	"github.com/arturpanteleev/workaistrator/pkg/safeio"
 )
 
 // CodexAdapter — реализация RuntimeAdapter для OpenAI Codex CLI.

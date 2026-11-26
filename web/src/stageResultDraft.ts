@@ -9,7 +9,7 @@ export interface StageResultDraft {
   description: string;
 }
 
-const PREFIX = 'ai-team:stage-result-draft:v1';
+const PREFIX = 'WorkAiStrator:stage-result-draft:v1';
 
 export const emptyStageResultDraft: StageResultDraft = { content: '', url: '', note: '', description: '' };
 

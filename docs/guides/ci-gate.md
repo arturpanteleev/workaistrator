@@ -1,6 +1,6 @@
 # Проверки в CI без модели
 
-Команда `ai-team gate` проверяет изменение без языковой модели, API-ключей и
+Команда `workaistrator gate` проверяет изменение без языковой модели, API-ключей и
 агентов. Она сравнивает две ревизии, применяет правило «код меняется вместе с
 тестами» и запускает [проверки](../start/concepts.md#проверки) (checks) проекта. Сначала вы прогоните её
 локально на готовом демо, затем подключите к pull request в GitHub Actions.
@@ -15,7 +15,7 @@
 
 - Git и Bash.
 - Go версии 1.26.11 или новее (минимальная версия записана в `go.mod`).
-- Клон репозитория ai-team.
+- Клон репозитория WorkAiStrator.
 
 Модель, OpenCode, Codex, Claude Code и авторизация GitHub для этого маршрута не
 нужны. Gate — детерминированный слой: при одинаковом входе он даёт одинаковый
@@ -23,14 +23,14 @@
 
 ## 1. Запустить демо локально
 
-Из корня клона ai-team выполните:
+Из корня клона WorkAiStrator выполните:
 
 ```bash
 git rev-parse --short HEAD
 bash docs/demo/run-demo.sh
 ```
 
-Скрипт собирает `ai-team` из текущей ревизии и создаёт во временном каталоге
+Скрипт собирает `workaistrator` из текущей ревизии и создаёт во временном каталоге
 маленький Python-репозиторий `demo-app`. В нём лежит
 [`gate.yaml`](../demo/gate.yaml) с двумя правилами: изменение кода требует
 изменения тестов, а JUnit-отчёт тестов должен быть зелёным. Затем скрипт
@@ -41,7 +41,7 @@ bash docs/demo/run-demo.sh
 ```text
 ✓ Демо завершено: pass=0 (0), policy-fail=1 (1), junit-fail=1 (1)
   Все bundle прошли самодостаточную verify — см. docs/demo/README.md и ci-gate-demo.yaml
-  ai-team закреплён за ревизией 53a9c56
+  WorkAiStrator закреплён за ревизией 53a9c56
 ```
 
 В скобках указан ожидаемый код, перед скобками — фактический. Если они
@@ -67,7 +67,7 @@ assertion`.
 
 Для каждого сценария gate пишет [пакет доказательств](../start/concepts.md#доказательства) (bundle): вердикт, список
 изменённых файлов, результаты проверок и SHA-256 каждого файла. Сразу после
-этого скрипт вызывает `ai-team verify <bundle>`. Эта команда проверяет пакет
+этого скрипт вызывает `workaistrator verify <bundle>`. Эта команда проверяет пакет
 сама по себе, без исходного репозитория и без каталога `.ai-team`.
 
 Обратите внимание: пакеты обоих FAIL-сценариев тоже проходят `verify`.
@@ -82,7 +82,7 @@ assertion`.
 | `1` | FAIL | Нарушено правило про тесты или упала обязательная проверка; пакет записан |
 | `2` | BLOCKED | Gate не смог выполниться: ошибка конфигурации, нет локальной ревизии, грязное рабочее дерево |
 
-Полный список причин — в [Статусы и коды выхода](../reference/statuses.md#ai-team-gate).
+Полный список причин — в [Статусы и коды выхода](../reference/statuses.md#workaistrator-gate).
 
 > [!IMPORTANT]
 > PASS означает «прошло то, что настроено». Если в `gate.yaml` нет проверок,
@@ -92,7 +92,7 @@ assertion`.
 > [!TIP]
 > Временный каталог демо удаляется при выходе. Чтобы потрогать пакет руками,
 > запустите gate в своём репозитории с `--out` (шаг 3) и попробуйте изменить
-> любой файл пакета: `ai-team verify` ответит `не совпадает со своим sha256
+> любой файл пакета: `workaistrator verify` ответит `не совпадает со своим sha256
 > (evidence подменён)` и завершится с кодом 1. Файлы пакета создаются только
 > для чтения, поэтому для такого эксперимента сначала скопируйте пакет и
 > выполните `chmod -R u+w` на копии.
@@ -117,15 +117,15 @@ checks: []
 Проверить незакоммиченную работу относительно последнего коммита:
 
 ```bash
-ai-team gate --out /tmp/my-gate-bundle
+workaistrator gate --out /tmp/my-gate-bundle
 ```
 
 По умолчанию `--base HEAD`, а `--candidate WORKTREE` — текущее рабочее дерево.
 Проверить готовую ветку относительно `main`:
 
 ```bash
-ai-team gate --base main --candidate HEAD --out /tmp/my-gate-bundle
-ai-team verify /tmp/my-gate-bundle
+workaistrator gate --base main --candidate HEAD --out /tmp/my-gate-bundle
+workaistrator verify /tmp/my-gate-bundle
 ```
 
 > [!PITFALL]
@@ -149,9 +149,9 @@ ai-team verify /tmp/my-gate-bundle
 
 1. Забирает историю целиком (`fetch-depth: 0`) и находит общего предка
    PR-ветки и целевой ветки (`git merge-base`).
-2. Собирает `ai-team` из зафиксированной ревизии `AI_TEAM_SHA`.
-3. Запускает `ai-team gate --target . --base <merge-base> --candidate HEAD --out bundle`.
-4. Всегда, даже после FAIL, выполняет `ai-team verify bundle` и загружает
+2. Собирает `workaistrator` из зафиксированной ревизии `AI_TEAM_SHA`.
+3. Запускает `workaistrator gate --target . --base <merge-base> --candidate HEAD --out bundle`.
+4. Всегда, даже после FAIL, выполняет `workaistrator verify bundle` и загружает
    пакет артефактом `ai-team-gate-bundle`.
 
 Код 1 или 2 от gate роняет job. Пакет при этом уже загружен, и его можно
@@ -161,8 +161,8 @@ ai-team verify /tmp/my-gate-bundle
 
 | Что | Где | Как |
 |---|---|---|
-| Версия ai-team | `env.AI_TEAM_SHA` | Полный SHA коммита ai-team. В файле стоит заглушка из нулей — с ней сборка упадёт. Не используйте `latest` и имена веток |
-| Версия Go | `go-version` в шаге `actions/setup-go` | Версия, с которой собирается выбранная ревизия ai-team (не ниже `go` из её `go.mod`) |
+| Версия WorkAiStrator | `env.AI_TEAM_SHA` | Полный SHA коммита WorkAiStrator. В файле стоит заглушка из нулей — с ней сборка упадёт. Не используйте `latest` и имена веток |
+| Версия Go | `go-version` в шаге `actions/setup-go` | Версия, с которой собирается выбранная ревизия WorkAiStrator (не ниже `go` из её `go.mod`) |
 | Правила проекта | `gate.yaml` в корне | Ваши `diff_policy` и `checks` |
 | Пины actions | `uses: …@<sha>` | Обновляйте SHA вместе с комментарием версии, когда обновляете actions |
 
@@ -190,7 +190,7 @@ merging**. В списке проверок выберите `gate` — имя j
 ## Gate и полный прогон
 
 Gate — лёгкий слой: только правило про тесты и проверки. Полный прогон
-(`ai-team run`) добавляет агентов, подтверждение delivery-плана и delivery
+(`workaistrator run`) добавляет агентов, подтверждение delivery-плана и delivery
 через commit, push и PR. Оба используют одни и те же типизированные проверки,
 поэтому `checks` из `gate.yaml` можно перенести в `.ai-team/config.yaml`.
 

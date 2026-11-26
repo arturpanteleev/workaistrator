@@ -234,7 +234,7 @@ func registerMCPActionTools(registry *mcpRegistry) {
 
 	// --- Reads that S12 did not need --------------------------------------
 	registry.add(mcpOperation{Name: "get_version", Title: "Server version", Path: "/api/version",
-		Description: "Build revision of the running ai-team server."})
+		Description: "Build revision of the running WorkAiStrator server."})
 	registry.add(mcpOperation{Name: "export_flow_metrics_csv", Title: "Flow metrics (CSV)",
 		Description: "The flow metrics of get_flow_metrics as CSV text.", Path: "/api/metrics/flow.csv",
 		Params: []mcpParam{

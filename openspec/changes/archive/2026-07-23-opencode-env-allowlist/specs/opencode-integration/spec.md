@@ -8,7 +8,7 @@ variables, plus any variable name explicitly opted in via
 environment.
 
 #### Scenario: Unlisted variable
-- **WHEN** the process invoking `ai-team run` has an environment variable set that is not in the baseline and not named in `AI_TEAM_OPENCODE_ENV_ALLOW`
+- **WHEN** the process invoking `workaistrator run` has an environment variable set that is not in the baseline and not named in `AI_TEAM_OPENCODE_ENV_ALLOW`
 - **THEN** the opencode subprocess MUST NOT receive that variable
 
 #### Scenario: Explicitly allowed variable

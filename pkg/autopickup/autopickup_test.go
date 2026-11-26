@@ -3,8 +3,8 @@ package autopickup
 import (
 	"testing"
 
-	"github.com/arturpanteleev/ai-team/pkg/config"
-	"github.com/arturpanteleev/ai-team/pkg/tokenbudget"
+	"github.com/arturpanteleev/workaistrator/pkg/config"
+	"github.com/arturpanteleev/workaistrator/pkg/tokenbudget"
 )
 
 func TestDecideLimitsAndBudgets(t *testing.T) {

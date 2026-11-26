@@ -1,0 +1,10 @@
+vite v8.1.5 building client environment for production...
+[2K
+transforming...✓ 192 modules transformed.
+rendering chunks...
+computing gzip size...
+../../../../../tmp/workaistrator-audit-2026-10-06/web-dist/index.html                   0.45 kB │ gzip:   0.29 kB
+../../../../../tmp/workaistrator-audit-2026-10-06/web-dist/assets/index-BJB9ArJu.css    9.82 kB │ gzip:   2.52 kB
+../../../../../tmp/workaistrator-audit-2026-10-06/web-dist/assets/index-CPgrW8dt.js   328.49 kB │ gzip: 102.05 kB
+
+✓ built in 181ms

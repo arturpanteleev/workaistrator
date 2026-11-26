@@ -6,7 +6,7 @@ a new destination with restrictive permissions. It MUST refuse symlink input
 and existing output paths, and state that only SQLite data is restored.
 
 #### Scenario: Restore a valid database snapshot
-- **WHEN** `ai-team db restore --from <snapshot> --out <new path>` receives a
+- **WHEN** `workaistrator db restore --from <snapshot> --out <new path>` receives a
   valid SQLite snapshot
 - **THEN** it MUST produce an independently openable SQLite database with the
   same committed controller rows

@@ -118,7 +118,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist
-          for binary in bin/ai-team-*; do
+          for binary in bin/workaistrator-*; do
             [ -e "$binary" ] || continue
             base=$(basename "$binary")
             tar -czf "dist/${base}.tar.gz" -C "$(dirname "$binary")" "$base"
@@ -278,7 +278,7 @@ jobs:
           # listed), macOS \`sha256sum -c -\` returns 0 on the empty input and the
           # pipeline would look green without verifying anything.
           set -o pipefail
-          ARCHIVE=ai-team-linux-amd64.tar.gz   # your platform
+          ARCHIVE=workaistrator-linux-amd64.tar.gz   # your platform
           grep " \$ARCHIVE\$" sha256sums.txt | sha256sum -c -
           \`\`\`
 

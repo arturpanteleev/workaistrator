@@ -4,17 +4,17 @@
 Команда `run` MUST поддерживать флаг `--retry-from` для перезапуска пайплайна с указанного агента.
 
 #### Scenario: Retry-from с флагом
-- **КОГДА** пользователь запускает `ai-team run --feature "add-auth" --retry-from coder`
+- **КОГДА** пользователь запускает `workaistrator run --feature "add-auth" --retry-from coder`
 - **ТОГДА** пайплайн MUST запуститься с агента `coder`, пропустив analyst и architect
 - **И** артефакты предыдущих этапов MUST NOT перезаписываться
 
 ## MODIFIED Requirements
 
-### Requirement: ai-team run
+### Requirement: workaistrator run
 Система MUST выполнять пайплайн агентов для фичи.
 
 #### Scenario: Запуск с флагом feature
-- **КОГДА** пользователь запускает `ai-team run --feature "add-auth" --task "Реализовать JWT авторизацию"`
+- **КОГДА** пользователь запускает `workaistrator run --feature "add-auth" --task "Реализовать JWT авторизацию"`
 - **ТОГДА** система MUST создать `.ai-team/artifacts/tasks/add-auth/task.md` с описанием задачи
 - **И** выполнить пайплайн: Analyst → Architect → Coder → Reviewer → Tester → Deployer
 - **И** все артефакты (proposal, spec, design, review, test-report) сохраняются в `.ai-team/artifacts/add-auth/`

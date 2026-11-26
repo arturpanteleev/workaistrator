@@ -18,7 +18,7 @@ part of the immutable attempt evidence.
 
 ## Scope
 
-- Add `ai-team stage submit` for markdown files/text, links, and approvals.
+- Add `workaistrator stage submit` for markdown files/text, links, and approvals.
 - Add `POST /api/runs/{runID}/stages/{stageID}/submit` and stage result history
   through the existing artifact revision API.
 - Store exact content, description, stage, result kind, link kind, approval ID,

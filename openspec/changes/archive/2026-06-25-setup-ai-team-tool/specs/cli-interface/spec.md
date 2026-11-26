@@ -1,35 +1,35 @@
 ## ДОБАВЛЕННЫЕ Требования
 
 ### Requirement: Точка входа CLI
-Система MUST предоставлять единый CLI-бинарник `ai-team` с подкомандами.
+Система MUST предоставлять единый CLI-бинарник `workaistrator` с подкомандами.
 
 #### Scenario: Вывод справки
-- **КОГДА** пользователь запускает `ai-team --help` или `ai-team -h`
+- **КОГДА** пользователь запускает `workaistrator --help` или `workaistrator -h`
 - **ТОГДА** система MUST вывести информацию об использовании со списком всех доступных команд
 
 #### Scenario: Неизвестная команда
-- **КОГДА** пользователь запускает `ai-team <неизвестная-команда>`
+- **КОГДА** пользователь запускает `WorkAiStrator <неизвестная-команда>`
 - **ТОГДА** система MUST вывести сообщение об ошибке и завершиться с ненулевым кодом
 
-### Requirement: ai-team init
+### Requirement: workaistrator init
 Система MUST инициализировать `.ai-team/` в текущей директории.
 
 #### Scenario: Init создаёт структуру директорий
-- **КОГДА** пользователь запускает `ai-team init`
+- **КОГДА** пользователь запускает `workaistrator init`
 - **ТОГДА** система MUST создать `.ai-team/config.yaml` с конфигом по умолчанию
 - **И** создать `.ai-team/artifacts/product/`, `.ai-team/artifacts/tech/`, `.ai-team/artifacts/reviews/`
 - **И** создать `.ai-team/artifacts/tasks/`
 
 #### Scenario: Init проверяет OpenCode
-- **КОГДА** пользователь запускает `ai-team init`
+- **КОГДА** пользователь запускает `workaistrator init`
 - **ТОГДА** система MUST проверить, доступен ли `opencode` в PATH
 - **И** вывести предупреждение, если не найден
 
-### Requirement: ai-team run
+### Requirement: workaistrator run
 Система MUST выполнять пайплайн агентов для фичи.
 
 #### Scenario: Запуск с флагом feature
-- **КОГДА** пользователь запускает `ai-team run --feature "add-auth" --task "Реализовать JWT авторизацию"`
+- **КОГДА** пользователь запускает `workaistrator run --feature "add-auth" --task "Реализовать JWT авторизацию"`
 - **ТОГДА** система MUST создать `.ai-team/artifacts/tasks/add-auth/task.md` с описанием задачи
 - **И** выполнить пайплайн: Analyst → Architect → Coder → Reviewer → Tester → Deployer
 
@@ -38,16 +38,16 @@
 - **ТОГДА** система MUST остановить выполнение
 - **И** вывести сообщение об ошибке с именем упавшего агента и причиной
 
-### Requirement: ai-team list
+### Requirement: workaistrator list
 Система MUST выводить список всех доступных встроенных агентов.
 
 #### Scenario: Список агентов
-- **КОГДА** пользователь запускает `ai-team list`
+- **КОГДА** пользователь запускает `workaistrator list`
 - **ТОГДА** система MUST вывести таблицу с именем агента, описанием и типом runtime
 
-### Requirement: ai-team version
+### Requirement: workaistrator version
 Система MUST выводить текущую версию.
 
 #### Scenario: Вывод версии
-- **КОГДА** пользователь запускает `ai-team version`
+- **КОГДА** пользователь запускает `workaistrator version`
 - **ТОГДА** система MUST вывести semver-строку версии

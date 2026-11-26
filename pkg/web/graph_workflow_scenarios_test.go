@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/web/store"
-	"github.com/arturpanteleev/ai-team/pkg/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/web/store"
 )
 
 // graphAPITwoWorkflowTemplate declares two workflows whose exit gate chains

@@ -13,7 +13,7 @@ per-day token budget that stop work instead of silently continuing.
 - A draft idea backlog stored separately from tasks (`backlog_items` in the
   web database). New items are always `draft` and never start automatically.
 - An explicit, human-set `ready` status is the only pickup marker. The picker
-  in `ai-team web` takes one ready item per poll, in the order items were
+  in `workaistrator web` takes one ready item per poll, in the order items were
   marked ready, and starts it in `auto` mode through the same admission path
   as `POST /api/runs`.
 - `auto_pickup.max_parallel_tasks` (default 1) counts non-terminal lifecycle

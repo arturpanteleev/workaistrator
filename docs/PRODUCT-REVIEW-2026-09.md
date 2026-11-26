@@ -15,9 +15,9 @@ web-дашборда на этой машине (Go 1.27.1, Node 26.8.2, darwin/
 | PDD-01 | P0 | prod-readiness | `make verify` нестабилен: флейк preflight из-за hardcoded 5s timeout | S |
 | PDD-02 | P1 | prod-readiness | Релизные бинарники не подписаны при том, что продукт продаёт authenticity | M |
 | PDD-03 | P1 | doc-conformance | Release-гейт слабее CI, комментарий утверждает паритет | S |
-| PDD-04 | P1 | tests | `cmd/ai-team` 16.9% покрытия и вне safety-floors | M |
+| PDD-04 | P1 | tests | `cmd/workaistrator` 16.9% покрытия и вне safety-floors | M |
 | PDD-05 | P1 | architecture | `pkg/workflow` (чистый домен) зависит от `checks` и `delivery` | M |
-| PDD-06 | P1 | ux | `ai-team list` молча игнорирует все аргументы | S |
+| PDD-06 | P1 | ux | `workaistrator list` молча игнорирует все аргументы | S |
 | PDD-07 | P1 | api | Неизвестные `/api/*` отдают 200 text/html вместо JSON 404 | S |
 | PDD-08 | P1 | quality | Нет статического анализа кроме `go vet`/`gofmt` | S |
 | PDD-09 | P2 | architecture | `pkg/pipeline` — hub-пакет: 22/42 импорта, функции 496 и 340 строк | L |
@@ -63,7 +63,7 @@ failed, и контроллер блокирует run целиком. То ес
 холодный кэш выглядят как «рантайм недоступен».
 
 **ГДЕ.** `pkg/preflight/preflight.go:21` (`commandTimeout = 5 * time.Second`),
-используется в `preflight.go:163`; тест — `cmd/ai-team/audit_machine_test.go:245`.
+используется в `preflight.go:163`; тест — `cmd/workaistrator/audit_machine_test.go:245`.
 
 **КАК ПРОВЕРИТЬ.** Timeout вынесен в конфиг с дефолтом и инъекцией в тестах;
 `go test -count=1 -coverprofile=cov.out ./...` зелёный 5 раз подряд под
@@ -116,9 +116,9 @@ workflow через `workflow_call`); комментарий и текст relea
 
 <a id="pdd-04"></a>
 
-### PDD-04 — `cmd/ai-team` покрыт на 16.9% и не входит в safety-floors
+### PDD-04 — `cmd/workaistrator` покрыт на 16.9% и не входит в safety-floors
 
-**ЧТО.** Общее покрытие 67.4% при floor 60%. Но `cmd/ai-team` — 16.9%, при
+**ЧТО.** Общее покрытие 67.4% при floor 60%. Но `cmd/workaistrator` — 16.9%, при
 этом `main.go` более 1400 строк и содержит разбор флагов, коды выхода и весь
 пользовательский контракт CLI. В `scripts/coverage-floors.env` перечислены
 `approval, checks, delivery, evidence, pipeline, safeio` — `cmd/` отсутствует.
@@ -128,7 +128,7 @@ workflow через `workflow_call`); комментарий и текст relea
 
 **ГДЕ.** `scripts/coverage-floors.env`, `scripts/coverage-gate.sh:31`.
 
-**КАК ПРОВЕРИТЬ.** Для `cmd/ai-team` заведён floor (стартово на текущем
+**КАК ПРОВЕРИТЬ.** Для `cmd/workaistrator` заведён floor (стартово на текущем
 значении, ratchet вверх) и добавлены тесты на разбор аргументов и exit codes
 каждой команды.
 
@@ -154,18 +154,18 @@ workflow через `workflow_call`); комментарий и текст relea
 
 <a id="pdd-06"></a>
 
-### PDD-06 — `ai-team list` молча игнорирует аргументы
+### PDD-06 — `workaistrator list` молча игнорирует аргументы
 
 **ЧТО.** `cmdList` не создаёт `flag.FlagSet` и жёстко берёт `absoluteTarget(".")`.
-Проверено: `ai-team list --target <dir>` печатает реестр текущего каталога,
-`ai-team list --nonexistent-flag xyz` печатает вывод как ни в чём не бывало.
+Проверено: `workaistrator list --target <dir>` печатает реестр текущего каталога,
+`workaistrator list --nonexistent-flag xyz` печатает вывод как ни в чём не бывало.
 Все остальные команды используют `flag.ExitOnError`.
 
 **ПОЧЕМУ важно.** Команда уверенно отвечает неправильно вместо того, чтобы
 упасть. `--target` есть у всех соседних команд, поэтому пользователь ожидает
 его и здесь.
 
-**ГДЕ.** `cmd/ai-team/main.go:1259-1285`.
+**ГДЕ.** `cmd/workaistrator/main.go:1259-1285`.
 
 **КАК ПРОВЕРИТЬ.** `list` принимает `--target` и отвергает неизвестные флаги
 ненулевым кодом; тест на оба случая.
@@ -272,11 +272,11 @@ workflow через `workflow_call`); комментарий и текст relea
 
 ### PDD-12 — `gc` и `usage` отсутствуют в README
 
-**ЧТО.** `printUsage` описывает `ai-team usage <run_id>` и `ai-team gc`, но в
+**ЧТО.** `printUsage` описывает `workaistrator usage <run_id>` и `workaistrator gc`, но в
 разделе «CLI-справочник» README их нет. `docs/docs_test.go` проверяет только
 наличие заголовков и терминов глоссария, поэтому расхождение не ловится.
 
-**ГДЕ.** `cmd/ai-team/main.go:124,142` (usage/gc в help) против README
+**ГДЕ.** `cmd/workaistrator/main.go:124,142` (usage/gc в help) против README
 «CLI-справочник»; `docs/docs_test.go`.
 
 **КАК ПРОВЕРИТЬ.** Тест сверяет множество `case`-веток диспетчера команд в
@@ -290,7 +290,7 @@ workflow через `workflow_call`); комментарий и текст relea
 выводится два раза подряд. Наблюдалось на двух разных сценариях (грязный
 workspace; падение агента).
 
-**ГДЕ.** Путь вывода ошибки в `cmd/ai-team` + `pkg/pipeline` (двойной вывод
+**ГДЕ.** Путь вывода ошибки в `cmd/workaistrator` + `pkg/pipeline` (двойной вывод
 ошибки run'а).
 
 **КАК ПРОВЕРИТЬ.** Тест на однократность строки в stderr.
@@ -342,7 +342,7 @@ frontend audit/lint/tests/build». Фактически target дополнит�
 Эмпирическая база: на этой машине без единой строки Go запущен полностью
 не-софтверный workflow (`researcher → writer → factchecker`, свои роли, свой
 граф, свои артефакты, loopback-ребро). Он прошёл до `$complete`, произвёл
-evidence, прошёл `ai-team verify`, `ai-team export` и автономную проверку
+evidence, прошёл `workaistrator verify`, `workaistrator export` и автономную проверку
 bundle, и отобразился в дашборде с полным снимком конфигурации. Движок уже
 универсален для формы «LLM-стадия → файловый артефакт → вердикт →
 гейтированный переход». Ниже — то, что отделяет его от конструктора общего
@@ -415,7 +415,7 @@ outcome, который выводится из verdict-маркера и ста
 предварительный шаг: YAML уже является этим DSL, ему не хватает контракта и
 инструментов.
 
-**ЦЕНА.** M. Порядок: JSON Schema → `ai-team graph validate|render` →
+**ЦЕНА.** M. Порядок: JSON Schema → `WorkAiStrator graph validate|render` →
 визуальный редактор → композиция.
 
 <a id="pdd-21"></a>
@@ -428,7 +428,7 @@ outcome, который выводится из verdict-маркера и ста
 бейджи, домен GitHub Pages, имена коммитов и структура кода — английские.
 
 **ПОЧЕМУ важно.** Это не вопрос вкуса, а вопрос рынка: прямые конкуренты
-(Bernstein, AI-SDLC) англоязычны, а качество документации у ai-team —
+(Bernstein, AI-SDLC) англоязычны, а качество документации у WorkAiStrator —
 объективно одна из его сильнейших сторон, которая сейчас недоступна
 большинству потенциальных адоптеров. Самый высокий ROI из всех находок.
 
@@ -449,7 +449,7 @@ QualityGate, AutonomyPolicy, AdapterBinding; DSSE-конверты; cross-harnes
 review, где Codex ревьюит Claude и наоборот; operator TUI).
 
 **ПОЧЕМУ важно.** Нужен явный выбор ниши и раздел сравнения в README.
-Обороняемая дифференциация ai-team, подтверждённая кодом: approval,
+Обороняемая дифференциация WorkAiStrator, подтверждённая кодом: approval,
 привязанный к SHA-256 **canonical delivery plan** (а не к PR), и evidence,
 проверяемый автономно одной командой без репозитория. Дешёвая идея к
 заимствованию из AI-SDLC — cross-harness review: конфиг уже позволяет задать
@@ -513,7 +513,7 @@ README и описывает в разделе «integrity vs authenticity». Э
 
 ### PDD-23 — дочерний процесс агента переживает жёсткий обрыв контроллера
 
-**ЧТО.** После `kill -9` процесса `ai-team` подпроцесс CLI-агента остаётся жив
+**ЧТО.** После `kill -9` процесса `workaistrator` подпроцесс CLI-агента остаётся жив
 и продолжает работать бессрочно. Проверено: через 2 секунды после обрыва
 родителя `pgrep` находит процесс агента.
 
@@ -647,9 +647,9 @@ M ≈ 2–5 дней, L > 1 недели.
 
 - [ ] **PDD-02** · [Подписывать релизные бинарники и описать проверку подписи в README](#pdd-02) · M
 - [ ] **PDD-03** · [Привести release-гейт к паритету с CI и выровнять текст release notes](#pdd-03) · S
-- [ ] **PDD-04** · [Завести coverage-floor для `cmd/ai-team` и покрыть разбор флагов и коды выхода](#pdd-04) · M
+- [ ] **PDD-04** · [Завести coverage-floor для `cmd/workaistrator` и покрыть разбор флагов и коды выхода](#pdd-04) · M
 - [ ] **PDD-05** · [Убрать из `pkg/workflow` зависимости на `checks` и `delivery`](#pdd-05) · M
-- [ ] **PDD-06** · [Научить `ai-team list` принимать `--target` и отвергать неизвестные флаги](#pdd-06) · S
+- [ ] **PDD-06** · [Научить `workaistrator list` принимать `--target` и отвергать неизвестные флаги](#pdd-06) · S
 - [ ] **PDD-07** · [Отдавать JSON-404 на неизвестных путях под `/api/`](#pdd-07) · S
 - [ ] **PDD-08** · [Подключить golangci-lint в CI и в `make verify`](#pdd-08) · S
 
@@ -677,6 +677,6 @@ M ≈ 2–5 дней, L > 1 недели.
 - [ ] **PDD-17** · [Ввести в граф ветвление и слияние с параллельным исполнением ветвей](#pdd-17) · L
 - [ ] **PDD-18** · [Обобщить `kind: delivery` в `kind: effect` с пристыковываемыми исполнителями, где git-PR — одна из реализаций](#pdd-18) · L
 - [ ] **PDD-19** · [Разрешить маршрутизацию по данным артефакта, а не только по вердикту](#pdd-19) · M
-- [ ] **PDD-20** · [Опубликовать JSON Schema конфига и добавить `ai-team graph validate` и `render`](#pdd-20) · M
+- [ ] **PDD-20** · [Опубликовать JSON Schema конфига и добавить `WorkAiStrator graph validate` и `render`](#pdd-20) · M
 - [ ] **PDD-21** · [Перевести сообщения CLI и документацию на английский, оставив русскую версию переводом](#pdd-21) · L
 - [ ] **PDD-22** · [Добавить в README раздел сравнения с Bernstein и AI-SDLC](#pdd-22) · S

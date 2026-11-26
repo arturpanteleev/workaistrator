@@ -7,7 +7,7 @@
 - [x] Add shared typed-result validation and controller-owned
   `description_missing` event validation/replay.
 - [x] Add the stage submission REST route and stage revision history access.
-- [x] Add `ai-team stage submit` for file/text, link, and approve results.
+- [x] Add `workaistrator stage submit` for file/text, link, and approve results.
 - [x] Add regression coverage for approval/store concurrency, worker event
   boundaries, pipeline attempt evidence, Web API, and CLI.
 - [x] Validate grill result revisions with the SHA-verified pinned stage

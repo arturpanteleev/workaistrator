@@ -58,13 +58,13 @@ async function waitForServer(url, child) {
 test('global event feed filters warnings and opens the linked task', async ({ page }) => {
   const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'ai-team-global-events-e2e-'))
   const target = path.join(tempRoot, 'target')
-  const binary = path.join(tempRoot, 'ai-team')
+  const binary = path.join(tempRoot, 'WorkAiStrator')
   const port = await unusedPort()
   const baseURL = `http://127.0.0.1:${port}`
   let webServer
 
   try {
-    run('go', ['build', '-o', binary, './cmd/ai-team'], { cwd: repoDir })
+    run('go', ['build', '-o', binary, './cmd/workaistrator'], { cwd: repoDir })
     await mkdir(target, { recursive: true })
     run(binary, ['init', '--target', target], { cwd: repoDir })
     webServer = start(binary, ['web', '--target', target, '--port', String(port), '--dist', path.join(webDir, 'dist'), '--scheduler-db', '.ai-team/scheduler.db'], { cwd: target })

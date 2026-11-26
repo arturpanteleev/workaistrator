@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/approval"
-	"github.com/arturpanteleev/ai-team/pkg/lifecycle"
-	"github.com/arturpanteleev/ai-team/pkg/tracker"
-	"github.com/arturpanteleev/ai-team/pkg/web/store"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/approval"
+	"github.com/arturpanteleev/workaistrator/pkg/lifecycle"
+	"github.com/arturpanteleev/workaistrator/pkg/runtime/tracker"
+	"github.com/arturpanteleev/workaistrator/pkg/web/store"
 )
 
 // Inbound synchronization (S15): a status change made in the tracker becomes a
@@ -34,7 +34,7 @@ const (
 	// trackerManualMinGap is the shortest interval between two real manual
 	// passes; a "sync now" inside it returns the previous result.
 	trackerManualMinGap = 5 * time.Second
-	// trackerClockSkew tolerates a tracker clock that runs behind ai-team's.
+	// trackerClockSkew tolerates a tracker clock that runs behind WorkAiStrator's.
 	trackerClockSkew = 5 * time.Second
 )
 
@@ -265,7 +265,7 @@ func (s *Server) decideInbound(ctx context.Context, rec store.TrackerInbound, ma
 	rec.Reason, rec.SuggestedAction, rec.ResolvedBy = "", "", ""
 	if tracker.IsOwnEcho(tracker.Change{Origin: rec.Origin}) {
 		rec.State = store.TrackerInboundIgnored
-		rec.Reason = "the change was made by ai-team itself (echo of an outbound transition)"
+		rec.Reason = "the change was made by WorkAiStrator itself (echo of an outbound transition)"
 		return rec
 	}
 	run, err := s.store.GetPipelineRunByID(rec.TaskID)
@@ -432,7 +432,7 @@ func describeInboundRule(rule tracker.InboundRule) string {
 
 // trackerInboundActor is the audit identity of a tracker-launched stage:
 // the adapter only. The external author is a display name the Jira user can
-// change and is not an ai-team user, so it is never part of the actor; it is
+// change and is not an WorkAiStrator user, so it is never part of the actor; it is
 // stored beside the request as untrusted information. The launch is recorded
 // as trackerInboundLaunchEvent, which is not a stage-author event, so a
 // tracker launch neither makes anyone an author of the stage nor removes

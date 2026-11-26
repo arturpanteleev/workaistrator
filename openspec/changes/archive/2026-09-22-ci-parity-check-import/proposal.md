@@ -2,7 +2,7 @@
 
 ## Why
 
-Проекты-adoptеры хотят, чтобы локальная проверка ai-team повторяла их реальный
+Проекты-adoptеры хотят, чтобы локальная проверка WorkAiStrator повторяла их реальный
 CI. Ручное копирование check-определений из CI в `config.yaml` дублируется и
 расходится. P1-8: импортировать ограниченный объяснимый набор checks из
 реального project CI **без исполнения произвольного YAML**. Effective suite
@@ -25,7 +25,7 @@ GitHub Actions workflow (`.github/workflows/*.yml`).
     suite **до запуска**; `Imported{Definitions, Fingerprint, SourceFiles,
     Skipped, WorkflowCount}`.
   - Дедупликация по имени + детерминированная сортировка.
-- **CLI**: `ai-team ci-import [--target <dir>] [--format github-actions]` —
+- **CLI**: `workaistrator ci-import [--target <dir>] [--format github-actions]` —
   печатает effective suite, fingerprint и пропуски; JSON/quiet режимы (OPS-6)
   работают. Команда checks не запускает (только импорт, показ, fingerprint).
 
@@ -38,7 +38,7 @@ GitHub Actions workflow (`.github/workflows/*.yml`).
    фиксируются в `Skipped` с причиной.
 3. Effective suite детерминирована и fingerprinted (SHA-256) до запуска;
    повторный импорт того же дерева даёт тот же отпечаток; дубликаты схлопываются.
-4. `ai-team ci-import ` показывает suite + отпечаток; `--json` печатает stable
+4. `workaistrator ci-import ` показывает suite + отпечаток; `--json` печатает stable
    record (`type: ci-import`, `data.fingerprint`).
 5. Регрессии нет: `go test ./...` зелёный (кроме двух известных e2e baseline-fail),
    `make specs` 68/68.

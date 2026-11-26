@@ -23,14 +23,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/approval"
-	"github.com/arturpanteleev/ai-team/pkg/attest"
-	"github.com/arturpanteleev/ai-team/pkg/candidate"
-	"github.com/arturpanteleev/ai-team/pkg/containment"
-	"github.com/arturpanteleev/ai-team/pkg/delivery"
-	"github.com/arturpanteleev/ai-team/pkg/evidence"
-	"github.com/arturpanteleev/ai-team/pkg/metrics"
-	"github.com/arturpanteleev/ai-team/pkg/pipeline"
+	"github.com/arturpanteleev/workaistrator/pkg/attest"
+	"github.com/arturpanteleev/workaistrator/pkg/candidate"
+	"github.com/arturpanteleev/workaistrator/pkg/containment"
+	"github.com/arturpanteleev/workaistrator/pkg/delivery"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/approval"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/pipeline"
+	"github.com/arturpanteleev/workaistrator/pkg/metrics"
+	"github.com/arturpanteleev/workaistrator/pkg/store/evidence"
 )
 
 const (

@@ -146,6 +146,6 @@ What would you like to do?
 
 This project's runtime invariant applies here too: completing tasks in this
 command never authorizes delivery (commit/push/PR) on its own. Only the
-ai-team CLI's own controller does that, after deterministic checks and exact
+WorkAiStrator CLI's own controller does that, after deterministic checks and exact
 `--approve-plan <sha256>` approval — this command edits the working tree,
 nothing more.

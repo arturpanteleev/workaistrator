@@ -28,7 +28,7 @@ and whose path is `<base_url path>/browse/KEY-N`; trailing `/` characters, a
 query string and a `#` fragment are allowed. Keys MUST NOT be searched for inside arbitrary text: a
 combined field such as `APP-12 https://example.atlassian.net/browse/APP-12` or
 a URL with a lowercase key is not recognized. For a completed stage it MUST add
-a comment containing the ai-team task URL and stage result, whatever the
+a comment containing the WorkAiStrator task URL and stage result, whatever the
 outcome. When the stage has a configured target status and the attempt
 succeeded (`status` is `passed`, `outcome` is `passed` and `decision` is not
 `rejected`), Jira MUST transition to that status before the comment is posted.
@@ -42,14 +42,14 @@ workflow.
 - **WHEN** a Jira-linked task completes a mapped stage with `status=passed`,
   `outcome=passed` and a decision other than `rejected`
 - **THEN** Jira MUST transition the issue to the configured status when needed
-- **AND** receive a result comment with the ai-team task link
+- **AND** receive a result comment with the WorkAiStrator task link
 
 #### Scenario: A mapped stage fails or is rejected
 
 - **WHEN** a Jira-linked task finishes a mapped stage as failed, infra-failed,
   skipped or rejected, or without outcome fields
 - **THEN** Jira MUST NOT receive a transition request
-- **AND** receive a result comment with the ai-team task link
+- **AND** receive a result comment with the WorkAiStrator task link
 
 #### Scenario: An external link is not a recognized key format
 

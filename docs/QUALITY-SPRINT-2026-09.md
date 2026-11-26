@@ -48,8 +48,8 @@ decisions= [{"actor_id": "the-llm", "actor_role": "release_manager",
              "action": "approve", "subject_hash": "99eb6df…"}]
 ```
 
-Затем `ai-team run --resume <run>` **без `--approve-plan`, без
-`ai-team decision`, без TTY**:
+Затем `workaistrator run --resume <run>` **без `--approve-plan`, без
+`workaistrator decision`, без TTY**:
 
 ```
 resume exit=0
@@ -73,7 +73,7 @@ worktree (`pkg/pipeline/workflow.go:33-35`).
 
 ## QS-02. Неаутентифицированный HTTP-вызов объявляет свою роль и утверждает план
 
-**Исполнено** на дефолтном `ai-team web`:
+**Исполнено** на дефолтном `workaistrator web`:
 
 ```
 GET  /api/auth/config → {"authentication_required":false}
@@ -82,7 +82,7 @@ POST /api/runs/<run>/approvals/<id>/decisions
      {"action":"approve","subject_hash":"…",
       "actor_id":"anon","actor_role":"release_manager"}
 → HTTP 200, status=resolved
-→ ai-team run --resume → коммит в origin
+→ workaistrator run --resume → коммит в origin
 ```
 
 **Причина.** `pkg/web/commands.go:222-244` — `actorID` и `ActorRole` берутся из
@@ -116,8 +116,8 @@ delivery-approval.
 успешной required-проверки поменял её вход `dist/flag` с `good` на `bad`:
 
 ```
-ai-team [tester]   ✓ PASS
-ai-team [verifier] ✓ APPROVED
+WorkAiStrator [tester]   ✓ PASS
+WorkAiStrator [verifier] ✓ APPROVED
 ✗ Пайплайн остановлен: требуется решение человека   ← план предъявлен человеку
 --- go test ./... на том же candidate:
 --- FAIL: TestFlag   flag_test.go:15: dist/flag says bad
@@ -152,7 +152,7 @@ mutations recorded for coder: ['e2e_implementation.go']   ← hook не зафи
 
 **Оценка.** S для hooks. L для настоящего confinement.
 
-## QS-05. `ai-team verify` печатает «Run OK» для подделанной evidence
+## QS-05. `workaistrator verify` печатает «Run OK» для подделанной evidence
 
 Whitelist проверки (`pkg/export/export.go:411-441`) покрывает `events.jsonl`,
 `anchor.json`, `attempts/*/manifest.json`, `config.json`, `workflow.json`,
@@ -261,7 +261,7 @@ depth= 5 findings=1   depth=15 findings=1   depth=16 findings=0   depth=20 findi
 `pkg/pipeline/pipeline.go:664` вооружает таймер только при значении больше нуля.
 Константа `DefaultBudgetMaxWallTime = "24h"` нигде не парсится в длительность.
 
-**Новое сверх #143:** `ai-team init` никогда не пишет секцию `budget`, и сама
+**Новое сверх #143:** `workaistrator init` никогда не пишет секцию `budget`, и сама
 секция не описана в README вовсе. Единственный рабочий способ ограничить run —
 недокументированный ключ.
 
@@ -373,7 +373,7 @@ e2e_test.go:793: timeout ожидания:                             (×2)
 конфиг → встроенные. E2e передаёт подпроцессам всё родительское окружение.
 
 ```
-$ AI_TEAM_AGENT_PATH=<plugin> ai-team list
+$ AI_TEAM_AGENT_PATH=<plugin> workaistrator list
 analyst … plugin-0 … HIJACKED analyst
 $ AI_TEAM_AGENT_PATH=<plugin> go test -run TestE2E_SuccessfulPipeline ./e2etest/
 FAIL
@@ -385,8 +385,8 @@ FAIL
 
 ## QS-17. Утечка `AI_TEAM_CLI_CHILD=1` убивает целый пакет
 
-`cmd/ai-team/audit_machine_test.go:29-36`. Переменная в окружении — и весь
-`cmd/ai-team` падает за 0.355 с. **S.**
+`cmd/workaistrator/audit_machine_test.go:29-36`. Переменная в окружении — и весь
+`cmd/workaistrator` падает за 0.355 с. **S.**
 
 ## QS-18. Утечки в веб-сервере
 
@@ -449,7 +449,7 @@ APPROVED                          → ✓ APPROVED
 
 ## QS-23. `delivery.json` назван tamper-evident, но не проверяется
 
-Подмена `commit_sha` и `pr_url` → `ai-team verify` даёт `✓ Run OK`, `export`
+Подмена `commit_sha` и `pr_url` → `workaistrator verify` даёт `✓ Run OK`, `export`
 даёт `✓ проверенно экспортирован`. `pkg/evidence/query.go:54` отбрасывает
 ошибку чтения. ARCHITECTURE обещает обратное. **S.**
 

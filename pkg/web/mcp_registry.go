@@ -16,7 +16,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/arturpanteleev/ai-team/pkg/runid"
+	"github.com/arturpanteleev/workaistrator/pkg/store/runid"
 	"github.com/go-chi/chi/v5"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )

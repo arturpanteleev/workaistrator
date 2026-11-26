@@ -23,13 +23,13 @@ demo_prepare_home "$DEMO_HOME"
 DEMO_HOME="$(demo_guard_path "$DEMO_HOME")"
 mkdir -p "$DEMO_HOME/bin" "$DEMO_HOME/state" "$DEMO_HOME/repo"
 
-echo "⟶ Сборка ai-team"
+echo "⟶ Сборка WorkAiStrator"
 # Тулчейн — пин из .tool-versions, как в Makefile (явный GOTOOLCHAIN в окружении главнее).
 if [[ -z "${GOTOOLCHAIN:-}" ]]; then
   pin="$(awk '$1 == "golang" { print "go" $2 }' "$REPO_ROOT/.tool-versions" 2>/dev/null || true)"
   [[ -n "$pin" ]] && export GOTOOLCHAIN="$pin"
 fi
-(cd "$REPO_ROOT" && go build -o "$DEMO_HOME/ai-team" ./cmd/ai-team)
+(cd "$REPO_ROOT" && go build -o "$DEMO_HOME/ai-team" ./cmd/workaistrator)
 go_used="$(cd "$REPO_ROOT" && go env GOVERSION)"
 echo "  собрано тулчейном $go_used"
 
@@ -61,7 +61,7 @@ git -C "$REPO" push -q -u origin master
 # Каталоги контроллера не должны пачкать рабочее дерево.
 printf '.ai-team/\n.demo/\n' > "$REPO/.git/info/exclude"
 
-# Обмен фейкового трекера с внешним миром (только для демо, см. pkg/tracker/fake.go).
+# Обмен фейкового трекера с внешним миром (только для демо, см. pkg/runtime/tracker/fake.go).
 mkdir -p "$DEMO_HOME/tracker"
 : > "$DEMO_HOME/tracker/inbox.jsonl"
 : > "$DEMO_HOME/tracker/outbox.jsonl"

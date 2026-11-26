@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/notifier"
-	"github.com/arturpanteleev/ai-team/pkg/safeio"
-	"github.com/arturpanteleev/ai-team/pkg/scope"
-	"github.com/arturpanteleev/ai-team/pkg/ui"
+	"github.com/arturpanteleev/workaistrator/pkg/notifier"
+	"github.com/arturpanteleev/workaistrator/pkg/safeio"
+	"github.com/arturpanteleev/workaistrator/pkg/scope"
+	"github.com/arturpanteleev/workaistrator/pkg/ui"
 )
 
 //go:embed templates/stage.html

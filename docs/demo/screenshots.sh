@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
 # Пересъёмка скриншотов документации (docs/assets/screens/) на настоящем
-# прогоне ai-team без LLM: агенты — заглушка e2etest/mock-opencode.sh,
+# прогоне WorkAiStrator без LLM: агенты — заглушка e2etest/mock-opencode.sh,
 # gh — заглушка, которая «создаёт» PR. Модель, ключи и сеть не нужны.
 #
 #   bash docs/demo/screenshots.sh
 #
 # Нужны: go, git, python3, Google Chrome или Chromium (путь можно задать в
 # CHROME).
-# Рабочий каталог — AI_TEAM_DEMO_DIR (по умолчанию /tmp/ai-team-demo), он
+# Рабочий каталог — AI_TEAM_DEMO_DIR (по умолчанию /tmp/workaistrator-demo), он
 # пересоздаётся при каждом запуске.
 set -euo pipefail
 
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"
 OUT="${OUT:-$REPO/docs/assets/screens}"
-WORK="${AI_TEAM_DEMO_DIR:-/tmp/ai-team-demo}"
+WORK="${AI_TEAM_DEMO_DIR:-/tmp/workaistrator-demo}"
 rm -rf "$WORK"
 mkdir -p "$WORK"
 WORK="$(cd "$WORK" && pwd -P)"
@@ -56,8 +56,8 @@ term() {
   shot "$out" "file://$WORK/shots/term.html" "1200,$height"
 }
 
-echo "→ Сборка ai-team и заглушек"
-(cd "$REPO" && go build -o "$WORK/bin/ai-team" ./cmd/ai-team)
+echo "→ Сборка WorkAiStrator и заглушек"
+(cd "$REPO" && go build -o "$WORK/bin/workaistrator" ./cmd/workaistrator)
 ln -s "$REPO/e2etest/mock-opencode.sh" "$WORK/bin/opencode"
 cat >"$WORK/bin/gh" <<EOF
 #!/bin/sh
@@ -79,7 +79,7 @@ P="$WORK/greeter"
 mkdir -p "$P/cmd/greeter"
 cp "$REPO/e2etest/sample-project/go.mod" "$P/"
 cp "$REPO/e2etest/sample-project/main.go" "$P/cmd/greeter/"
-printf '# greeter\n\nМаленький CLI для учебника ai-team.\n' >"$P/README.md"
+printf '# greeter\n\nМаленький CLI для учебника WorkAiStrator.\n' >"$P/README.md"
 git -C "$WORK" init -q --bare origin.git
 git -C "$P" init -q -b main
 git -C "$P" config user.name "Demo User"
@@ -87,11 +87,11 @@ git -C "$P" config user.email "demo@example.com"
 git -C "$P" add . && git -C "$P" commit -q -m "greeter: начальная версия"
 git -C "$P" remote add origin "$WORK/origin.git"
 git -C "$P" push -q -u origin main
-(cd "$P" && ai-team init >/dev/null)
+(cd "$P" && workaistrator init >/dev/null)
 
 echo "→ Прогон до подтверждения плана"
 set +e
-(cd "$P" && python3 -I "$HELPER" tty "$WORK/run.ansi" ai-team run --feature "$FEATURE" --task "$TASK")
+(cd "$P" && python3 -I "$HELPER" tty "$WORK/run.ansi" workaistrator run --feature "$FEATURE" --task "$TASK")
 code=$?
 set -e
 [[ $code -eq 3 ]] || { echo "ожидался код 3 (ждёт подтверждения), получен $code" >&2; exit 1; }
@@ -99,7 +99,7 @@ SHA="$(python3 -I "$HELPER" sha "$WORK/run.ansi")"
 RUN_ID="$(ls "$P/.ai-team/runs" | head -1)"
 
 echo "→ Дашборд"
-(cd "$P" && exec ai-team web --port "$PORT" >"$WORK/web.log" 2>&1) &
+(cd "$P" && exec workaistrator web --port "$PORT" >"$WORK/web.log" 2>&1) &
 WEB_PID=$!
 for _ in $(seq 1 30); do curl -fsS "http://127.0.0.1:$PORT/api/pipelines" >/dev/null 2>&1 && break; sleep 0.5; done
 PIPE_ID="$(curl -fsS "http://127.0.0.1:$PORT/api/pipelines" | python3 -I -c 'import json,sys; print(json.load(sys.stdin)[0]["id"])')"
@@ -109,7 +109,7 @@ shot "$OUT/dashboard-waiting.png" "$BASE/" "1440,760"
 shot "$OUT/pipeline-waiting.png" "$BASE/pipelines/$PIPE_ID" "1440,980"
 
 echo "→ Подтверждение плана и поставка"
-(cd "$P" && python3 -I "$HELPER" tty "$WORK/approve.ansi" ai-team run --resume "$RUN_ID" --approve-plan "$SHA")
+(cd "$P" && python3 -I "$HELPER" tty "$WORK/approve.ansi" workaistrator run --resume "$RUN_ID" --approve-plan "$SHA")
 
 shot "$OUT/dashboard.png" "$BASE/" "1440,760"
 shot "$OUT/pipeline.png" "$BASE/pipelines/$PIPE_ID" "1440,2680"
@@ -128,32 +128,32 @@ shot "$OUT/artifact.png" "$BASE/artifacts/$RUN_ID/$ART_PATH" "1440,640"
 
 echo "→ Отказ от поставки"
 set +e
-(cd "$P" && python3 -I "$HELPER" answer "$WORK/stop.ansi" n ai-team run --feature add-farewell --task "Добавить прощание")
+(cd "$P" && python3 -I "$HELPER" answer "$WORK/stop.ansi" n workaistrator run --feature add-farewell --task "Добавить прощание")
 set -e
 STOP_ID="$(curl -fsS "$BASE/api/pipelines" | python3 -I -c 'import json,sys; print(next(p["id"] for p in json.load(sys.stdin) if p["feature"]=="add-farewell"))')"
 shot "$OUT/pipeline-stopped.png" "$BASE/pipelines/$STOP_ID" "1440,900"
 
 echo "→ Вход в облачном режиме"
-(cd "$P" && AI_TEAM_AUTH_SECRET="demo-secret-for-screenshots-only-0123456789" exec ai-team web --port "$((PORT + 1))" >"$WORK/web-auth.log" 2>&1) &
+(cd "$P" && AI_TEAM_AUTH_SECRET="demo-secret-for-screenshots-only-0123456789" exec workaistrator web --port "$((PORT + 1))" >"$WORK/web-auth.log" 2>&1) &
 AUTH_PID=$!
 for _ in $(seq 1 30); do curl -fsS "http://127.0.0.1:$((PORT + 1))/" >/dev/null 2>&1 && break; sleep 0.5; done
 shot "$OUT/login.png" "http://127.0.0.1:$((PORT + 1))/" "1440,640"
 kill "$AUTH_PID" 2>/dev/null || true
 
 echo "→ Терминал"
-term "$OUT/terminal-run.png" "ai-team run — этапы и план поставки" --brief \
+term "$OUT/terminal-run.png" "workaistrator run — этапы и план поставки" --brief \
   --cut '"file_digests"' '"commit_message"' \
-  --drop 'Решение: ai-team decision' \
-  --cmd "ai-team run --feature $FEATURE --task \"$TASK\"" "$WORK/run.ansi"
-term "$OUT/terminal-approve.png" "ai-team run --resume — поставка после подтверждения" --brief \
+  --drop 'Решение: workaistrator decision' \
+  --cmd "workaistrator run --feature $FEATURE --task \"$TASK\"" "$WORK/run.ansi"
+term "$OUT/terminal-approve.png" "workaistrator run --resume — поставка после подтверждения" --brief \
   --cut '"file_digests"' '"commit_message"' \
-  --cmd "ai-team run --resume $RUN_ID --approve-plan $SHA" "$WORK/approve.ansi"
+  --cmd "workaistrator run --resume $RUN_ID --approve-plan $SHA" "$WORK/approve.ansi"
 
 echo "→ Проверки без модели (gate)"
 set +e
 (cd "$REPO" && python3 -I "$HELPER" tty "$WORK/gate.ansi" bash docs/demo/run-demo.sh)
 set -e
-PROMPT='ai-team $' term "$OUT/gate.png" "docs/demo/run-demo.sh — три сценария gate" \
+PROMPT='WorkAiStrator $' term "$OUT/gate.png" "docs/demo/run-demo.sh — три сценария gate" \
   --cmd "bash docs/demo/run-demo.sh" "$WORK/gate.ansi"
 
 echo "Готово: $OUT"

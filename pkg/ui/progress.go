@@ -70,7 +70,7 @@ func (pb *ProgressBar) BarText(agent string) string {
 		filled = pb.barWidth
 	}
 	bar := strings.Repeat("█", filled) + strings.Repeat("░", pb.barWidth-filled)
-	return fmt.Sprintf("%s[ai-team]%s %s | %s%s (%d/%d) %s",
+	return fmt.Sprintf("%s[WorkAiStrator]%s %s | %s%s (%d/%d) %s",
 		ColorBold, ColorReset,
 		Colorize(pb.feature, ColorCyan),
 		Colorize(agent, ColorYellow), ColorReset,

@@ -5,8 +5,8 @@
 package autopickup
 
 import (
-	"github.com/arturpanteleev/ai-team/pkg/config"
-	"github.com/arturpanteleev/ai-team/pkg/tokenbudget"
+	"github.com/arturpanteleev/workaistrator/pkg/config"
+	"github.com/arturpanteleev/workaistrator/pkg/tokenbudget"
 )
 
 // Статусы элемента бэклога. Агент берёт только StatusReady — его ставит

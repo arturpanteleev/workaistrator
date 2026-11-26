@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arturpanteleev/ai-team/pkg/safeio"
+	"github.com/arturpanteleev/workaistrator/pkg/safeio"
 )
 
 func TestCheckCLI_RejectsUnknownAdapter(t *testing.T) {

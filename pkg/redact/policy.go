@@ -3,7 +3,7 @@ package redact
 import (
 	"fmt"
 
-	"github.com/arturpanteleev/ai-team/pkg/scope"
+	"github.com/arturpanteleev/workaistrator/pkg/scope"
 )
 
 // ScanDefaults — канонические параметры сканирования.

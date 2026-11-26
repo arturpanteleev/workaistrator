@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/arturpanteleev/ai-team/pkg/evidence"
-	"github.com/arturpanteleev/ai-team/pkg/metrics"
+	"github.com/arturpanteleev/workaistrator/pkg/metrics"
+	"github.com/arturpanteleev/workaistrator/pkg/store/evidence"
 )
 
 func TestLocalCASDetectsCorruption(t *testing.T) {

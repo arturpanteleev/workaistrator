@@ -1,0 +1,8 @@
+{
+  "claimed_by_other_target_worker": true,
+  "note": "Contract probe only: no real worker crash simulated; start operation remains start after lease recovery.",
+  "other_target_validation_error": "worker job: target_dir не совпадает с mounted target",
+  "reclaimed_after_lease_expired": true,
+  "reclaimed_operation": "start",
+  "same_run_id": true
+}

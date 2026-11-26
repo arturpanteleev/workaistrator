@@ -40,7 +40,7 @@ test.afterAll(async () => {
 })
 
 async function open(page, id, { theme = 'light', width = 1440, height = 900, ...options } = {}) {
-  await page.addInitScript((value) => { try { localStorage.setItem('ai-team:theme', value) } catch {} }, theme)
+  await page.addInitScript((value) => { try { localStorage.setItem('WorkAiStrator:theme', value) } catch {} }, theme)
   await page.setViewportSize({ width, height })
   await installApi(page, id, options)
   await page.goto(`${baseURL}/tasks/run-audit`)
@@ -150,7 +150,7 @@ test.describe('real requests of the task page', () => {
   }
 
   test('accepting a transition goes through the decision card with the exact subject hash', async ({ page }) => {
-    await page.addInitScript(() => { try { localStorage.setItem('ai-team:theme', 'light') } catch {} })
+    await page.addInitScript(() => { try { localStorage.setItem('WorkAiStrator:theme', 'light') } catch {} })
     await page.setViewportSize({ width: 1440, height: 900 })
     await installApi(page, 'awaiting-human')
     const calls = await record(page)
@@ -304,7 +304,7 @@ test.describe('DES-03 neon stage strip', () => {
 
 test.describe('empty and error states', () => {
   async function loggedIn(page, handlers) {
-    await page.addInitScript(() => { try { localStorage.setItem('ai-team:theme', 'light') } catch {} })
+    await page.addInitScript(() => { try { localStorage.setItem('WorkAiStrator:theme', 'light') } catch {} })
     await page.route('**/api/**', async (route) => {
       const { pathname, searchParams } = new URL(route.request().url())
       const json = (body, status = 200) => route.fulfill({ status, json: body })
@@ -431,7 +431,7 @@ test.describe('DES-04: animated timeline and gates', () => {
   ]
 
   async function journal(page, id, theme, withTimeline = false) {
-    await page.addInitScript((value) => { try { localStorage.setItem('ai-team:theme', value) } catch {} }, theme)
+    await page.addInitScript((value) => { try { localStorage.setItem('WorkAiStrator:theme', value) } catch {} }, theme)
     await page.setViewportSize({ width: 1440, height: 900 })
     await installApi(page, id)
     if (withTimeline) await page.route('**/api/runs/run-audit/events**', (route) => route.fulfill({ status: 200, json: { events: timelineEvents, next_cursor: timelineEvents.length } }))
@@ -558,7 +558,7 @@ test.describe('DES-05: volumetric cards and pastel bubbles', () => {
   ]
 
   async function stub(page, theme, width, api) {
-    await page.addInitScript((value) => { try { localStorage.setItem('ai-team:theme', value) } catch {} }, theme)
+    await page.addInitScript((value) => { try { localStorage.setItem('WorkAiStrator:theme', value) } catch {} }, theme)
     await page.setViewportSize({ width, height: 900 })
     await page.route('**/api/**', async (route) => {
       const { pathname } = new URL(route.request().url())
@@ -691,7 +691,7 @@ test.describe('DES-05: volumetric cards and pastel bubbles', () => {
 // pastel palette; S16 colours, focus order, actions and the 390px layout stay put.
 test.describe('DES-06: holographic state glyphs', () => {
   async function emptyQueue(page, theme = 'light', width = 1440) {
-    await page.addInitScript((value) => { try { localStorage.setItem('ai-team:theme', value) } catch {} }, theme)
+    await page.addInitScript((value) => { try { localStorage.setItem('WorkAiStrator:theme', value) } catch {} }, theme)
     await page.setViewportSize({ width, height: 900 })
     await page.route('**/api/**', async (route) => {
       const { pathname } = new URL(route.request().url())

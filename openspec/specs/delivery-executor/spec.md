@@ -56,7 +56,7 @@ Delivery MUST persist step results and safely resume after partial failure.
 
 ### Requirement: Повторная доставка после возврата из ревью
 
-Планировщик MUST принять ту же ветку `ai-team/<feature>`, когда задача вернулась
+Планировщик MUST принять ту же ветку `WorkAiStrator/<feature>`, когда задача вернулась
 на реализацию (`code_review` → `implementation`) после завершённой доставки,
 с одним условием: ветка целиком состоит из commits, которые контроллер сам
 записал и проверил. Один state-файл в рабочем дереве доверия не заслуживает,

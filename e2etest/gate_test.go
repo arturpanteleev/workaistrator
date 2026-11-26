@@ -33,7 +33,7 @@ func gateWrite(t *testing.T, dir string, files map[string]string) {
 	}
 }
 
-// TestE2E_GateBundleAndExitCodes проверяет `ai-team gate` end-to-end: exit коды
+// TestE2E_GateBundleAndExitCodes проверяет `workaistrator gate` end-to-end: exit коды
 // (0 PASS / 1 FAIL / 2 BLOCKED), diff-policy test_modify, дефолтный конфиг без
 // файла и самодостаточный attestation bundle (index.json + digests).
 func TestE2E_GateBundleAndExitCodes(t *testing.T) {

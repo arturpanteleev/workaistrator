@@ -1,5 +1,5 @@
 // Идентификатор задачи/инициативы (feature). Регэксп повторяет featurePattern
-// из pkg/workflow/identity.go: сервер принимает только такой slug.
+// из pkg/engine/workflow/identity.go: сервер принимает только такой slug.
 
 export const identifierPattern = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
 

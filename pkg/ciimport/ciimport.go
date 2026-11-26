@@ -19,7 +19,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/arturpanteleev/ai-team/pkg/checks"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/stage/checks"
 )
 
 // ImportFormat — поддерживаемый adopter-формат. Начинаем с одного формата.

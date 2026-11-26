@@ -1,6 +1,6 @@
 # Сетевой MCP
 
-`ai-team web` отдаёт по адресу `POST /mcp` сервер [Model Context Protocol](https://modelcontextprotocol.io/specification/2026-07-28),
+`workaistrator web` отдаёт по адресу `POST /mcp` сервер [Model Context Protocol](https://modelcontextprotocol.io/specification/2026-07-28),
 к которому подключаются Claude и Codex. MCP даёт **все продуктовые чтения и действия Web/REST**: проекты, backlog,
 задачи (создание, запуск, возобновление, отмена), выбор исполнителя, сдачу результата, запуск агента, повтор гейта,
 решения человека, возвраты, пропуски, обход гейта администратором, delivery-план и delivery, шаблон (проверка и
@@ -35,7 +35,7 @@ REST/Web UI, под личностью владельца токена: поль
 Принимаются:
 
 1. **Персональный MCP-токен** (`aitm_…`) — долгоживущий, для Claude/Codex. В облачном режиме.
-2. Любой токен, который уже принимает веб-сервер: облачный HMAC-токен (`ai-team auth token`, живёт не дольше
+2. Любой токен, который уже принимает веб-сервер: облачный HMAC-токен (`workaistrator auth token`, живёт не дольше
    суток) или локальный токен loopback-сервера (`.ai-team/web.token`).
 
 Любой токен сопоставляется с участником команды так же, как при входе в UI (`resolveTeamPrincipal`): участник
@@ -79,9 +79,9 @@ REST/Web UI, под личностью владельца токена: поль
 ### Claude Code
 
 ```bash
-claude mcp add --transport http ai-team https://ai-team.example.com/mcp \
+claude mcp add --transport http WorkAiStrator https://ai-team.example.com/mcp \
   --header "Authorization: Bearer aitm_…"
-claude mcp list          # ai-team должен быть Connected
+claude mcp list          # WorkAiStrator должен быть Connected
 ```
 
 Проектный `.mcp.json` (токен берите из переменной окружения, не коммитьте его):
@@ -89,7 +89,7 @@ claude mcp list          # ai-team должен быть Connected
 ```json
 {
   "mcpServers": {
-    "ai-team": {
+    "WorkAiStrator": {
       "type": "http",
       "url": "https://ai-team.example.com/mcp",
       "headers": { "Authorization": "Bearer ${AI_TEAM_MCP_TOKEN}" }
@@ -113,7 +113,7 @@ bearer_token_env_var = "AI_TEAM_MCP_TOKEN"
 
 ```bash
 export AI_TEAM_MCP_TOKEN=aitm_…
-codex exec "вызови ai-team whoami"
+codex exec "вызови WorkAiStrator whoami"
 ```
 
 Без правки конфигурации: `codex exec -c 'mcp_servers.ai_team.url="…/mcp"' -c 'mcp_servers.ai_team.bearer_token_env_var="AI_TEAM_MCP_TOKEN"' "…"`.
@@ -125,7 +125,7 @@ codex exec "вызови ai-team whoami"
 
 ### Локальный сервер
 
-Для `ai-team web` на loopback используйте локальный токен из `.ai-team/web.token` в том же заголовке и адрес
+Для `workaistrator web` на loopback используйте локальный токен из `.ai-team/web.token` в том же заголовке и адрес
 `http://127.0.0.1:<порт>/mcp`.
 
 ## Инструменты и ресурсы

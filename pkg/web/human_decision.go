@@ -9,13 +9,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/approval"
-	"github.com/arturpanteleev/ai-team/pkg/humandecision"
-	"github.com/arturpanteleev/ai-team/pkg/strictjson"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/approval"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/gate/human"
+	"github.com/arturpanteleev/workaistrator/pkg/strictjson"
 )
 
 // human_decision.go — the Web/REST face of the single human-decision service
-// (pkg/humandecision). Every decision on a stage transition passes through
+// (pkg/engine/gate/human). Every decision on a stage transition passes through
 // it, so Web, REST and the MCP server give the same decision and the same
 // audit record.
 

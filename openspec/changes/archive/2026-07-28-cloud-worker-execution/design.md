@@ -14,7 +14,7 @@ mount и параметрами start/resume/cancel. Job передаётся wo
 убивает process; повторный отдельный cancel job завершает persisted lifecycle.
 Вывод bounded и используется только для diagnostics.
 
-`ai-team worker` загружает config и layered agent registry внутри mounted
+`workaistrator worker` загружает config и layered agent registry внутри mounted
 repository, подключает recorder к общей SQLite projection и вызывает обычный
 RunEngine. Поэтому approvals, candidate identity, checks и delivery не имеют
 отдельной «облачной» реализации.

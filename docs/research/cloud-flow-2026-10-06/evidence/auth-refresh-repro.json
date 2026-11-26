@@ -1,0 +1,6 @@
+{
+  "login": 200,
+  "identity_with_cookie": 200,
+  "session_with_cookie_only": 401,
+  "explanation": "After browser reload, api.ts csrfToken is null; getCsrfToken calls openSession without bearer; valid session cookie cannot obtain csrf."
+}

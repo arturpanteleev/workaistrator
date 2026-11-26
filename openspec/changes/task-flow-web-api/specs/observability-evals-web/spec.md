@@ -34,7 +34,7 @@ incomplete selected usage, stage manifests, or monthly denominators makes the
 estimate unknown rather than zero. Separately, reports MUST show the provider
 tariff cost as attested agent-attempt tokens multiplied by the configured
 `usage.tariffs` price of the attempt's model effective at the attempt; each
-tariff entry MUST carry its currency, effective date and source, and ai-team
+tariff entry MUST carry its currency, effective date and source, and WorkAiStrator
 MUST NOT ship or infer prices. An attempt without a recorded model, without a
 tariff for its model, or with cache tokens lacking a cache price makes the
 tariff cost unknown rather than zero. A 1000-run metrics calculation MUST complete within

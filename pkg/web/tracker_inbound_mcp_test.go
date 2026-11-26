@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/tracker"
+	"github.com/arturpanteleev/workaistrator/pkg/runtime/tracker"
 )
 
 func TestMCPReadsTrackerSyncStateAndPendingRequests(t *testing.T) {

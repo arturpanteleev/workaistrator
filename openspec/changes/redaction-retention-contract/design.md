@@ -4,7 +4,7 @@
 
 Evidence хранит агентский вывод и снапшоты конфигов/workflow. Secrets-скан
 + redaction обязательны перед внешней публикацией (bundle, SIEM, архив).
-Retention (уборка .ai-team) уже есть в `pkg/retention`/`ai-team gc`, но не
+Retention (уборка .ai-team) уже есть в `pkg/retention`/`workaistrator gc`, но не
 настраивается из config и не оформлена как контракт без legal-обещаний.
 
 ## Requirements
@@ -15,7 +15,7 @@ Retention (уборка .ai-team) уже есть в `pkg/retention`/`ai-team gc
 - include/exclude glob'ы в repository-относительном формате (`pkg/scope`).
 - `redact verify` — fail-closed; `export` блокируется при находках (по умолчанию;
   opt-out `disable_export_block`).
-- Retention настраивается в config; `ai-team gc` берёт дефолты, явные флаги
+- Retention настраивается в config; `workaistrator gc` берёт дефолты, явные флаги
   переопределяют.
 - Raw logs — opt-in; никогда не сохраняются без `redaction.raw_logs: true`.
 
@@ -48,7 +48,7 @@ nil-safe дефолты 720h/20.
 
 ### CLI
 
-- `ai-team redact verify|scan|redact` — новый command-файл; policy из config;
+- `workaistrator redact verify|scan|redact` — новый command-файл; policy из config;
   scan-root = `.ai-team/runs` (или `--path`/`--run`); logging.Emit JSON.
 - `export.go`: перед `export.Build` — `redact.Verify(runDir, policy)`; при
   ошибке — fail-closed, bundle не создаётся, `type: redact_block`.

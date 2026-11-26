@@ -5,7 +5,7 @@
 - [x] Record one report-bound agent retry and stop for human action after a
       repeated check failure.
 - [x] Implement controller PR resolution, stable identity checks, `project_checks`
-      through `ai-team gate`, and `pr_checks_green` through `gh pr checks`.
+      through `workaistrator gate`, and `pr_checks_green` through `gh pr checks`.
 - [x] Supply the immutable PR diff and identity to the reviewer with its
       declared specification and technical-decision inputs.
 - [x] Add local Git repository, stub-`gh`, replay and pipeline tests for the

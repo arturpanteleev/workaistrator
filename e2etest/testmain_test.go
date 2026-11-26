@@ -7,7 +7,7 @@ import (
 
 // Delivery state is signed with a key outside the working tree, and a PR
 // reference is accepted only for github.com or GH_HOST; fixtures use
-// https://example.test/... as the PR host. Child ai-team processes inherit both.
+// https://example.test/... as the PR host. Child WorkAiStrator processes inherit both.
 func TestMain(m *testing.M) {
 	dir, err := os.MkdirTemp("", "ai-team-state-key-")
 	if err != nil {
