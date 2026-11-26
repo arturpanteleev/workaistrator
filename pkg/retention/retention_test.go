@@ -10,7 +10,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/arturpanteleev/ai-team/pkg/approval"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/approval"
 )
 
 const (

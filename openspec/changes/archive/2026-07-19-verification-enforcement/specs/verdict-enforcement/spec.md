@@ -42,7 +42,7 @@
 В неинтерактивном режиме негативный вердикт и BLOCKED MUST останавливать пайплайн без ожидания ввода.
 
 #### Scenario: CI-прогон с REJECTED
-- **КОГДА** `ai-team run` запущен с перенаправленным stdin
+- **КОГДА** `workaistrator run` запущен с перенаправленным stdin
 - **И** reviewer вернул REJECTED
 - **ТОГДА** пайплайн MUST остановиться сразу после reviewer (loopback не предлагается)
 - **И** tester, verifier, deployer MUST NOT выполняться

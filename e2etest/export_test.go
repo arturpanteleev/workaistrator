@@ -9,7 +9,7 @@ import (
 )
 
 // TestE2E_ExportAndVerifyBundle — реальный pipeline flow до терминального run,
-// затем `ai-team export` (V0-4): bundle публикуется, verified-запись в
+// затем `workaistrator export` (V0-4): bundle публикуется, verified-запись в
 // state/exports, повторная самодостаточная verify (без repo и .ai-team) и
 // локальная verify сходятся; tampering события ловится и вне repo.
 func TestE2E_ExportAndVerifyBundle(t *testing.T) {
@@ -23,7 +23,7 @@ func TestE2E_ExportAndVerifyBundle(t *testing.T) {
 	setupDeliveryGit(t, dir)
 
 	if code, out := runAI(t, bin, dir, []string{pathEnv}, "init"); code != 0 {
-		t.Fatalf("ai-team init failed (%d):\n%s", code, out)
+		t.Fatalf("workaistrator init failed (%d):\n%s", code, out)
 	}
 	code, out := runAI(t, bin, dir, []string{pathEnv}, "run",
 		"--feature", "e2e-export", "--task", "E2E export task", "--approve-gates")
@@ -31,7 +31,7 @@ func TestE2E_ExportAndVerifyBundle(t *testing.T) {
 		t.Fatalf("run должен остановиться для delivery approval (exit 3), got %d:\n%s", code, out)
 	}
 	hashMatch := regexp.MustCompile(`Plan SHA-256: ([a-f0-9]{64})`).FindStringSubmatch(out)
-	resumeMatch := regexp.MustCompile(`ai-team run --resume ([^ ]+) --approve-plan`).FindStringSubmatch(out)
+	resumeMatch := regexp.MustCompile(`workaistrator run --resume ([^ ]+) --approve-plan`).FindStringSubmatch(out)
 	if len(hashMatch) != 2 || len(resumeMatch) != 2 {
 		t.Fatalf("no delivery plan hash/resume in output:\n%s", out)
 	}

@@ -1,5 +1,5 @@
 version: 2
-# Policy обновления зависимостей ai-team:
+# Policy обновления зависимостей WorkAiStrator:
 # - все PR создаёт Dependabot на target-branch master; SHA-пины действий
 #   обновляются вместе с human-readable comment (# vX.Y.Z) в одном PR.
 #   version-comment (частная недокументированная опция) НЕ используется.

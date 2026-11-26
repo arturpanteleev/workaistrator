@@ -212,19 +212,19 @@ func Wait(ctx context.Context, provider Provider, build Build, expectedSHA strin
 			return build, finishedBuildError(build, expectedSHA)
 		}
 		if options.Timeout > 0 && !clock.Now().Before(deadline) {
-			cancelBuild(ctx, provider, build, "ai-team deploy wait timed out", options.CancelTimeout)
+			cancelBuild(ctx, provider, build, "WorkAiStrator deploy wait timed out", options.CancelTimeout)
 			return build, fmt.Errorf("%w after %s (build %s)", ErrDeployTimeout, options.Timeout, build.ID)
 		}
 		select {
 		case <-ctx.Done():
-			cancelBuild(ctx, provider, build, "ai-team deploy canceled", options.CancelTimeout)
+			cancelBuild(ctx, provider, build, "WorkAiStrator deploy canceled", options.CancelTimeout)
 			return build, fmt.Errorf("deploy wait for build %s: %w", build.ID, ctx.Err())
 		case <-clock.After(poll):
 		}
 		next, err := provider.Build(ctx, build.ID)
 		if err != nil {
 			if ctx.Err() != nil {
-				cancelBuild(ctx, provider, build, "ai-team deploy canceled", options.CancelTimeout)
+				cancelBuild(ctx, provider, build, "WorkAiStrator deploy canceled", options.CancelTimeout)
 				return build, fmt.Errorf("deploy wait for build %s: %w", build.ID, ctx.Err())
 			}
 			if IsTransient(err) {

@@ -207,10 +207,10 @@ func TestNotificationSummaryHasNoControlCharacters(t *testing.T) {
 	if strings.ContainsAny(n.Summary(), "\r\n") {
 		t.Fatalf("summary contains line breaks: %q", n.Summary())
 	}
-	if !strings.HasPrefix(n.Summary(), "[ai-team] stage_stalled · task #12 · stage qa") || !strings.HasSuffix(n.Text(), "\nhttps://ai-team.example/tasks/r") {
+	if !strings.HasPrefix(n.Summary(), "[WorkAiStrator] stage_stalled · task #12 · stage qa") || !strings.HasSuffix(n.Text(), "\nhttps://ai-team.example/tasks/r") {
 		t.Fatalf("text=%q", n.Text())
 	}
-	if (Notification{Type: "run_started", RunID: "r1"}).Text() != "[ai-team] run_started · run r1" {
+	if (Notification{Type: "run_started", RunID: "r1"}).Text() != "[WorkAiStrator] run_started · run r1" {
 		t.Fatalf("run summary=%q", (Notification{Type: "run_started", RunID: "r1"}).Text())
 	}
 }

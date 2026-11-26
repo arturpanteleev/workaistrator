@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/tracker"
-	"github.com/arturpanteleev/ai-team/pkg/web/store"
+	"github.com/arturpanteleev/workaistrator/pkg/runtime/tracker"
+	"github.com/arturpanteleev/workaistrator/pkg/web/store"
 )
 
 func TestTrackerRetryDoesNotLoseTransitionWhenNewerEventDeliveredOnlyAComment(t *testing.T) {

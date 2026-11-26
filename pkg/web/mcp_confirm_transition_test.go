@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arturpanteleev/ai-team/pkg/lifecycle"
+	"github.com/arturpanteleev/workaistrator/pkg/lifecycle"
 )
 
 // startSpecConfirmation drives a real task up to the confirmation of the spec

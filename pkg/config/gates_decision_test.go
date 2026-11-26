@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arturpanteleev/ai-team/pkg/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/workflow"
 )
 
 // gates_decision_test.go — the version-2 LLM and human gates (S05).

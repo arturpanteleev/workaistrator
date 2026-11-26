@@ -14,19 +14,19 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/approval"
-	"github.com/arturpanteleev/ai-team/pkg/config"
-	"github.com/arturpanteleev/ai-team/pkg/control"
-	"github.com/arturpanteleev/ai-team/pkg/lifecycle"
-	"github.com/arturpanteleev/ai-team/pkg/notifier"
-	"github.com/arturpanteleev/ai-team/pkg/pipeline"
-	"github.com/arturpanteleev/ai-team/pkg/web/store"
+	"github.com/arturpanteleev/workaistrator/pkg/config"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/approval"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/control"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/pipeline"
+	"github.com/arturpanteleev/workaistrator/pkg/lifecycle"
+	"github.com/arturpanteleev/workaistrator/pkg/notifier"
+	"github.com/arturpanteleev/workaistrator/pkg/web/store"
 )
 
 // waitingStageEngine — тестовый run engine, который ЗАМЕНЯЕТ настоящий
 // pipeline: агенты, проверки и граф этапов здесь не исполняются. Он только
 // воспроизводит durable-след первого этапа: проецирует run_started/attempt_* в
-// SQLite через отдельное соединение (как recorderStore в `ai-team web`),
+// SQLite через отдельное соединение (как recorderStore в `workaistrator web`),
 // открывает человеческий запрос на подтверждение этапа и паркует run в фазе
 // waiting. Тест поэтому проверяет персистентность web-сервера, контроллера и
 // SQLite, а не исполнение pipeline. done закрывается, когда вся durable-запись
@@ -97,7 +97,7 @@ func (e *waitingStageEngine) Cancel(config pipeline.CancelConfig) (pipeline.RunR
 }
 
 // restartServer поднимает web-сервер над файловой базой dbPath и целевым
-// каталогом target — так же, как `ai-team web` при каждом старте процесса.
+// каталогом target — так же, как `workaistrator web` при каждом старте процесса.
 func restartServer(t *testing.T, dbPath, target string, engine *waitingStageEngine) *Server {
 	t.Helper()
 	controller, err := control.New(engine, target)

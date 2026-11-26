@@ -14,8 +14,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/checks"
-	"github.com/arturpanteleev/ai-team/pkg/safeio"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/stage/checks"
+	"github.com/arturpanteleev/workaistrator/pkg/safeio"
 )
 
 const metadataVersion = 1

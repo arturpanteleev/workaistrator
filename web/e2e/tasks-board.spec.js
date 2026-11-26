@@ -58,13 +58,13 @@ async function waitForServer(url, child) {
 test('tasks board creates a task from the browser and shows it by stage', async ({ page }) => {
   const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'ai-team-tasks-board-e2e-'))
   const target = path.join(tempRoot, 'target')
-  const binary = path.join(tempRoot, 'ai-team')
+  const binary = path.join(tempRoot, 'WorkAiStrator')
   const port = await unusedPort()
   const baseURL = `http://127.0.0.1:${port}`
   let webServer
 
   try {
-    run('go', ['build', '-o', binary, './cmd/ai-team'], { cwd: repoDir })
+    run('go', ['build', '-o', binary, './cmd/workaistrator'], { cwd: repoDir })
     await mkdir(target, { recursive: true })
     run(binary, ['init', '--target', target], { cwd: repoDir })
     webServer = start(binary, ['web', '--target', target, '--port', String(port), '--dist', path.join(webDir, 'dist'), '--scheduler-db', '.ai-team/scheduler.db'], { cwd: target })
@@ -78,7 +78,7 @@ test('tasks board creates a task from the browser and shows it by stage', async 
 
     // Board with template-stage columns and Russian title/lang contract.
     await expect(page.getByRole('heading', { name: 'Задачи', level: 1 })).toBeVisible()
-    await expect(page).toHaveTitle('Задачи — ai-team')
+    await expect(page).toHaveTitle('Задачи — WorkAiStrator')
     await expect(page.locator('html')).toHaveAttribute('lang', 'ru')
     await expect(page.getByRole('region', { name: 'Доска по этапам' })).toBeVisible()
     await expect(page.getByLabel('Этап: Бизнес-идея')).toBeVisible()

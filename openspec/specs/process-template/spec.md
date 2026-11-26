@@ -180,14 +180,14 @@ while a stage with return routes keeps the approval carrying `approve` and the
 
 ### Requirement: Profile presets materialize templates
 
-`ai-team init` MUST write the built-in `idea-to-prod` template by default.
+`workaistrator init` MUST write the built-in `idea-to-prod` template by default.
 `fast`, `standard`, and `regulated` presets MUST be serialized as ordinary
 schema v6 templates with one template ID each; they MUST NOT require a separate
 runtime profile representation.
 
 #### Scenario: Default init template
 
-- **КОГДА** `ai-team init` runs without a profile override
+- **КОГДА** `workaistrator init` runs without a profile override
 - **ТОГДА** it MUST write `schema_version: 6` and `template: idea-to-prod`
 
 #### Scenario: Profile init
@@ -295,7 +295,7 @@ version. Concurrent edits MUST NOT silently overwrite a newer active version.
   `delivery_timeout`, `model` and `effort` MUST NOT be refused; the role,
   executor and tighten-only checks MUST NOT apply to an already pinned template
 - **И** run-agent and return MUST be refused before any decision is recorded
-- **И** `ai-team web` MUST warn at start about stored versions that would be
+- **И** `workaistrator web` MUST warn at start about stored versions that would be
   refused, and MUST print an error when the audit itself cannot be completed
 
 #### Scenario: Publish with stale active version

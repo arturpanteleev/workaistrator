@@ -22,6 +22,6 @@ identity. Это несовместимо с web/cloud approvals, где run д�
 ## Затронутые области
 
 - `pkg/pipeline`, новый lifecycle package, `pkg/evidence`, recorder/SQLite,
-  `cmd/ai-team`.
+  `cmd/workaistrator`.
 - Capabilities: новый `run-lifecycle`; изменённые `workflow-engine`,
   `workflow-rollback`, `cli-interface`, `run-evidence`.

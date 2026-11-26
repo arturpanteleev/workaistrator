@@ -6,7 +6,7 @@
 записать разделяемое правило в `.gitignore`.
 
 #### Scenario: Чистая инициализация по умолчанию
-- **КОГДА** пользователь запускает `ai-team init` в Git-репозитории
+- **КОГДА** пользователь запускает `workaistrator init` в Git-репозитории
 - **ТОГДА** система MUST идемпотентно добавить `.ai-team/` в локальный
   `.git/info/exclude`
 - **И** MUST NOT создавать или изменять `.gitignore`
@@ -14,7 +14,7 @@
   чистым до запуска
 
 #### Scenario: Явная разделяемая ignore policy
-- **КОГДА** пользователь запускает `ai-team init --write-gitignore`
+- **КОГДА** пользователь запускает `workaistrator init --write-gitignore`
 - **ТОГДА** система MUST идемпотентно добавить `.ai-team/` в корневой
   `.gitignore`
 - **И** изменение `.gitignore` MUST быть видимым в Git workspace
@@ -30,9 +30,9 @@
 - **И** MUST NOT записывать данные по symlink
 
 ### Requirement: Директория reports при инициализации
-Система MUST создавать `.ai-team/reports/` при `ai-team init`.
+Система MUST создавать `.ai-team/reports/` при `workaistrator init`.
 
 #### Scenario: Init создаёт reports
-- **КОГДА** `ai-team init` запускается
+- **КОГДА** `workaistrator init` запускается
 - **ТОГДА** система MUST создать `.ai-team/reports/` директорию
 - **И** `.ai-team/` MUST быть исключён выбранной Git ignore policy

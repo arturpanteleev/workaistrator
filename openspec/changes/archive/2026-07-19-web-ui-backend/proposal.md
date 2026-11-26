@@ -17,7 +17,7 @@
 - WebSocket hub для live updates
 - Pipeline event emitter (stage_started, stage_completed, pipeline_completed)
 - WebNotifier — реализация Notifier для записи в SQLite + push через WebSocket
-- CLI команда: `ai-team web --port 8080`
+- CLI команда: `workaistrator web --port 8080`
 
 ## Capabilities
 
@@ -28,7 +28,7 @@
 - `web-api`: REST API endpoints для запроса данных о pipeline
 - `web-websocket`: WebSocket hub для real-time updates
 - `web-pipeline-integration`: Интеграция pipeline с web backend (event emitter, WebNotifier)
-- `web-cli-command`: CLI команда `ai-team web`
+- `web-cli-command`: CLI команда `workaistrator web`
 
 ### Modified Capabilities
 
@@ -38,6 +38,6 @@
 
 - `pkg/web/` — новый пакет (server, handlers, websocket, store)
 - `go.mod` — добавление зависимостей (chi router, modernc.org/sqlite, gorilla/websocket)
-- `cmd/ai-team/main.go` — добавление команды `web`
+- `cmd/workaistrator/main.go` — добавление команды `web`
 - `pkg/notifier/notifier.go` — возможно расширение интерфейса
 - `pkg/pipeline/pipeline.go` — добавление event emitter

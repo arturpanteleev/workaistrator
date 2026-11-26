@@ -1,195 +1,155 @@
-# ai-team
+# WorkAiStrator
 
-[![CI](https://github.com/arturpanteleev/ai-team/actions/workflows/ci.yaml/badge.svg)](https://github.com/arturpanteleev/ai-team/actions/workflows/ci.yaml)
-[![Docs](https://img.shields.io/badge/docs-site-blue)](https://arturpanteleev.github.io/ai-team/)
-[![Release](https://img.shields.io/github/v/release/arturpanteleev/ai-team)](https://github.com/arturpanteleev/ai-team/releases/latest)
-[![Go](https://img.shields.io/github/go-mod/go-version/arturpanteleev/ai-team)](https://go.dev/dl/)
-[![License](https://img.shields.io/github/license/arturpanteleev/ai-team)](LICENSE)
+[![CI](https://github.com/arturpanteleev/workaistrator/actions/workflows/ci.yaml/badge.svg)](https://github.com/arturpanteleev/workaistrator/actions/workflows/ci.yaml)
+[![Docs](https://img.shields.io/badge/docs-site-blue)](https://arturpanteleev.github.io/workaistrator/)
+[![Release](https://img.shields.io/github/v/release/arturpanteleev/workaistrator)](https://github.com/arturpanteleev/workaistrator/releases/latest)
+[![Go](https://img.shields.io/github/go-mod/go-version/arturpanteleev/workaistrator)](https://go.dev/dl/)
+[![License](https://img.shields.io/github/license/arturpanteleev/workaistrator)](LICENSE)
 
-**AI-агенты пишут код. Решает, что попадёт в репозиторий, не модель, а вы и
-строгий контроллер.**
+**Движок графовых workflow для оркестрации AI-агентов.** Этапы, переходы,
+гейты, доказательства и delivery исполняет детерминированный контроллер на Go,
+а не модель. Коммит, push и PR появляются только после того, как вы
+подтвердили точный delivery-план по его SHA-256.
 
-ai-team ведёт задачу по цепочке агентов: аналитик пишет спецификацию,
-архитектор — дизайн, программист — код, ревьюер, тестировщик и верификатор
-проверяют. Переходы между этапами, проверки, доказательства и delivery
-исполняет детерминированный контроллер на Go. Коммит, push и PR появляются
-только после того, как вы подтвердили точный delivery-план по его SHA-256.
+## Одна команда
 
-Документация: **<https://arturpanteleev.github.io/ai-team/>**
-
-## Зачем это
-
-С обычным coding-агентом трудно быть уверенным, что между «агент написал код»
-и «код попал в main» были ревью и тесты, а не «похоже, ок». ai-team превращает
-это в обязательный протокол:
-
-- каждый смысловой этап заканчивается вердиктом, который читает контроллер,
-  а не человек на глаз;
-- агент может менять только разрешённые пути, всё остальное проваливает этап;
-- проверки проекта запускает контроллер, а не модель;
-- delivery делает контроллер, ровно по плану, который вы подтвердили;
-- каждый прогон оставляет проверяемые доказательства в `.ai-team/runs/<run_id>/`.
-
-Как это выглядит на экране — в [туре](docs/start/tour.md). Чем ai-team
-отличается от Bernstein, AI-SDLC, Spec Kit, LangGraph и других — в
-[сравнении](docs/start/compare.md).
-
-## Для кого
-
-**Для команды.** ai-team разворачивается на сервере или в облаке, и команда
-работает в одном веб-дашборде: запускает прогоны, подтверждает переходы по
-своим ролям, смотрит артефакты и доказательства. Попробовать можно и на своей
-машине, на одном репозитории.
-
-**Enterprise — следующий этап.** Для одной команды уже есть вход по токену
-или через корпоративный SSO (OIDC), постоянные сессии, роли в подтверждениях,
-очередь заданий и архив доказательств. Разделения ответственности между
-командами и зонами пока нет.
-
-> [!NOTE]
-> ai-team не изолирует агентов сам: агент работает с правами процесса, который
-> его запустил. В облаке запускайте исполнителей в одноразовых контейнерах.
-> Подробно — в [Граница безопасности](docs/reference/security.md).
-
-Подробнее о выборе — [Подходит ли вам](docs/start/fit.md).
-
-## Установка
-
-Нужны Go 1.26.11+ (для `go install`), один из CLI-рантаймов в `PATH`
-([OpenCode](https://opencode.ai), [Codex](https://github.com/openai/codex) или
-[Claude Code](https://docs.anthropic.com/en/docs/claude-code)) и, для delivery,
-авторизованный [`gh`](https://cli.github.com).
+Из клона репозитория — без ключей, Docker и настроек:
 
 ```bash
-go install github.com/arturpanteleev/ai-team/cmd/ai-team@latest
-ai-team version
+go build -o bin/workaistrator ./cmd/workaistrator && ./bin/workaistrator run --demo
 ```
 
-Готовые бинарники для darwin/linux × amd64/arm64 лежат в
-[релизах](https://github.com/arturpanteleev/ai-team/releases/latest). Каждый
-релиз после `v0.2.0` подписан cosign (keyless, Sigstore) и снабжён
-`sha256sums.txt`. Как проверить подпись перед установкой — в учебнике
-[Установка](docs/tutorial/install.md).
+Demo проходит граф на агентах-заглушках и ничего не пишет на диск: это
+симуляция обхода графа, без `run_id` и без evidence. Настоящие доказательства
+появляются только у реального прогона — см.
+[Quickstart](docs/start/quickstart.md). Если в вашей сборке команды `run --demo`
+ещё нет, тот же сценарий запускает `bash docs/demo/run-demo.sh`.
 
-## Быстрый старт
+## Как выглядит workflow
 
-Посмотреть `ai-team gate` без модели и без ключей — готовое демо из корня
-репозитория ai-team (нужны `bash`, `git` и Go):
+```text
+intent ─▶ product_spec ─▶ tech_design ─▶ implementation ─▶ code_review ─▶ qa ─▶ done
+                                        ▲                                │
+                                        └─────────── on_fail ────────────┘
 
-```bash
-bash docs/demo/run-demo.sh
+on_fail может вести на любой предыдущий этап; цикл защищён max_visits.
 ```
 
-Подготовить свой проект и провести задачу:
-
-```bash
-cd /my-project
-ai-team init
-ai-team run --feature add-jwt-auth --task "Реализовать JWT авторизацию"
-```
-
-В интерактивном терминале контроллер покажет delivery-план и спросит
-`Продолжить? [y/N]` перед delivery. Без терминала (CI, скрипт)
-прогон остановится с кодом `3` и напечатает delivery-план с его SHA-256.
-Подтвердите именно его:
-
-```bash
-ai-team run --resume <run_id> --approve-plan <sha256>
-```
-
-Результат — на дашборде `ai-team web` или в `.ai-team/runs/<run_id>/`.
-
-Ключ провайдера агент видит, только если вы разрешили его имя:
-`AI_TEAM_HARNESS_ENV_ALLOW=ANTHROPIC_API_KEY ai-team run …`. Подробно — в
-учебнике [Подключить настоящую модель](docs/tutorial/real-model.md).
-
-## Дашборд, проекты, workflow, гейты, MCP и трекер
-
-`ai-team web` поднимает дашборд на `127.0.0.1:8080`. Для команды запуск идёт в
-облачном режиме (`--auth-secret-env`, токены `ai-team auth-token`, SSO по OIDC).
-Что умеет текущая версия:
-
-- **Workflow и графы.** Workflow — это класс: именованная версия набора графов
-  с эффективными цепочками гейтов входа и выхода. Задача закрепляет граф при
-  старте и проходит по нему уже как по прогону. Встроенный каталог содержит два
-  сценария: `idea-to-prod` — полный путь от идеи до выкладки, и `bugfix` —
-  короткий граф «разбор → исправление → проверка» со своими этапами и гейтами.
-  Активный сценарий выбирается полем `workflow` в конфиге; файлы без блока
-  `workflows` по-прежнему получают синтезированный `idea-to-prod`. В дашборде
-  есть каталог **Workflow** и отдельная страница графа: `/graphs/<id>` показывает
-  граф-класс, а `/runs/<id>/graph` — граф конкретного прогона с фактическими
-  статусами этапов, посещениями и возвратами.
-- **Входные гейты.** `entry_gate_groups` проверяют входные артефакты до запуска
-  исполнителя этапа. Проваленный обязательный гейт входа блокирует запуск,
-  рекомендательный только предупреждает; попытки входа пишутся в durable-журнал
-  с фазой `entry`. Гейты выхода (`exit_gate_groups`) работают как раньше.
-- **Контракт результата coder.** Программист обязан выдать `coder.diff` —
-  настоящий unified diff — и `unit-test-report.md` со строкой `**Result:**
-  PASS|FAIL`. Ссылка на PR берётся по URL из выхода агента, а не по первому
-  попавшемуся файлу. Нет отчёта — этап провален, а после возврата на доработку
-  гейт повторяется заново.
-- **Процессные правки workflow.** Со страницы workflow в дашборде и через MCP
-  можно менять только процессные поля — название и описание. Сервер принимает
-  доверенный process-only patch и отклоняет любое изменение инфраструктуры,
-  командных гейтов и адаптеров: их правят в `.ai-team/config.yaml` как код.
-- **`ai-team template audit`.** Разовый dry-run аудит сохранённых версий
-  шаблона, у которых нет якоря доверия: команда показывает, какие версии
-  расходятся с активным файловым конфигом, а `--rewrite` пересохраняет
-  проверенные версии через доверенный файловый якорь. См. `ai-team help`.
-- **Проекты.** Каждая задача и идея принадлежат ровно одному проекту-папке;
-  без `project_id` создание отклоняется. Старые записи лежат в проекте
-  «Основной».
-- **Гейты этапа.** Самая новая схема конфига — `schema_version: 7`: она
-  добавляет к гейтам этапа (`exit_gate_groups`) метаданные workflow и входные
-  гейты. `ai-team init` пока пишет v6, а v5 и v6 продолжают загружаться без
-  миграции. Библиотека гейтов версионирована: `required_sections`,
-  `verdict_marker`, `required_phrases`, `pr_*`, `project_checks`,
-  `agent_review`, `human_approval`, `external_program`, `docker_program`.
-  Группы идут по очереди, гейты внутри группы параллельно. Рекомендательный
-  гейт не блокирует переход, технический сбой повторяется на той же версии
-  результата, обход проваленного обязательного гейта доступен только
-  администратору (право `admin`) и виден красной отметкой. Подробно —
-  [Конфигурация](docs/reference/config.md) и
-  [Протокол гейта](docs/reference/gate-protocol.md).
-- **Исполнитель этапа.** Человек, внутренний агент или внешний адаптер
-  (`executor_adapters`, в том числе в Docker для `code_review`).
-- **Статусы этапов** вычисляются из durable-журнала и одинаковы в UI, REST и MCP.
-- **Сетевой MCP.** `POST /mcp` даёт Claude и Codex те же чтения и действия, что
-  Web/REST, под личностью владельца персонального токена. Разрешённые
-  браузерные источники — `--mcp-allowed-origins`. См. [Сетевой MCP](docs/reference/mcp.md).
-- **Трекер задач.** Связь «задача — карточка» 1:1; исходящие переходы
-  (`tracker.on_enter`, `tracker.on_pass`) и входящая синхронизация, которая
-  двигает граф только через контроллер. Jira — один из адаптеров.
-
-Схема SQLite дашборда — версия 19; миграции применяются при открытии базы.
-Итоги спринта — в [отчёте](docs/sprint-2026-10-report.md), сквозной сценарий —
-в [демо](docs/demo/README.md).
+Граф описывается одним YAML: `stages`, `transitions` (`on_pass`/`on_fail`) и
+гейты четырёх типов — `program`, `llm`, `human`, `required_phrases`.
 
 ## Документация
+
+Начните с трёх страниц:
+
+| Страница | Зачем |
+|---|---|
+| **[Quickstart](docs/start/quickstart.md)** | от нуля до первого успешного прогона за ≤5 минут |
+| **[Workflow Reference](docs/start/workflow-reference.md)** | stages, transitions, гейты и loopback |
+| **[Deployment](docs/start/deployment.md)** | один бинарник, дашборд, OIDC, архив evidence |
+
+Полный справочник:
 
 | Раздел | Что внутри |
 |---|---|
 | [Ключевые понятия](docs/start/concepts.md) | прогон, кандидат, вердикт, delivery-план; глоссарий |
-| [Учебник](docs/tutorial/install.md) | от установки до первого PR за четыре шага |
-| [Проверки в CI без модели](docs/guides/ci-gate.md) | `ai-team gate` как проверка изменений в CI |
-| [Остановки и BLOCKED](docs/guides/troubleshooting.md) | почему прогон остановился и что делать |
+| [Как это выглядит](docs/start/tour.md) | один прогон от задачи до PR в скриншотах |
 | [Команды CLI](docs/reference/cli.md) | все команды и флаги |
 | [Конфигурация](docs/reference/config.md) | `.ai-team/config.yaml`, профили, рантаймы и ключи |
 | [Агенты и этапы](docs/reference/pipeline.md) | кто что делает и где решает человек |
 | [Статусы и коды выхода](docs/reference/statuses.md) | что означает код и что делать |
 | [Граница безопасности](docs/reference/security.md) | что гарантируется, а что нет |
 | [Протокол гейта](docs/reference/gate-protocol.md) | JSON-контракт гейта внешней программы |
-| [Сетевой MCP](docs/reference/mcp.md) | подключение Claude и Codex, токены, инструменты чтения и действия, матрица паритета с REST |
+| [Сетевой MCP](docs/reference/mcp.md) | подключение Claude и Codex, токены, паритет с REST |
 | [Web API задач](docs/reference/TASK-FLOW-WEB-API.md) | REST-маршруты, статусы этапов, гейты, права |
 | [Архитектура](docs/ARCHITECTURE.md) | как устроен контроллер внутри |
 
-## Разработка
+## Зачем это
 
-Нужны Go 1.26.11+ и Node 22+ (фронтенд дашборда); точная версия Go для
-локальной сборки закреплена в [`.tool-versions`](.tool-versions).
+С обычным coding-агентом трудно быть уверенным, что между «агент написал код»
+и «код попал в main» были ревью и тесты, а не «похоже, ок». WorkAiStrator
+превращает это в протокол:
+
+- каждый этап заканчивается вердиктом, который читает контроллер;
+- агент меняет только разрешённые пути, остальное проваливает этап;
+- проверки запускает контроллер, а не модель;
+- delivery идёт ровно по подтверждённому плану;
+- каждый прогон оставляет проверяемые доказательства.
+
+## Для кого
+
+Для команды, которой нужен предсказуемый процесс вокруг AI-агентов: аналитик,
+архитектор, программист, ревьюер, тестировщик. WorkAiStrator разворачивается
+на сервере или в облаке, команда работает в одном дашборде и подтверждает
+переходы по своим ролям. Попробовать можно на своей машине с одним
+репозиторием.
+
+> [!NOTE]
+> WorkAiStrator не изолирует агентов сам: агент работает с правами процесса,
+> который его запустил. В облаке запускайте исполнителей в одноразовых
+> контейнерах. Подробно — в [Границе безопасности](docs/reference/security.md).
+
+## Установка
+
+Нужны Go 1.26.11+ (для `go install`), один CLI-рантайм в `PATH`
+([OpenCode](https://opencode.ai), [Codex](https://github.com/openai/codex) или
+[Claude Code](https://docs.anthropic.com/en/docs/claude-code)) и, для delivery,
+авторизованный [`gh`](https://cli.github.com). Для demo и `workaistrator gate`
+ничего этого не нужно.
 
 ```bash
-make build          # сборка bin/ai-team
+go install github.com/arturpanteleev/workaistrator/cmd/workaistrator@latest
+workaistrator version
+```
+
+Готовые бинарники — в
+[релизах](https://github.com/arturpanteleev/workaistrator/releases/latest):
+darwin/linux × amd64/arm64, подпись cosign (keyless, Sigstore) и
+`sha256sums.txt`.
+
+## Быстрый старт
+
+```bash
+workaistrator init
+workaistrator run --feature add-login \
+  --task "Добавить вход по e-mail и паролю"
+```
+
+`init` создаёт `.ai-team/config.yaml` с рабочим графом; `run` читает граф
+оттуда. Перед delivery контроллер покажет план и его SHA-256 и спросит
+подтверждение.
+Без терминала прогон остановится с кодом `3`; подтвердите именно этот план:
+
+```bash
+workaistrator run --resume <run_id> --approve-plan <sha256>
+```
+
+Результат — в дашборде `workaistrator web` на <http://127.0.0.1:8080> и в
+`.ai-team/runs/<run_id>/`. Пошагово — в [Quickstart](docs/start/quickstart.md).
+
+Ключ провайдера агент видит, только если вы разрешили его имя:
+`AI_TEAM_HARNESS_ENV_ALLOW=ANTHROPIC_API_KEY workaistrator run …`.
+
+## Дашборд и возможности
+
+`workaistrator web` поднимает дашборд: проекты, задачи, графы, решения,
+артефакты и доказательства. Для команды — облачный режим с токенами и SSO по
+OIDC, роли в подтверждениях, очередь заданий. Гейты работают на входе и выходе
+этапа; группа гейтов идёт последовательно, гейты внутри группы — параллельно;
+проваленный обязательный гейт блокирует переход, обход доступен только
+администратору и виден в журнале. Сетевой MCP даёт Claude и Codex те же
+чтения и действия, что Web/REST. Трекер задач двигает граф только через
+контроллер.
+
+Развёртывание, вход, backup и evidence — в [Deployment](docs/start/deployment.md).
+
+## Разработка
+
+Нужны Go 1.26.11+ и Node 22+ (фронтенд дашборда); точная версия Go закреплена
+в [`.tool-versions`](.tool-versions).
+
+```bash
+make build          # сборка bin/workaistrator
 make test           # go test ./...
 make test-e2e       # E2E на mock-opencode
 make specs          # строгая проверка OpenSpec
@@ -197,18 +157,15 @@ make docs           # сайт документации в docs/_site
 make verify         # полная проверка, как в CI
 ```
 
-Как устроен процесс, как предложить изменение и что проверяет CI — в
-[«Как участвовать»](CONTRIBUTING.md) и
-[«Разработка ai-team»](docs/DEVELOPMENT.md).
-Ошибки и предложения — в
-[GitHub Issues](https://github.com/arturpanteleev/ai-team/issues).
-Уязвимости — только приватно, по
-[«Сообщить об уязвимости»](SECURITY.md).
+Как устроен процесс и что проверяет CI — в [«Как участвовать»](CONTRIBUTING.md)
+и [«Разработка»](docs/DEVELOPMENT.md). Ошибки и предложения — в
+[GitHub Issues](https://github.com/arturpanteleev/workaistrator/issues).
+Уязвимости — только приватно, по [«Сообщить об уязвимости»](SECURITY.md).
 
 Сайт документации собирается генератором [`docsgen/`](docsgen/) из Markdown
 этого репозитория и публикуется на GitHub Pages при push в `master`. Релизы
-собираются по тегу `v*`: сначала весь CI против коммита тега, потом сборка,
-подпись cosign и публикация.
+собираются по тегу `v*`: CI против коммита тега, затем сборка, подпись cosign и
+публикация.
 
 ## Лицензия
 

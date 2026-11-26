@@ -13,8 +13,8 @@
 
 #### Scenario: ConsoleNotifier выводит уведомление
 - **КОГДА** этап завершается
-- **ТОГДА** `ConsoleNotifier` MUST вывести в stdout: `[ai-team] analyst completed ✓ (12.3s)`
-- **И** при ошибке: `[ai-team] coder failed ✗: error message`
+- **ТОГДА** `ConsoleNotifier` MUST вывести в stdout: `[WorkAiStrator] analyst completed ✓ (12.3s)`
+- **И** при ошибке: `[WorkAiStrator] coder failed ✗: error message`
 
 ### Requirement: Notifier цепочка
 Система MUST поддерживать цепочку из нескольких Notifier-ов.

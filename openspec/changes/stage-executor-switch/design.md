@@ -42,4 +42,4 @@ The API route is `POST /api/runs/{runID}/executor` with
 `{"stage_id":"…","executor":"human|agent"}`. It uses the user's stage
 function role and returns the selected visit ID. The CLI stage-action command
 is intentionally left for the B-71 integration seam; the intended action is
-`ai-team task stage <stage-id> run-agent`.
+`WorkAiStrator task stage <stage-id> run-agent`.

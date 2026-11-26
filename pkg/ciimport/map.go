@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/arturpanteleev/ai-team/pkg/checks"
-	"github.com/arturpanteleev/ai-team/pkg/safeio"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/stage/checks"
+	"github.com/arturpanteleev/workaistrator/pkg/safeio"
 	"gopkg.in/yaml.v3"
 )
 

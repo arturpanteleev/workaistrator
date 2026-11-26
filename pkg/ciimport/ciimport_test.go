@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arturpanteleev/ai-team/pkg/checks"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/stage/checks"
 )
 
 func writeWorkflow(t *testing.T, target, name, content string) {

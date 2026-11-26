@@ -5,8 +5,8 @@ import (
 	"errors"
 	"io"
 
-	"github.com/arturpanteleev/ai-team/pkg/verdict"
-	"github.com/arturpanteleev/ai-team/pkg/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/store/verdict"
 )
 
 var ErrNotImplemented = errors.New("LLM runtime: not implemented yet")

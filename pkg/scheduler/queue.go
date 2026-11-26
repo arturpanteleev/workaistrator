@@ -15,7 +15,7 @@ import (
 
 	_ "modernc.org/sqlite"
 
-	"github.com/arturpanteleev/ai-team/pkg/worker"
+	"github.com/arturpanteleev/workaistrator/pkg/worker"
 )
 
 var ErrDuplicate = errors.New("active worker job уже существует")

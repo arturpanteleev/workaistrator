@@ -11,7 +11,7 @@ records on stdout, one object per line, parseable via `encoding/json`.
 
 #### Scenario: Gate result as JSON
 
-- **WHEN** `ai-team gate --json ...` completes
+- **WHEN** `workaistrator gate --json ...` completes
 - **THEN** stdout MUST contain a single JSON object line with fields
   `level`, `cmd`, `type`, `message` and `data`
 - **AND** `exit_code` MUST be present whenever the exit code is nonzero
@@ -20,7 +20,7 @@ records on stdout, one object per line, parseable via `encoding/json`.
 
 #### Scenario: Verify result as JSON
 
-- **WHEN** `ai-team verify --json <bundle|run>` completes successfully
+- **WHEN** `workaistrator verify --json <bundle|run>` completes successfully
 - **THEN** stdout MUST contain a JSON record with `cmd:"verify"` and a `type`
   of `gate_bundle`, `run_bundle` or `run`
 - **AND** on failure a record with `level:"error"` MUST be emitted before the
@@ -34,7 +34,7 @@ preserving exit codes.
 
 #### Scenario: Quiet run
 
-- **WHEN** `ai-team gate --quiet ...` completes
+- **WHEN** `workaistrator gate --quiet ...` completes
 - **THEN** stdout MUST NOT contain a JSON result record
 - **AND** exit codes MUST be identical to the non-quiet invocation
 
@@ -46,12 +46,12 @@ flags.
 
 #### Scenario: Flag after subcommand
 
-- **WHEN** `ai-team gate --json ...` (global flag after subcommand) runs
+- **WHEN** `workaistrator gate --json ...` (global flag after subcommand) runs
 - **THEN** the subcommand MUST parse successfully and emit JSON
 
 #### Scenario: Flag before subcommand
 
-- **WHEN** `ai-team --json gate ...` (global flag before subcommand) runs
+- **WHEN** `WorkAiStrator --json gate ...` (global flag before subcommand) runs
 - **THEN** the command MUST dispatch to `gate` and emit JSON
 
 ### Requirement: Logging package

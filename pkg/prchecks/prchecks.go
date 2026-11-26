@@ -19,10 +19,10 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/arturpanteleev/ai-team/pkg/checks"
-	"github.com/arturpanteleev/ai-team/pkg/containment"
-	"github.com/arturpanteleev/ai-team/pkg/delivery"
-	"github.com/arturpanteleev/ai-team/pkg/gate"
+	"github.com/arturpanteleev/workaistrator/pkg/containment"
+	"github.com/arturpanteleev/workaistrator/pkg/delivery"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/stage/checks"
+	"github.com/arturpanteleev/workaistrator/pkg/gate"
 	"gopkg.in/yaml.v3"
 )
 
@@ -329,9 +329,9 @@ func (r Runner) projectChecks(ctx context.Context, targetDir, repository string,
 		return "", "", errors.New("pull request changed while project checks were running; retry against stable head/base SHAs")
 	}
 	if exitCode != gate.ExitPass || result.Status != "passed" {
-		return "failed", fmt.Sprintf("ai-team gate status=%s policy=%s", result.Status, result.PolicyVerdict), nil
+		return "failed", fmt.Sprintf("workaistrator gate status=%s policy=%s", result.Status, result.PolicyVerdict), nil
 	}
-	return "passed", fmt.Sprintf("ai-team gate passed for head %s against base %s", headOID, baseOID), nil
+	return "passed", fmt.Sprintf("workaistrator gate passed for head %s against base %s", headOID, baseOID), nil
 }
 
 func (r Runner) newSandbox(targetDir, trustedRepoDir string) (checks.CommandSandbox, error) {
@@ -494,7 +494,7 @@ func loadTrustedBaseGateConfig(ctx context.Context, commands delivery.CommandRun
 		return &cfg, nil
 	}
 	// A PR cannot add or edit its way around the project's gate policy: when
-	// the base has no gate.yaml, use the same safe default as `ai-team gate`.
+	// the base has no gate.yaml, use the same safe default as `workaistrator gate`.
 	return &gate.Config{SchemaVersion: gate.SchemaVersion, DiffPolicy: gate.DiffPolicy{TestModify: gate.TestModifyRequired}}, nil
 }
 

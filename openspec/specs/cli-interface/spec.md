@@ -31,11 +31,11 @@ CLI MUST предоставлять `init`, `run`, `runs`, `show`, `cancel`, `li
 `runs` MUST показывать сохранённые lifecycle runs проекта, а `show` MUST проверять соответствие lifecycle identity immutable run evidence перед показом этапов, попыток и ожидания.
 
 #### Scenario: Список задач
-- **КОГДА** пользователь вызывает `ai-team runs --target <path>`
+- **КОГДА** пользователь вызывает `workaistrator runs --target <path>`
 - **ТОГДА** CLI MUST перечислить lifecycle runs проекта с feature, phase, next stage и временем обновления
 
 #### Scenario: Подробности прогона
-- **КОГДА** пользователь вызывает `ai-team show <run_id>`
+- **КОГДА** пользователь вызывает `workaistrator show <run_id>`
 - **ТОГДА** CLI MUST проверить manifest, event chain и attempt manifests до показа истории попыток
 - **И** MUST показать токены и приблизительную долю месячной подписки только при достаточных данных
 - **И** MUST NOT показывать точную цену API
@@ -44,12 +44,12 @@ CLI MUST предоставлять `init`, `run`, `runs`, `show`, `cancel`, `li
 `cancel` MUST завершить только non-terminal run и сохранить непустую пользовательскую причину в событии `run_canceled`.
 
 #### Scenario: Отмена run
-- **КОГДА** пользователь вызывает `ai-team cancel <run_id> --reason <text>` для незавершённого run
+- **КОГДА** пользователь вызывает `workaistrator cancel <run_id> --reason <text>` для незавершённого run
 - **ТОГДА** CLI MUST записать причину в verified event journal и перевести lifecycle в terminal
 - **И** уже terminal run MUST быть отклонён
 
 ### Requirement: Human stage take command
-CLI MUST предоставлять `ai-team stage take <run_id> --stage <id>` для текущего
+CLI MUST предоставлять `workaistrator stage take <run_id> --stage <id>` для текущего
 ожидающего human input этапа через защищённый web controller. Actor и role MUST
 определяться серверной сессией и approval policy; CLI MUST NOT принимать их как
 параметры этой команды. Клиент MUST получить web session/CSRF token через
@@ -74,7 +74,7 @@ URL до передачи bearer token.
   взятии
 
 ### Requirement: Init
-`ai-team init` MUST создать `.ai-team/config.yaml`, artifact tasks, reports и
+`workaistrator init` MUST создать `.ai-team/config.yaml`, artifact tasks, reports и
 logs directories. В Git repository команда MUST обеспечить ignore
 `.ai-team/`, не изменяя workspace по умолчанию.
 
@@ -117,7 +117,7 @@ workspace lock и использовать одну immutable run_id на вес
 - **ТОГДА** CLI и direct pipeline API MUST отклонить запрос до записи файлов
 
 #### Scenario: Resume
-- **КОГДА** пользователь запускает `ai-team run --resume <run_id>`
+- **КОГДА** пользователь запускает `workaistrator run --resume <run_id>`
 - **ТОГДА** CLI MUST восстановить feature, task и next stage
 - **И** MUST продолжить ту же run identity после fail-closed проверок
 

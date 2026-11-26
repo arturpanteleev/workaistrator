@@ -1,6 +1,6 @@
 # Security Policy
 
-ai-team is a control plane that, in its default `trusted-local` profile,
+WorkAiStrator is a control plane that, in its default `trusted-local` profile,
 executes agent tools and verification commands with the privileges of the
 current OS user. This makes security a first-class concern: please report any
 vulnerability promptly and privately.
@@ -14,7 +14,7 @@ Instead, disclose privately so we can triage and fix before publicising:
 - **Email:** <security@ai-team.dev> (or the maintainer contact listed on the
   repository owner's GitHub profile)
 - **GitHub Security Advisory:** use the private
-  [Report a vulnerability](https://github.com/arturpanteleev/ai-team/security/advisories/new)
+  [Report a vulnerability](https://github.com/arturpanteleev/workaistrator/security/advisories/new)
   form.
 
 Please include:
@@ -31,7 +31,7 @@ window before making details public.
 
 ## Scope
 
-This policy covers the `ai-team` repository itself (source, built binary,
+This policy covers the `workaistrator` repository itself (source, built binary,
 web dashboard, checks/delivery/evidence code paths, and CI configuration).
 
 ### In scope
@@ -47,10 +47,10 @@ web dashboard, checks/delivery/evidence code paths, and CI configuration).
 
 - **No OS-level sandbox:** in the `trusted-local` profile, agent tools and
   verification commands run with the current user's privileges. This is a
-  documented, acknowledged limitation, not a vulnerability. Do not run ai-team
+  documented, acknowledged limitation, not a vulnerability. Do not run WorkAiStrator
   on untrusted code or next to valuable secrets without external containment.
 - Third-party dependencies (report those to their own projects) unless the
-  ai-team integration is exploitable in a way the dependency alone is not.
+  WorkAiStrator integration is exploitable in a way the dependency alone is not.
 
 ## Supported versions
 
@@ -65,11 +65,11 @@ patched. We recommend always using the newest release.
 
 ## Security considerations for operators
 
-- Run ai-team only in trusted, local repositories.
+- Run WorkAiStrator only in trusted, local repositories.
 - For untrusted code or sensitive secrets, execute inside an external
   container/VM sandbox with strict filesystem/network/process limits and a
   disposable runtime (see `docs/ARCHITECTURE.md`,
-  `docs/reference/security.md` and the `ai-team worker` notes in
+  `docs/reference/security.md` and the `workaistrator worker` notes in
   `docs/reference/cli.md`).
 - Treat bundled evidence as integrity-protected but not necessarily
   authenticity-bearing unless signed with your own `--sign-key` and verified

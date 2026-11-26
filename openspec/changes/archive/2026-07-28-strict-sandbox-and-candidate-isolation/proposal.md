@@ -12,7 +12,7 @@ coverage proving a real `opencode` binary honors it, and workspace-hashing
 cost was measured (not estimated) at ~14-20 full-tree passes per run on a
 9,247-file repo.
 
-Today, `ai-team` mutates the live target workspace directly. The controller
+Today, `workaistrator` mutates the live target workspace directly. The controller
 detects disallowed mutations *after* the fact by comparing filesystem
 snapshots; it cannot prevent an agent or a compromised check from reading a
 secret, reaching the network, or corrupting workspace state before that

@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/delivery"
-	"github.com/arturpanteleev/ai-team/pkg/safeio"
+	"github.com/arturpanteleev/workaistrator/pkg/delivery"
+	"github.com/arturpanteleev/workaistrator/pkg/safeio"
 )
 
 const receiptSchemaVersion = 2
@@ -102,7 +102,7 @@ func Deploy(ctx context.Context, provider Provider, request DeployRequest) (Buil
 		case previous.CommitSHA != proof.DeploySHA:
 			if !current.Finished() {
 				// The branch moved on; replace the stale deployment.
-				cancelBuild(ctx, provider, current, "ai-team deploys a newer branch tip", request.Wait.CancelTimeout)
+				cancelBuild(ctx, provider, current, "WorkAiStrator deploys a newer branch tip", request.Wait.CancelTimeout)
 			}
 		case current.Finished() && finishedBuildError(current, proof.DeploySHA) == nil:
 			if err := writeReceipt(request, provider.Name(), proof, current, false, previous.DeployID); err != nil {
@@ -141,7 +141,7 @@ func Deploy(ctx context.Context, provider Provider, request DeployRequest) (Buil
 	}
 	if err := writeReceipt(request, provider.Name(), proof, build, false, deployID); err != nil {
 		// The build exists; stop it rather than leave an untracked deployment.
-		cancelBuild(ctx, provider, build, "ai-team could not record the deploy build", request.Wait.CancelTimeout)
+		cancelBuild(ctx, provider, build, "WorkAiStrator could not record the deploy build", request.Wait.CancelTimeout)
 		return build, err
 	}
 	final, waitErr := Wait(ctx, provider, build, proof.DeploySHA, request.Wait)

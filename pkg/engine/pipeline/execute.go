@@ -1,0 +1,774 @@
+package pipeline
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"math"
+	"net/url"
+	"os"
+	"path/filepath"
+	"sort"
+	"strings"
+	"time"
+
+	"github.com/arturpanteleev/workaistrator/pkg/agent"
+	"github.com/arturpanteleev/workaistrator/pkg/config"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/approval"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/lifecycle"
+	"github.com/arturpanteleev/workaistrator/pkg/logging"
+	"github.com/arturpanteleev/workaistrator/pkg/notifier"
+	"github.com/arturpanteleev/workaistrator/pkg/report"
+	"github.com/arturpanteleev/workaistrator/pkg/runtime"
+	"github.com/arturpanteleev/workaistrator/pkg/safeio"
+	"github.com/arturpanteleev/workaistrator/pkg/store/evidence"
+	"github.com/arturpanteleev/workaistrator/pkg/store/verdict"
+	"github.com/arturpanteleev/workaistrator/pkg/ui"
+)
+
+// execute.go — исполнение графа workflow и lifecycle-переходы.
+
+func (rs *runState) execute(ctx context.Context) error {
+	if err := rs.recordGatePins(); err != nil {
+		return err
+	}
+	rs.replayTypedEvents()
+	if err := rs.applyBudgetAllowanceGrant(); err != nil {
+		return err
+	}
+	if err := rs.recordResumedHumanDecision(); err != nil {
+		return err
+	}
+	if rs.runCfg.resumeDecisionAction == "reject" && (rs.resumedApproval == nil || rs.resumedApproval.Kind != approval.KindInput) &&
+		!rejectKeepsStage(rs.resumedApproval) {
+		return fmt.Errorf("%w: ожидавшийся переход отклонён человеком", ErrUserStopped)
+	}
+	return rs.executeGraph(ctx)
+}
+
+// consumeConfiguredSkip clears the one-shot skip request once its stage has
+// executed. requireSkipped is true when the stage actually executed in this
+// visit (an agent stage skipped by config, or a human stage that consumed the
+// skip through its skip-resolved input approval): such a stage must have
+// recorded OutcomeSkipped, otherwise the request fails closed. It is false for
+// replays (a pending check after a budget stop, a grill answer, a check
+// override), which do not execute the stage and cannot record the skip.
+// In every case the request is cleared: otherwise a later visit of the same
+// stage — for example after a loopback that switched it to an agent executor —
+// would be skipped again with a stale reason.
+func (rs *runState) consumeConfiguredSkip(current string, requireSkipped bool, result notifier.StageResult) error {
+	if rs.runCfg.skipStageID == "" || rs.runCfg.skipStageID != current {
+		return nil
+	}
+	if requireSkipped && result.State.Outcome != workflow.OutcomeSkipped {
+		return fmt.Errorf("stage %q did not record the requested skip", current)
+	}
+	rs.runCfg.skipStageID = ""
+	rs.runCfg.skipReason = ""
+	return nil
+}
+
+func (rs *runState) executeGraph(ctx context.Context) error {
+	current := rs.graph.Entry
+	if rs.runCfg.retryFrom != "" {
+		current = rs.runCfg.retryFrom
+	}
+	if rs.runCfg.skipStageID != "" && current != rs.runCfg.skipStageID {
+		return fmt.Errorf("skip stage %q does not match current stage %q", rs.runCfg.skipStageID, current)
+	}
+	if workflow.IsTerminal(current) {
+		return graphTerminalError(current, "", nil)
+	}
+	for {
+		if rs.runCfg.CancelRequested != nil && rs.runCfg.CancelRequested() {
+			return context.Canceled
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+		}
+		node, exists := rs.graph.Node(current)
+		if !exists {
+			return fmt.Errorf("workflow graph: next node %q не существует", current)
+		}
+		if err := rs.prepareControllerPRInput(ctx, current); err != nil {
+			return err
+		}
+		// Resume после остановки по бюджету перед проверяющим продолжает с
+		// проверки уже завершённой попытки: новой попытки нет, поэтому лимиты
+		// визитов и попыток к ней не применяются.
+		pendingCheck, hasPendingCheck, pendingErr := rs.pendingCheckAfterBudgetStop(current)
+		if pendingErr != nil {
+			// Проверку изменённого выхода не запускаем и этап молча не
+			// перезапускаем: run встаёт на паузу с явной причиной.
+			return fmt.Errorf("budget stop replay for %s: %w", current, pendingErr)
+		}
+		if !hasPendingCheck && node.MaxVisits > 0 && rs.visits[current] >= node.MaxVisits {
+			return fmt.Errorf("workflow graph: max_visits=%d исчерпан для %s", node.MaxVisits, current)
+		}
+		// P1-7: глобальный лимит попыток run'а (всегда, default 100). Проверка
+		// ДО исполнения: cap строгий, лишняя попытка не запускается.
+		if !hasPendingCheck && rs.attemptOrdinal >= rs.budgetConfig.EffectiveMaxAttempts() {
+			return fmt.Errorf("run budget: превышен лимит попыток max_attempts=%d", rs.budgetConfig.EffectiveMaxAttempts())
+		}
+		index := rs.graph.Index(current)
+		if err := rs.saveLifecycle(lifecycle.PhaseRunning, current); err != nil {
+			return err
+		}
+		if err := rs.prepareControllerStageEvidence(ctx, current); err != nil {
+			return fmt.Errorf("controller evidence for %s: %w", current, err)
+		}
+		if err := rs.authorizeStage(current); err != nil {
+			return err
+		}
+		executor := rs.stageExecutorForRun(current)
+		if override, active := rs.activeExecutorOverride(current); active {
+			if err := rs.recordExecutorChanged(current, override.PreviousExecutor, override.Executor, override.ActorID, override.VisitID, override.ChangedAt); err != nil {
+				return err
+			}
+		}
+		stageApproval := rs.activeResolvedApproval(current)
+		if stageApproval != nil && stageApproval.Kind == approval.KindInput &&
+			(stageApproval.ResolvedAction == "run_agent" || stageApproval.ResolvedAction == "refine_agent") {
+			decision := lastApprovalDecision(stageApproval)
+			if err := rs.recordExecutorChanged(current, "human", "agent", decision.ActorID, stageApproval.ID, decision.DecidedAt); err != nil {
+				return err
+			}
+		}
+		var result notifier.StageResult
+		replayedHumanAttempt := false
+		// requireSkipped: the visit executed the stage itself, so a configured
+		// skip of this stage must end with OutcomeSkipped.
+		requireSkipped := false
+		skippedByConfig := rs.runCfg.skipStageID == current && executor != "human"
+		retryGateByDecision := rs.runCfg.resumeDecisionAction == approval.ActionRetryGate &&
+			rs.resumedApproval != nil && rs.resumedApproval.Kind == approval.KindCheckDecision &&
+			current == rs.runCfg.retryFrom
+		overriddenByDecision := rs.runCfg.resumeDecisionAction == "override" &&
+			rs.resumedApproval != nil && rs.resumedApproval.Kind == approval.KindCheckDecision &&
+			current == rs.runCfg.retryFrom
+		if hasPendingCheck {
+			result = pendingCheck
+			replayedHumanAttempt = true
+		} else if stageApproval != nil && stageApproval.Kind == approval.KindGrillQuestions && stageApproval.FromStage == current {
+			for _, previous := range rs.results {
+				if previous.Name == current && previous.AttemptID == stageApproval.AttemptID {
+					result = previous
+					replayedHumanAttempt = true
+					break
+				}
+			}
+			if !replayedHumanAttempt {
+				return fmt.Errorf("grill approval %s has no source result for attempt %s", stageApproval.ID, stageApproval.AttemptID)
+			}
+		} else if retryGateByDecision {
+			// Technically failed gates run again on the SAME result version:
+			// the finished attempt is replayed, its checks run with the retry
+			// set, and the gates that already succeeded are not repeated.
+			var retryErr error
+			result, retryErr = rs.prepareGateRetry(current)
+			if retryErr != nil {
+				return retryErr
+			}
+			replayedHumanAttempt = true
+			rs.runCfg.resumeDecisionAction = ""
+			rs.resumedApproval = nil
+		} else if overriddenByDecision {
+			var overrideErr error
+			result, overrideErr = rs.applyCheckOverride(current)
+			if overrideErr != nil {
+				return overrideErr
+			}
+			rs.runCfg.resumeDecisionAction = ""
+			rs.resumedApproval = nil
+		} else if skippedByConfig {
+			requireSkipped = true
+			var found bool
+			var skipErr error
+			result, found, skipErr = rs.replayedSkippedStage(current, rs.runCfg.skipReason)
+			if skipErr != nil {
+				return skipErr
+			}
+			if !found {
+				result, skipErr = rs.runSkippedStage(ctx, index, current, rs.runCfg.skipReason)
+				if skipErr != nil {
+					return skipErr
+				}
+			}
+		} else if executor == "human" {
+			requireSkipped = true
+			var humanErr error
+			result, humanErr = rs.runHumanStage(ctx, index, current)
+			if humanErr != nil {
+				return humanErr
+			}
+		} else {
+			var cleanup func()
+			if stageApproval != nil && stageApproval.Kind == approval.KindInput && stageApproval.ResolvedAction == "refine_agent" {
+				var refineErr error
+				cleanup, refineErr = rs.addRefinementInput(current, lastApprovalDecision(stageApproval).Comment)
+				if refineErr != nil {
+					return refineErr
+				}
+			}
+			if err := rs.enforceStageTokenBudget(current); err != nil {
+				if cleanup != nil {
+					cleanup()
+				}
+				return err
+			}
+			result = rs.runStage(ctx, index, current)
+			if cleanup != nil {
+				cleanup()
+			}
+		}
+		rs.consumePRReviewInputs(current)
+		rs.clearExecutorOverride(current)
+		if err := rs.consumeConfiguredSkip(current, requireSkipped, result); err != nil {
+			return err
+		}
+		for _, previous := range rs.results {
+			if previous.AttemptID == result.AttemptID && result.AttemptID != "" {
+				replayedHumanAttempt = true
+				break
+			}
+		}
+		if !replayedHumanAttempt {
+			rs.results = append(rs.results, result)
+			rs.visits[current]++
+		}
+		if err := rs.enforceTestMutationPolicy(current, result); err != nil {
+			return err
+		}
+		if !replayedHumanAttempt {
+			if err := rs.afterAttempt(ctx); err != nil {
+				return err
+			}
+		}
+		// Stage-scoped delivery is a controller operation after the immutable
+		// attempt manifest is published and before hard PR checks consume the
+		// stage result. The URL is projected separately and never added to that
+		// manifest.
+		if err := rs.executeStageDelivery(ctx, current, &result); err != nil {
+			return err
+		}
+		if err := rs.validateStagePRResultContract(current, result); err != nil {
+			return err
+		}
+		if result.AttemptID != "" {
+			for resultIndex := len(rs.results) - 1; resultIndex >= 0; resultIndex-- {
+				if rs.results[resultIndex].AttemptID == result.AttemptID {
+					rs.results[resultIndex] = result
+					break
+				}
+			}
+		}
+
+		if !replayedHumanAttempt {
+			if err := rs.p.notifier.Notify(ctx, result); err != nil {
+				fmt.Fprintf(os.Stderr, "  %s notifier error: %v\n", ui.Colorize("⚠", ui.ColorYellow), err)
+			}
+			if err := report.GenerateStageReport(rs.reportsDir, rs.runCfg.Feature, result.AttemptID, result, rs.task.ArtifactRoot); err != nil {
+				fmt.Fprintf(os.Stderr, "  %s report error: %v\n", ui.Colorize("⚠", ui.ColorYellow), err)
+			}
+			if rs.p.recorder != nil {
+				rs.p.recorder.StageFinished(result)
+			}
+		}
+		if errors.Is(result.Err, ErrAgentFinishedEvidence) {
+			return result.Err
+		}
+		if result.Status == notifier.StatusBlocked {
+			logging.Printf("\n%s %s\n", ui.Colorize("⊘ Блокер:", ui.ColorBold+ui.ColorYellow), result.Blocker)
+			logging.Printf("  Для исправления уточните задачу и запустите заново: workaistrator run --feature %s --task \"<описание>\"\n",
+				rs.runCfg.Feature)
+		}
+		// A cancellation requested during the runtime call is honored only after
+		// the attempt, its outputs, and its evidence have been persisted. Stop
+		// before creating a new handoff or starting another stage.
+		if rs.runCfg.CancelRequested != nil && rs.runCfg.CancelRequested() {
+			return context.Canceled
+		}
+
+		edge, found := rs.graph.Edge(current, result.State.Outcome)
+		var transitionPayload json.RawMessage
+		requestKind := approval.KindApprove
+		if result.Status == notifier.StatusBlocked {
+			stage, stageErr := rs.p.loadStageDefinition(current)
+			if stageErr != nil {
+				return fmt.Errorf("load stage %s: %w", current, stageErr)
+			}
+			if stage != nil && stage.AskQuestions {
+				var hasQuestions bool
+				var questionErr error
+				transitionPayload, hasQuestions, questionErr = questionsPayload(result.Outputs)
+				if questionErr != nil {
+					return questionErr
+				}
+				if !hasQuestions {
+					transitionPayload, hasQuestions, questionErr = questionsPayloadFromPath(stageQuestionsPath(rs.task.ArtifactRoot, rs.runCfg.Feature))
+					if questionErr != nil {
+						return questionErr
+					}
+				}
+				if !hasQuestions {
+					return &BlockedError{Agent: current, Reason: result.Blocker}
+				}
+				questionRounds, roundsErr := countQuestionApprovals(rs.approvalStore, rs.runID, current)
+				if roundsErr != nil {
+					return fmt.Errorf("count %s clarification rounds: %w", current, roundsErr)
+				}
+				if questionRounds >= maxQuestionRounds {
+					return &BlockedError{Agent: current, Reason: fmt.Sprintf("после %d циклов уточнений этап %s всё ещё запрашивает информацию: %s", maxQuestionRounds, current, result.Blocker)}
+				}
+				requestKind = approval.KindQuestions
+			}
+		}
+		if result.Status == notifier.StatusPassed && result.State.Outcome == workflow.OutcomePassed &&
+			found && edge.Approval != nil && containsString(orderedGraphActions(edge), "approve_spec") {
+			var payloadErr error
+			transitionPayload, payloadErr = encodeApprovedSpec(rs.brief, result.AttemptID, result.Outputs)
+			if payloadErr != nil {
+				return fmt.Errorf("prepare Product Owner specification approval: %w", payloadErr)
+			}
+		}
+		if !found {
+			if result.Status == notifier.StatusBlocked {
+				return &BlockedError{Agent: current, Reason: result.Blocker}
+			}
+			if result.Err != nil {
+				return result.Err
+			}
+			if result.Verdict.IsNegative() {
+				return &NegativeVerdictError{Agent: current, Verdict: result.Verdict}
+			}
+			return fmt.Errorf("workflow graph: для %s outcome %s нет ребра", current, result.State.Outcome)
+		}
+
+		// B-40: проваленная (или сорвавшаяся) проверка блочит переход и
+		// поднимает запрос kind=check_decision; новая версия = повторный
+		// прогон этапа по решению человека. Проверка идемпотентна на
+		// durable-событиях (runStageChecks), поэтому её вызываем и для
+		// переигранной попытки: крах между attempt_finished и проверкой не
+		// должен пропускать проверку (fail-open).
+		if result.Status == notifier.StatusPassed && result.State.Outcome == workflow.OutcomePassed &&
+			!skippedByConfig && !overriddenByDecision {
+			if err := rs.runStageChecks(ctx, current, result); err != nil {
+				var retry *autoCheckRetryError
+				if errors.As(err, &retry) {
+					rs.extraInputs[current] = append(rs.extraInputs[current], retry.input)
+					// A check retry is another attempt of the same workflow visit;
+					// it must not consume the graph's loopback visit allowance.
+					if rs.visits[current] > 0 {
+						rs.visits[current]--
+					}
+					rs.ps.DoneAgent(current)
+					continue
+				}
+				return err
+			}
+		}
+
+		target := edge.To
+		action := ""
+		if edge.Approval != nil {
+			actions := orderedGraphActions(edge)
+			selected, err := rs.authorizeTransition(
+				current, edge.To, "graph_outcome:"+string(edge.Outcome), result,
+				edge.Approval.Roles, edge.Approval.Quorum, actions, edge.Approval.Actions,
+				edge.Approval.Deferred, requestKind, transitionPayload,
+			)
+			if recordErr := rs.recordHumanGateOutcome(current, edge, requestKind, result, selected, err); recordErr != nil {
+				return recordErr
+			}
+			if err != nil {
+				return err
+			}
+			action = selected
+			target = edge.Approval.Actions[selected]
+			if target == current && edge.Outcome == workflow.OutcomePassed && action == "reject" && rs.visits[current] > 0 {
+				// human_approval on_reject: stay. The refusal is a decision of
+				// a person, not a loopback: the rework must not consume the
+				// visit allowance of the stage.
+				rs.visits[current]--
+			}
+		}
+		if target == "" {
+			return fmt.Errorf("workflow graph: edge %s/%s выбрал пустой target", current, edge.Outcome)
+		}
+		if !workflow.IsTerminal(target) {
+			if err := rs.projectGrillRevisionInputs(rs.replayed, current, result.AttemptID, target); err != nil {
+				return fmt.Errorf("project approved grill revision to %s: %w", target, err)
+			}
+		}
+		transitionAt := time.Now().UTC()
+		transitionData := map[string]any{
+			"from": current, "outcome": string(edge.Outcome), "edge_target": edge.To,
+			"action": action, "target": target,
+		}
+		if err := rs.evidence.Append(evidence.Event{
+			Type: "transition_selected", AttemptID: result.AttemptID, Stage: current,
+			Timestamp: transitionAt, Data: transitionData,
+		}); err != nil {
+			return err
+		}
+		if rs.p.recorder != nil {
+			rs.p.recorder.TransitionSelected(rs.runID, result.AttemptID, transitionAt, transitionData)
+		}
+		// The incoming approval authorized this dispatch only. Clear it before
+		// advancing so a same-stage loop cannot inherit the previous visit.
+		rs.lifecycleState.ActiveApprovalID = ""
+		if activeStageApprovalID(rs.resumedApproval, current) != "" {
+			rs.resumedApproval = nil
+		}
+		rs.ps.DoneAgent(current)
+		if workflow.IsTerminal(target) {
+			if err := rs.saveLifecycle(lifecycle.PhaseRunning, target); err != nil {
+				return err
+			}
+			return graphTerminalError(target, current, result.Err)
+		}
+		targetIndex := rs.graph.Index(target)
+		if targetIndex < 0 {
+			return fmt.Errorf("workflow graph: target %q не существует", target)
+		}
+		if targetIndex <= index {
+			if err := rs.invalidateAttempts(targetIndex + 1); err != nil {
+				return err
+			}
+			rs.extraInputs[target] = result.Outputs
+		}
+		if err := rs.saveLifecycle(lifecycle.PhaseRunning, target); err != nil {
+			return err
+		}
+		current = target
+	}
+}
+
+func orderedGraphActions(edge workflow.Edge) []string {
+	actions := make([]string, 0, len(edge.Approval.Actions))
+	for action := range edge.Approval.Actions {
+		actions = append(actions, action)
+	}
+	sort.Slice(actions, func(i, j int) bool {
+		iPrimary := edge.Approval.Actions[actions[i]] == edge.To
+		jPrimary := edge.Approval.Actions[actions[j]] == edge.To
+		if iPrimary != jPrimary {
+			return iPrimary
+		}
+		return actions[i] < actions[j]
+	})
+	return actions
+}
+
+// validateStagePRResultContract проверяет PR-половину контракта результата на
+// этапе implementation. Сам PR по-прежнему создаёт только контроллер после
+// approval точного SHA-256 канонического плана; эта проверка лишь не даёт этапу
+// перейти дальше без фактически закрытого контракта — PR-ссылки в результате.
+func (rs *runState) validateStagePRResultContract(stageID string, result notifier.StageResult) error {
+	stage, ok := rs.p.templateStage(stageID)
+	if !ok || !stageRequiresControllerPRDelivery(stage) {
+		return nil
+	}
+	if result.Status != notifier.StatusPassed || result.Err != nil || result.ControlStopped {
+		return nil
+	}
+	if result.Delivery == nil || strings.TrimSpace(result.Delivery.PRURL) == "" {
+		return fmt.Errorf("этап %s: результат не содержит PR-ссылки", stageID)
+	}
+	for _, output := range result.Outputs {
+		if output.Name != "link" || output.Path == "" {
+			continue
+		}
+		data, err := safeio.ReadRegularFile(output.Path, maxArtifactFileBytes)
+		if err != nil {
+			return fmt.Errorf("этап %s: PR-ссылка результата недоступна: %w", stageID, err)
+		}
+		if !isHTTPLinkReference(data) {
+			return fmt.Errorf("этап %s: PR-ссылка результата пуста или некорректна", stageID)
+		}
+		return nil
+	}
+	return fmt.Errorf("этап %s: результат не содержит PR-ссылки", stageID)
+}
+
+func isHTTPLinkReference(data []byte) bool {
+	value := strings.TrimSpace(string(data))
+	if value == "" {
+		return false
+	}
+	parsed, err := url.ParseRequestURI(value)
+	return err == nil && (parsed.Scheme == "https" || parsed.Scheme == "http") && parsed.Host != "" && parsed.User == nil
+}
+
+func graphTerminalError(target, stage string, cause error) error {
+	switch target {
+	case workflow.TerminalComplete:
+		return nil
+	case workflow.TerminalStop:
+		return fmt.Errorf("%w: graph transition после %s", ErrUserStopped, stage)
+	case workflow.TerminalBlocked:
+		return &BlockedError{Agent: stage, Reason: "graph terminal blocked"}
+	case workflow.TerminalFailed:
+		if cause != nil {
+			return cause
+		}
+		return fmt.Errorf("workflow graph завершил run как failed после %s", stage)
+	default:
+		return fmt.Errorf("workflow graph: неизвестный terminal target %q", target)
+	}
+}
+
+func replayedStageResults(run evidence.ReplayedRun, runDir string, source evidence.AttemptManifestSource, registry *agent.Registry, cfg *config.Config, totalStages int) ([]notifier.StageResult, runtime.Usage, bool, error) {
+	results := make([]notifier.StageResult, 0, len(run.Attempts))
+	var usage runtime.Usage
+	usageUnknown := false
+	for _, attempt := range run.Attempts {
+		var attemptErr error
+		if attempt.Error != "" {
+			attemptErr = errors.New(attempt.Error)
+		}
+		result := notifier.StageResult{
+			RunID: run.RunID, AttemptID: attempt.AttemptID, Name: attempt.Stage,
+			Executor: attempt.Executor, ActorID: attempt.ActorID, ActorRole: attempt.ActorRole,
+			HumanInputApprovalID: attempt.HumanInputApprovalID, HumanEditOfAgentAttemptID: attempt.HumanEditOfAgentAttemptID,
+			StageIndex: attempt.StageIndex, StartedAt: attempt.StartedAt,
+			FinishedAt: attempt.FinishedAt, Duration: attempt.FinishedAt.Sub(attempt.StartedAt),
+			Status: attempt.Status, State: attempt.State, Verdict: verdict.Verdict(attempt.Verdict),
+			Blocker: attempt.Blocker, Err: attemptErr, Superseded: attempt.Superseded, TotalStages: totalStages,
+		}
+		usageRecordPresent := false
+		if attempt.ManifestSHA256 != "" {
+			_, manifest, err := evidence.ReadAttemptManifest(source, runDir, run.RunID, attempt.AttemptID)
+			if err != nil {
+				return nil, runtime.Usage{}, false, fmt.Errorf("read attempt %s manifest: %w", attempt.AttemptID, err)
+			}
+			result.Checks = append(result.Checks, manifest.Checks...)
+			result.HumanEditOfAgentAttemptID = manifest.HumanEditOfAgentAttemptID
+			result.Usage = manifest.Usage
+			result.Mutations = append([]string(nil), manifest.Mutations...)
+			result.MutationChanges = append([]workflow.MutationChange(nil), manifest.MutationChanges...)
+			result.Delivery = manifest.Delivery
+			if manifest.TotalStages > 0 {
+				result.TotalStages = manifest.TotalStages
+			}
+			usageRecordPresent = manifest.Usage != nil
+			for _, input := range manifest.Inputs {
+				result.Inputs = append(result.Inputs, workflow.Artifact{Name: input.Name, Path: input.SourcePath, Size: input.Size})
+			}
+			for _, output := range manifest.Outputs {
+				result.Outputs = append(result.Outputs, workflow.Artifact{Name: output.Name, Path: output.SourcePath, Size: output.Size})
+			}
+			// Count model work even when a later loopback invalidated the attempt.
+			if manifest.Usage != nil && manifest.Usage.Attested {
+				usage.Attested = true
+				costTotal := usage.CostUSD + manifest.Usage.CostUSD
+				if manifest.Usage.TokensInput < 0 || manifest.Usage.TokensOutput < 0 ||
+					usage.TokensInput > math.MaxInt64-manifest.Usage.TokensInput || usage.TokensOutput > math.MaxInt64-manifest.Usage.TokensOutput ||
+					math.IsNaN(manifest.Usage.CostUSD) || math.IsInf(manifest.Usage.CostUSD, 0) || manifest.Usage.CostUSD < 0 || math.IsInf(costTotal, 0) {
+					usageUnknown = true
+				} else {
+					usage.TokensInput += manifest.Usage.TokensInput
+					usage.TokensOutput += manifest.Usage.TokensOutput
+					usage.CostUSD = costTotal
+				}
+			} else if manifest.Usage != nil {
+				usageUnknown = true
+			}
+		}
+		if !usageRecordPresent && attempt.State.Execution != workflow.ExecutionPending && attempt.State.Execution != workflow.ExecutionRunning {
+			// Pre-B-51 manifests have no usage field. A completed model attempt
+			// from that format cannot be treated as a zero-token invocation.
+			if attempt.Executor == "human" {
+				results = append(results, result)
+				continue
+			}
+			definition, err := registry.Load(cfg.RegistryAgentName(attempt.Stage))
+			if err != nil {
+				return nil, runtime.Usage{}, false, fmt.Errorf("load historical stage %s: %w", attempt.Stage, err)
+			}
+			if !definition.ControllerOperation() {
+				usageUnknown = true
+			}
+		}
+		if attempt.FinishedAt.IsZero() {
+			if attempt.Executor == "human" {
+				results = append(results, result)
+				continue
+			}
+			definition, err := registry.Load(cfg.RegistryAgentName(attempt.Stage))
+			if err != nil {
+				return nil, runtime.Usage{}, false, fmt.Errorf("load interrupted stage %s: %w", attempt.Stage, err)
+			}
+			if !definition.ControllerOperation() {
+				usageUnknown = true
+			}
+		}
+		results = append(results, result)
+	}
+	return results, usage, usageUnknown, nil
+}
+
+func indexOf(values []string, expected string) int {
+	for index, value := range values {
+		if value == expected {
+			return index
+		}
+	}
+	return -1
+}
+
+func (rs *runState) saveLifecycle(phase lifecycle.Phase, nextStage string) error {
+	next := rs.lifecycleState
+	next.Phase = phase
+	next.NextStage = nextStage
+	next.PendingApprovalID = ""
+	next.ActiveApprovalID = ""
+	if phase == lifecycle.PhaseRunning || phase == lifecycle.PhaseResumable {
+		// Keep the exact resolved handoff across the running checkpoint. A crash
+		// after this save but before dispatch must not turn a human agent action
+		// into an ordinary human submission or lose an executor override's visit.
+		next.ActiveApprovalID = activeStageApprovalID(rs.resumedApproval, nextStage)
+	}
+	next.AttemptOrdinal = rs.attemptOrdinal
+	saved, err := saveLifecycleCheckpoint(rs.lifecycleStore, rs.lifecycleState, next)
+	if err != nil {
+		return fmt.Errorf("lifecycle checkpoint: %w", err)
+	}
+	rs.lifecycleState = saved
+	return nil
+}
+
+func (rs *runState) saveWaiting(nextStage, approvalID string) error {
+	next := rs.lifecycleState
+	next.Phase = lifecycle.PhaseWaiting
+	next.NextStage = nextStage
+	next.PendingApprovalID = approvalID
+	next.ActiveApprovalID = ""
+	next.AttemptOrdinal = rs.attemptOrdinal
+	if override, ok := next.ExecutorOverrides[nextStage]; ok && override.Executor == "human" {
+		// Once the human executor has opened its typed input form, bind that
+		// same stage visit to the new approval identity until the human submits.
+		override.ApprovalID = approvalID
+		next.ExecutorOverrides[nextStage] = override
+	}
+	saved, err := saveLifecycleCheckpoint(rs.lifecycleStore, rs.lifecycleState, next)
+	if err != nil {
+		return fmt.Errorf("lifecycle approval checkpoint: %w", err)
+	}
+	rs.lifecycleState = saved
+	return nil
+}
+
+// saveLifecycleCheckpoint reloads the canonical state because Store.Save may
+// normalize schema/timestamps in its persisted copy. Keeping that returned
+// checkpoint prevents stale compare-and-save requests on the next transition.
+func saveLifecycleCheckpoint(store lifecycle.StorePort, previous, next lifecycle.State) (lifecycle.State, error) {
+	if err := store.Save(previous, next); err != nil {
+		return lifecycle.State{}, err
+	}
+	return store.Load(next.RunID)
+}
+
+func (rs *runState) invalidateAttempts(fromStageIndex int) error {
+	var invalidated []string
+	for i := range rs.results {
+		result := &rs.results[i]
+		if result.StageIndex < fromStageIndex || result.Superseded {
+			continue
+		}
+		result.Superseded = true
+		result.State = workflow.Invalidate(result.State)
+		result.Status = result.State.LegacyStatus()
+		invalidated = append(invalidated, result.AttemptID)
+	}
+	if len(invalidated) == 0 {
+		return nil
+	}
+	rs.loopbackCycles++
+	at := time.Now().UTC()
+	if rs.p.recorder != nil {
+		rs.p.recorder.AttemptsInvalidated(rs.runID, invalidated, at)
+	}
+	return rs.evidence.Append(evidence.Event{
+		Type: "attempts_invalidated", Timestamp: at,
+		Data: map[string]any{"from_stage_index": fromStageIndex, "attempt_ids": invalidated, "reason": "loopback"},
+	})
+}
+
+// runStage выполняет один этап: загрузка агента, входы, execute (с таймаутом),
+// blocked-check, проверка выходов, git guard, парсинг вердикта.
+func (rs *runState) stageOutputs(stage, attemptID string) ([]runtime.Artifact, error) {
+	if attemptID != "" {
+		runDir := filepath.Join(rs.runCfg.TargetDir, ".ai-team", "runs", rs.runID)
+		_, manifest, err := evidence.ReadAttemptManifest(rs.p.attemptManifestSource, runDir, rs.runID, attemptID)
+		if err != nil {
+			return nil, fmt.Errorf("approval source manifest: %w", err)
+		}
+		if manifest.RunID != rs.runID || manifest.AttemptID != attemptID || manifest.Stage != stage {
+			return nil, errors.New("approval source manifest identity mismatch")
+		}
+		outputs := make([]runtime.Artifact, 0, len(manifest.Outputs))
+		for _, output := range manifest.Outputs {
+			path := filepath.Join(runDir, filepath.FromSlash(output.EvidencePath))
+			relative, err := filepath.Rel(runDir, path)
+			if err != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
+				return nil, fmt.Errorf("approval evidence path %s выходит за run", output.EvidencePath)
+			}
+			info, err := os.Stat(path)
+			if err != nil {
+				return nil, fmt.Errorf("approval evidence output %s: %w", output.Name, err)
+			}
+			outputs = append(outputs, runtime.Artifact{
+				Name: output.Name, Path: path,
+				Size: info.Size(), ModTime: info.ModTime(),
+			})
+		}
+		return outputs, nil
+	}
+	definition, err := rs.p.reg.Load(rs.p.cfg.RegistryAgentName(stage))
+	if err != nil {
+		return nil, fmt.Errorf("approval source stage %s: %w", stage, err)
+	}
+	outputs := make([]runtime.Artifact, 0, len(definition.Outputs))
+	for _, name := range sortedStringMapKeys(definition.Outputs) {
+		path := filepath.Join(rs.task.ArtifactRoot, runtime.ReplaceVars(definition.Outputs[name], rs.runCfg.Feature))
+		if err := validateExistingArtifactPath(rs.task.ArtifactRoot, path); err != nil {
+			return nil, fmt.Errorf("approval source output %s: %w", name, err)
+		}
+		info, err := os.Stat(path)
+		if err != nil {
+			return nil, fmt.Errorf("approval source output %s: %w", name, err)
+		}
+		outputs = append(outputs, runtime.Artifact{Name: name, Path: path, Size: info.Size(), ModTime: info.ModTime()})
+	}
+	return outputs, nil
+}
+
+func (rs *runState) afterAttempt(ctx context.Context) error {
+	if rs.candidate == nil {
+		return nil
+	}
+	if err := rs.writeCandidateEvidence(ctx, "candidate.json", "run_candidate"); err != nil {
+		return fmt.Errorf("candidate identity: %w", err)
+	}
+	source := filepath.Join(rs.task.ArtifactRoot, rs.runCfg.Feature, ".control", "candidate.json")
+	data, err := safeio.ReadRegularFile(source, maxArtifactFileBytes)
+	if err != nil {
+		return err
+	}
+	var document candidateEvidence
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&document); err != nil {
+		return err
+	}
+	if err := writeControllerJSON(filepath.Join(rs.evidence.RunDir(), "candidate.json"), document); err != nil {
+		return err
+	}
+	return syncArtifactProjection(rs.task.ArtifactRoot, filepath.Join(rs.runCfg.TargetDir, ".ai-team", "artifacts"), rs.runCfg.Feature)
+}

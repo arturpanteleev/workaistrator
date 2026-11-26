@@ -21,7 +21,7 @@ info/exclude`. Это корректно разрешает путь как дл
 
 ### Явное изменение `.gitignore`
 
-`ai-team init --write-gitignore` пишет `.ai-team/` в корневой `.gitignore`.
+`workaistrator init --write-gitignore` пишет `.ai-team/` в корневой `.gitignore`.
 Этот режим нужен, когда команда сознательно хочет разделить правило через
 репозиторий. Флаг не включает одновременную запись в `.git/info/exclude`:
 одного источника ignore policy достаточно.

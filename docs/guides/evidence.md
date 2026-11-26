@@ -15,7 +15,7 @@
 ## Что понадобится
 
 - Завершённый прогон и его `run_id`. Идентификатор печатается в выводе
-  `ai-team run` и виден в [дашборде](dashboard.md); список всех прогонов —
+  `workaistrator run` и виден в [дашборде](dashboard.md); список всех прогонов —
   каталоги в `.ai-team/runs/`.
 - Для подписи — ключ ed25519, например созданный через `openssl`.
 
@@ -58,7 +58,7 @@
 ## 1. Посмотреть сводку прогона
 
 ```bash
-ai-team usage <run_id>
+workaistrator usage <run_id>
 ```
 
 ```text
@@ -87,7 +87,7 @@ Worker не видит каталог в sandbox. Loopback API workers без bu
 ## 2. Проверить целостность прогона
 
 ```bash
-ai-team verify --target /path/to/project <run_id>
+workaistrator verify --target /path/to/project <run_id>
 ```
 
 ```text
@@ -106,8 +106,8 @@ usage, containment), а также проверяет delivery record, если 
 До отправки доказательств наружу проверьте их на секреты:
 
 ```bash
-ai-team redact scan --run <run_id>
-ai-team redact verify --run <run_id>
+workaistrator redact scan --run <run_id>
+workaistrator redact verify --run <run_id>
 ```
 
 `scan` перечисляет находки и всегда завершается с кодом 0:
@@ -134,7 +134,7 @@ ai-team redact verify --run <run_id>
 Чтобы получить копию с заменёнными секретами, выполните:
 
 ```bash
-ai-team redact redact --run <run_id> --out /tmp/redacted-run
+workaistrator redact redact --run <run_id> --out /tmp/redacted-run
 ```
 
 Секреты в копии заменяются метками вида `[REDACTED:github token]`. Исходные
@@ -149,8 +149,8 @@ ai-team redact redact --run <run_id> --out /tmp/redacted-run
 ## 4. Собрать переносимый пакет
 
 ```bash
-ai-team export --target /path/to/project --out /path/to/new-bundle <run_id>
-ai-team verify /path/to/new-bundle
+workaistrator export --target /path/to/project --out /path/to/new-bundle <run_id>
+workaistrator verify /path/to/new-bundle
 ```
 
 ```text
@@ -170,7 +170,7 @@ ai-team verify /path/to/new-bundle
 В пакет попадают только типизированные записи: `run.json`, `config.json`,
 `workflow.json`, `events.jsonl`, манифесты попыток, аттестация, якорь и
 `index.json` с хешами всех файлов. Логи runtime и содержимое артефактов в
-пакет не входят. Проверка пакета через `ai-team verify <каталог>` не требует
+пакет не входят. Проверка пакета через `workaistrator verify <каталог>` не требует
 ни исходного репозитория, ни `.ai-team`.
 
 Каталог `--out` должен быть новым: в существующий каталог экспорт не пишет
@@ -190,8 +190,8 @@ openssl pkey -in signing-key.pem -pubout -out signing-key.pub
 Подпишите при экспорте и проверьте с открытым ключом:
 
 ```bash
-ai-team export --out /path/to/signed-bundle --sign-key signing-key.pem <run_id>
-ai-team verify --verify-key signing-key.pub /path/to/signed-bundle
+workaistrator export --out /path/to/signed-bundle --sign-key signing-key.pem <run_id>
+workaistrator verify --verify-key signing-key.pub /path/to/signed-bundle
 ```
 
 ```text
@@ -201,11 +201,11 @@ ai-team verify --verify-key signing-key.pub /path/to/signed-bundle
 
 Подпись лежит в `dsse.json` внутри пакета. Если передать `--verify-key`, а
 подписи нет, `verify` откажет: `задан --verify-key, но dsse.json (подпись
-bundle) отсутствует`. Пакеты `ai-team gate` подписываются так же: флаг
+bundle) отсутствует`. Пакеты `workaistrator gate` подписываются так же: флаг
 `--sign-key` у `gate`.
 
 > [!DEEPDIVE] Целостность и подлинность — не одно и то же
-> `ai-team verify` без ключа проверяет **целостность**: записи пакета
+> `workaistrator verify` без ключа проверяет **целостность**: записи пакета
 > согласованы между собой, хеши сходятся, журнал событий не разорван. Если
 > кто-то изменит один файл, проверка это заметит:
 > `record run_manifest run.json не совпадает со своим sha256 (evidence подменён)`.
@@ -227,7 +227,7 @@ bundle) отсутствует`. Пакеты `ai-team gate` подписыва�
 посмотрите план уборки:
 
 ```bash
-ai-team gc --dry-run
+workaistrator gc --dry-run
 ```
 
 ```text
@@ -250,7 +250,7 @@ dry-run: ничего не удалено
 
 > [!CAUTION]
 > Если delivery прогона не удалась и вы собираетесь повторить её через
-> `ai-team deliver`, не запускайте `gc` до этого: уборка удалит каталог
+> `workaistrator deliver`, не запускайте `gc` до этого: уборка удалит каталог
 > кандидата, и повтор delivery станет невозможен. Храните экспортированные
 > пакеты и открытые ключи отдельно от проекта, который чистите.
 
@@ -259,6 +259,6 @@ dry-run: ничего не удалено
 - [Веб-дашборд](dashboard.md) — смотреть прогоны и артефакты в браузере.
 - [Остановки и BLOCKED](troubleshooting.md) — что делать, если `verify` или
   `export` отказали.
-- [Граница безопасности](../reference/security.md) — что ai-team защищает, а
+- [Граница безопасности](../reference/security.md) — что WorkAiStrator защищает, а
   что нет.
 - [Команды CLI](../reference/cli.md) — флаги `verify`, `export`, `redact`, `gc`.

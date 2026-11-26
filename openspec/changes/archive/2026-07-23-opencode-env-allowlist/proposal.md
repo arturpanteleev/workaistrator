@@ -4,7 +4,7 @@
 to the `opencode` subprocess, minus 7 opencode/XDG-specific keys. `.env`
 **files** are correctly denied via the read-permission policy, but any
 secret exported as a process environment variable by whoever runs
-`ai-team run` (cloud credentials, CI tokens, database URLs) reaches the
+`workaistrator run` (cloud credentials, CI tokens, database URLs) reaches the
 subprocess unfiltered. Independent audit Finding 13 (Medium): the isolation
 harness is otherwise well-designed (default-deny bash/network/task,
 `.env`/`.git`/`.ai-team` read denial, refuses to run if the target project

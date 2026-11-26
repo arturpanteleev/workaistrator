@@ -16,9 +16,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/checks"
-	"github.com/arturpanteleev/ai-team/pkg/containment"
-	"github.com/arturpanteleev/ai-team/pkg/dsse"
+	"github.com/arturpanteleev/workaistrator/pkg/containment"
+	"github.com/arturpanteleev/workaistrator/pkg/dsse"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/stage/checks"
 	"gopkg.in/yaml.v3"
 )
 

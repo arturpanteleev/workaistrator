@@ -14,18 +14,18 @@
 
 - [x] 3.1 Создать `testdata/e2e_test.go` — тест успешного пайплайна → создано в `e2etest/e2e_test.go`
 - [x] 3.2 Добавить тест: пайплайн падает при REJECTED review
-- [x] 3.3 Добавить тест: `ai-team init` создаёт структуру
+- [x] 3.3 Добавить тест: `workaistrator init` создаёт структуру
 - [x] 3.4 Проверить что тесты проходят: `go test ./...` — все 7 пакетов OK
 
 ## 4. Eval-пакет и CLI
 
 - [x] 4.1 Создать `pkg/eval/eval.go` с типами Eval, Result
 - [x] 4.2 Реализовать `eval.Run()` — чтение артефакта + вызов opencode-судьи
-- [x] 4.3 Добавить команду `ai-team eval` в CLI
+- [x] 4.3 Добавить команду `workaistrator eval` в CLI
 - [x] 4.4 Написать тесты для pkg/eval
 
 ## 5. Финальная проверка
 
-- [x] 5.1 `go build ./cmd/ai-team` — успех
+- [x] 5.1 `go build ./cmd/workaistrator` — успех
 - [x] 5.2 `go test ./...` — все тесты проходят
 - [x] 5.3 `go vet ./...` — чисто

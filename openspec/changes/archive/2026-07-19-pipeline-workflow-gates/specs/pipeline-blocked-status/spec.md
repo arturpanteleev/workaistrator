@@ -16,20 +16,20 @@ Pipeline MUST останавливаться при получении BLOCKED �
 - **КОГДА** analyst вернул BLOCKED (требования противоречивы)
 - **ТОГДА** pipeline MUST остановиться
 - **И** показать: `Требования неоднозначны: {детали}`
-- **И** предложить: `Вернуться на этап анализа? Используйте: ai-team run --retry-from analyst`
+- **И** предложить: `Вернуться на этап анализа? Используйте: workaistrator run --retry-from analyst`
 
 #### Scenario: BLOCKED от architect
 - **КОГДА** architect вернул BLOCKED (технически нереализуемо)
 - **ТОГДА** pipeline MUST остановиться
 - **И** показать: `Техническое решение невозможно: {детали}`
-- **И** предложить: `Вернуться на этап проектирования? Используйте: ai-team run --retry-from architect`
+- **И** предложить: `Вернуться на этап проектирования? Используйте: workaistrator run --retry-from architect`
 
 ### Requirement: Предложение retry-from при BLOCKED
 Pipeline MUST предлагать retry-from агента, вернувшего BLOCKED.
 
 #### Scenario: Предложение retry
 - **КОГДА** агент вернул BLOCKED
-- **ТОГДА** pipeline MUST вывести: `Для исправления запустите: ai-team run --retry-from {agent_name}`
+- **ТОГДА** pipeline MUST вывести: `Для исправления запустите: workaistrator run --retry-from {agent_name}`
 - **И** pipeline MUST завершиться с кодом выхода, указывающим на BLOCKED
 
 ### Requirement: BLOCKED vs failed
@@ -49,7 +49,7 @@ Pipeline MUST предлагать retry-from агента, вернувшего
 Если stdin не является терминалом, BLOCKED MUST работать как failed.
 
 #### Scenario: CI/pipe режим
-- **КОГДА** `ai-team run` запущен с перенаправленным stdin (pipe)
+- **КОГДА** `workaistrator run` запущен с перенаправленным stdin (pipe)
 - **И** агент вернул BLOCKED
 - **ТОГДА** pipeline MUST завершиться с кодом выхода 1 (как failed)
 - **И** MUST NOT ожидать ввод от пользователя

@@ -62,7 +62,7 @@ In the pipeline, `kind: deploy` agents are controller operations like
 `kind: delivery`: no runtime, no usage, no workspace mutation guard (the fetch
 updates Git metadata). The stage body is `runControllerDeploy`. The provider is
 injected with `pipeline.WithDeployProvider` only by the local controller
-(`ai-team run`, local `ai-team web`); a sandboxed worker never builds it and a
+(`workaistrator run`, local `workaistrator web`); a sandboxed worker never builds it and a
 deploy stage there fails closed. Deterministic negatives (not merged, failed
 build, wrong revision, misconfiguration) mark the attempt as validation failure;
 transport errors and timeouts are infra failures. Each failure is projected to
@@ -99,7 +99,7 @@ empty temporary directory, never in the controller's working directory.
 
 Squash and single-commit rebase merges are proven by diff equality, so a squash
 whose content changed during the merge is rejected, and multi-commit rebase
-merges are not supported (fail-closed). ai-team never merges the pull request:
+merges are not supported (fail-closed). WorkAiStrator never merges the pull request:
 the human decision before production is the merge itself. The template does
 not require a `confirm: required` stage before deploy, because
 `--approve-gates` and auto mode confirm such gates automatically and an agent

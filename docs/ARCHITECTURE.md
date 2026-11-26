@@ -1,7 +1,7 @@
-# Архитектура ai-team
+# Архитектура WorkAiStrator
 
 Этот документ — глубокое техническое описание внутреннего устройства
-контроллера. Если вы ищете, как установить и запустить ai-team, начните с
+контроллера. Если вы ищете, как установить и запустить WorkAiStrator, начните с
 [README.md](../README.md); этот файл предполагает, что вы уже знаете базовый
 конвейер (`analyst → architect → coder → reviewer → tester → verifier →
 deployer`) и термины из [глоссария](start/concepts.md#глоссарий).
@@ -9,41 +9,40 @@ deployer`) и термины из [глоссария](start/concepts.md#гло�
 ## Карта пакетов
 
 ```text
-cmd/ai-team/        точка входа CLI
+cmd/workaistrator/   точка входа CLI
 pkg/
-├── config/         конфигурация, строгая валидация, layered registry lookup
-├── agent/          Agent struct + Registry (резолюция definition-слоёв)
+├── engine/          ядро: интерфейсы Executor/GateRunner/EventSink, машина состояний
+│   ├── pipeline/    оркестрация, enforcement вердиктов, гейты, loopback
+│   ├── workflow/    доменные state/outcome типы и чистые переходы
+│   ├── control/, approval/  управление переходами и подтверждениями
+│   ├── gate/{lib,run,sched,phrases,llm,human}/  каталог гейтов и планировщик
+│   └── stage/{exec,status,dockerrun,checks}/    исполнители и проекция статусов
 ├── runtime/         Runtime interface + AgentCLI (prompt, логи, model/effort)
-├── pipeline/        оркестрация, enforcement вердиктов, гейты, loopback
-├── workflow/        доменные state/outcome типы и чистые переходы; контракт гейта
-├── stagestatus/     чистая проекция статусов этапов и истории посещений из durable-журнала
-├── gatelib/         версионированная библиотека определений гейтов (реестр)
-├── gatephrases/     логика гейта required_phrases (явные параметры, RE2 только по флагу)
-├── gatesched/       планировщик групп гейтов: параллельные гейты, журнал, recovery
-├── gaterun/         раннер гейта внешней программы: JSON-протокол, запуск без shell, evidence; Docker-адаптер (docker_program)
-├── dockerrun/       запуск программы в контейнере через docker CLI: strict defaults, удаление по имени
-├── stageexec/       исполнитель этапа: внутренний агент, внешняя программа, Docker (общий JSON-контракт)
-├── llmgate/         контракт LLM-гейта: схема вердикта, попытки, error вместо pass
-├── humandecision/   единый сервис решения человека: роли, точный хеш, самоподтверждение, аудит
-├── verdict/         verdict-контракт: парсер маркеров, BLOCKED-протокол
-├── checks/          deterministic verification runner и evidence
+│   └── tracker/     абстрактный Tracker, адаптеры jira/fake, исходящие операции
+├── store/           immutable manifests и append-only events
+│   ├── evidence/    run/attempt manifests, события, replay
+│   ├── verdict/     verdict-контракт: парсер маркеров, BLOCKED-протокол
+│   └── runid/       идентификаторы прогонов
+├── config/          конфигурация, строгая валидация, layered registry lookup
+├── agent/           Agent struct + Registry (резолюция definition-слоёв)
 ├── scope/           repository-relative mutation path policy (glob-матчинг)
 ├── delivery/        строгий canonical plan и controller-owned executor
-├── evidence/        immutable run/attempt manifests, append-only events
 ├── safeio/          no-follow filesystem primitives (symlink rejection)
 ├── process/         process-group supervision и kill (Unix/Windows/plan9)
-├── eval/             независимая LLM-оценка артефактов
-├── notifier/         уведомления: консоль, webhook, Slack, e-mail
-├── tracker/          абстрактный Tracker, адаптеры jira/fake, планирование исходящих операций
-├── cicd/             controller-owned CI/CD deploy adapters (TeamCity)
-├── report/           HTML-отчёты по завершённым run
-├── ui/               консольный вывод (цвет, progress bar)
-└── web/              HTTP API + SQLite store + StoreRecorder (дашборд)
+├── notifier/        уведомления: консоль, webhook, Slack, e-mail
+├── report/          HTML-отчёты по завершённым run
+├── ui/              консольный вывод (цвет, progress bar)
+└── web/             HTTP API + SQLite store + StoreRecorder (дашборд)
 agents/{name}/       встроенные агенты (def.yaml + prompt.md)
 web/                 React-фронтенд дашборда (отдельный npm-проект)
 e2etest/             mock-opencode.sh + subprocess-level E2E-тесты
 openspec/            OpenSpec change history (specs/ + changes/)
 ```
+
+Зависимости направлены вниз: `engine` описывает контракты, `runtime` и `store`
+их реализуют, `web` — тонкий слой над ядром. Остальные пакеты (`artifactstore`,
+`attest`, `cicd`, `eval`, `worker` и др.) обслуживают конкретные сценарии и не
+являются частью ядра.
 
 Контроллер владеет переходами, исходами, checks и delivery-эффектами. LLM
 создаёт смысловые артефакты и verdict markers, но не исполняет команды
@@ -117,7 +116,7 @@ Resolved `workflow.json` содержит фактически исполнен�
    (MCP `get_task_template_version`). Продолжение использует ту же версию.
 3. **Прогон.** `GET /api/runs/{id}/graph` (MCP `get_run_graph`) отдаёт тот же
    скомпилированный граф с вычисленными статусами этапов и посещениями из
-   `pkg/stagestatus`; кастомных статусов графа не существует.
+   `pkg/engine/stage/status`; кастомных статусов графа не существует.
 
 Валидация графа (`Graph.Validate`) требует уникальных `(from, outcome)` рёбер,
 достижимости всех узлов из entry, пути до терминального узла, approval на
@@ -167,7 +166,7 @@ canonical `events.jsonl` и при каждом старте/resume сверяе
 
 ## Статусы этапов и история посещений (S11)
 
-`pkg/stagestatus` — одна **чистая** функция `Project(Input) Projection`: из
+`pkg/engine/stage/status` — одна **чистая** функция `Project(Input) Projection`: из
 журнала событий, согласований, checkpoint жизненного цикла и закреплённого
 шаблона она выводит, где находится каждый этап. Ничего не хранится и не
 редактируется: проекция пересчитывается на каждом чтении, после перезапуска даёт
@@ -235,7 +234,7 @@ action-маршруты уже указывают на следующий эта
 
 - **`workflow.GateDefinition`** — ID, точная версия, вид (`builtin`, `llm`,
   `human`, `external`, `docker`), схема параметров, применимость к типу
-  результата. Живёт в Go-реестре `pkg/gatelib` (`Default()`), меняется через
+  результата. Живёт в Go-реестре `pkg/engine/gate/lib` (`Default()`), меняется через
   PR, неизменяема после публикации: изменение — новая версия, старые версии
   остаются. Каталог читается через `GET /api/gates/catalog`, записи нет.
 - **`workflow.GateRef`** — ссылка этапа: `gate`, точная `version` (без
@@ -303,7 +302,7 @@ action-маршруты уже указывают на следующий эта
 
 ### Планировщик групп гейтов
 
-`pkg/gatesched` исполняет цепочку `exit_gate_groups` одного результата этапа и
+`pkg/engine/gate/sched` исполняет цепочку `exit_gate_groups` одного результата этапа и
 ничего не знает об этапах, агентах и файлах evidence: виды гейтов исполняют
 `Runner`-ы, которые подставляет вызывающий, а персистентность идёт через порт
 `Journal`. Группы идут последовательно, гейты группы — параллельно (предел
@@ -339,13 +338,13 @@ Wave{Key{task, stage, visit, scope=попытка этапа, sha256 резул�
   контроллера, а не исход: она поднимается в вызывающую горутину после того,
   как остальные гейты группы закончили.
 
-`pkg/pipeline/gate_wave.go` — адаптер к исполнителю этапа: кодовые гейты
+`pkg/engine/pipeline/gate_wave.go` — адаптер к исполнителю этапа: кодовые гейты
 исполняет `stagecheck.RunHard` по одному правилу на гейт (один запрос PR на
 волну, общая закреплённая идентичность PR), LLM-гейты — прежний проверяющий
 агент (по одному за раз) или раунды grill с ожиданием ответа; итог волны
 проецируется на прежние `check_*`-события, отчёт и запрос `check_decision`
 (`check_*` теперь несут хеш результата, а записанная проверка другого хеша
-игнорируется). Вердикт LLM-гейта разбирает `pkg/llmgate` (схема `verdict_marker`
+игнорируется). Вердикт LLM-гейта разбирает `pkg/engine/gate/llm` (схема `verdict_marker`
 или `json`, число попыток, ответ вне схемы и отказ рантайма — `error`; см.
 `gate_llm.go`). Без `human_approval` переход идёт сам, кроме этапа с возвратами
 в `returns`: там вперёд оформляется решение `approve`/`return_to_*`
@@ -354,7 +353,7 @@ Wave{Key{task, stage, visit, scope=попытка этапа, sha256 резул�
 участвует: человека спрашивают после её окончания, а ожидание и решение
 записываются в ту же историю попыток гейта (`human_gate.go`; решение, принятое
 пока процесс остановлен, фиксируется при возобновлении). Решение принимает один
-сервис `pkg/humandecision` (роли, точный хеш, самоподтверждение, аудит), общий
+сервис `pkg/engine/gate/human` (роли, точный хеш, самоподтверждение, аудит), общий
 для Web, REST и MCP. Заголовок `Idempotency-Key` (`RequestKey`; для MCP — `idempotency_key`) пишется в
 аудит этого сервиса и им не дедуплицируется (дедупликацию делает слой ключей запроса REST/MCP): повтор распознаётся по (актор, действие, хеш,
 роль) и отвечает только в роли, которую актор по-прежнему держит. Для кода, которому нужно «что
@@ -449,7 +448,7 @@ build configuration с той же ревизией; иначе нужен оп�
 
 ### Интеграция с трекером задач
 
-`pkg/tracker` определяет абстрактный интерфейс `Tracker` (проверка формата ключа,
+`pkg/runtime/tracker` определяет абстрактный интерфейс `Tracker` (проверка формата ключа,
 получение карточки, допустимые переходы, идемпотентный переход, комментарий с
 ключом идемпотентности, чтение изменений с курсором для будущей входящей
 синхронизации) и реестр адаптеров по имени из конфига (`jira`, `fake`).
@@ -499,7 +498,7 @@ adapter говорит по REST API v3 (ADF) или v2 (простой текс
 `applied`, `pending` (условия не выполнены), `conflict` (неоднозначный статус,
 нет маршрута возврата), `ignored` (собственное эхо `origin: ai-team`, статус вне
 карты), `superseded` (задача ушла с этапа или связь снята), `dismissed`
-(закрыто оператором с причиной). Собственные исходящие переходы ai-team
+(закрыто оператором с причиной). Собственные исходящие переходы WorkAiStrator
 приходят обратно с `origin: ai-team` и не становятся запросами, поэтому петли
 исходящих/входящих обновлений нет.
 
@@ -516,7 +515,7 @@ adapter говорит по REST API v3 (ADF) или v2 (простой текс
 
 Доверие и аудит. Право запустить этап по статусу даёт конфигурация
 `tracker.inbound`: оператор сам решил, какой статус продолжает этап. Внешний
-автор не сопоставляется с пользователем ai-team, права этапа (RBAC) по нему не
+автор не сопоставляется с пользователем WorkAiStrator, права этапа (RBAC) по нему не
 проверяются; его отображаемое имя Jira меняет сам пользователь, поэтому оно
 хранится и показывается только как недоверенная информация (очищенная от
 управляющих символов, ≤256 байт) и в актор не входит. Перед вызовом контроллера
@@ -614,7 +613,7 @@ _type/predicateType/schema_version) — compatibility policy; `Digest` даёт
 что не может вычислить deterministically (subject пуст вне Git).
 
 export/verify (V0-4): `pkg/export` собирает самодостаточный deterministic
-portable bundle терминального run в `ai-team export <run_id>` (whitelisted
+portable bundle терминального run в `workaistrator export <run_id>` (whitelisted
 typed records — run/config/workflow snapshots, hash-chained event log, anchor,
 attestation v1, attempt manifests и их input/output artifacts; при наличии
 также terminal delivery и containment records; без raw logs/stdout и reports).
@@ -633,8 +632,8 @@ VerifyAnchor не даёт), размеры и sha256 всех опублико�
 attestation v1 против events/config/workflow/
 attempt_count/provenance. Только после успешной verify пишется verified-запись
 в state/exports/<runID>.json (контракт V0-0), открывающая право `gc --prune-runs`.
-`ai-team verify <bundle-dir>` проверяет bundle самодостаточно без repo и
-.ai-team; `ai-team verify <run_id>` — та же full-свёртка live evidence.
+`workaistrator verify <bundle-dir>` проверяет bundle самодостаточно без repo и
+.ai-team; `workaistrator verify <run_id>` — та же full-свёртка live evidence.
 Экспорт отказастся от non-terminal run и от run без attestation.json.
 
 Signed bundle (P1-5, DSSE): `pkg/dsse` реализует минимальный DSSE-envelope на
@@ -645,20 +644,20 @@ stdlib-only (PAE — Pre-Authentication Encoding `"DSSEv1"` с длинами pa
 (рядом с index.json); сам signature-файл не попадает в index.Records, чтобы не
 влиять на детерминизм. Ключи загружаются из файлов каждая команда через
 `--sign-key <path>` (PEM PKCS8 ed25519 или raw), никогда не коммитятся и не
-попадают в evidence. Верификация fail-closed: `ai-team verify --verify-key
+попадают в evidence. Верификация fail-closed: `workaistrator verify --verify-key
 <pub>` требует наличия и валидности подписи для каждого проверяемого bundle
 (export/gate `VerifyBundle` принимают variadic verify-key); без ключа —
 integrity-only как раньше, с ключом при отсутствии/несовпадении подписи —
 ошибка. Подпись связывает digest с автором («кто создал») поверх integrity
 («не изменено»), поддерживая future audit.
 
-gate MVP (V0-5): `pkg/gate` + `ai-team gate` — deterministic diff-policy гейт
+gate MVP (V0-5): `pkg/gate` + `workaistrator gate` — deterministic diff-policy гейт
 для trusted local base/candidate без .ai-team и без runtime. Диф между двумя
 локальными ref'ами (или ref и WORKTREE) парсится в типизированные мутации
 (kinds added/modified/removed сразу с V0-1 классификацией через scope),
 политика test_modify (required/warning/off) отклоняет изменение source без
 сопутствующих изменённых/добавленных тестов. Typed checks переиспользуют
-pkg/checks Runner (evidence digests, workspace immutability). Вердикт пишется
+pkg/engine/stage/checks Runner (evidence digests, workspace immutability). Вердикт пишется
 в самодостаточный attestation bundle (gate.json + checks/*.json + детерминиро-
 ванный index.json; BundleDigest — sha256 канонического индекса; каждый record
 связан со своим sha256 в индексе). Стабильные exit codes:
@@ -667,7 +666,7 @@ ref, который не разрешается в локальный объек
 BLOCKED — untrusted mode запрещён до P1-4. Bundles проверяются самодостаточно:
 `gate.VerifyBundle` перечитывает каждый record и сверяет digest с index.json,
 реагирует на лишние файлы (за пределами checks/*+gate.json), на отсутствующие
-records и на расхождение заявленного bundle_sha256; `ai-team verify <dir>`
+records и на расхождение заявленного bundle_sha256; `workaistrator verify <dir>`
 автоматически различает run-bundle (V0-4) и gate-bundle по наличию gate.json.
 WORKTREE-кандидат идентифицируется в index как ref "WORKTREE" (commit пуст).
 
@@ -675,7 +674,7 @@ Demo + CI action + truthful README (V0-7): `docs/demo/` — самодостат
 `gate → bundle → verify` на не-Go репозитории. `run-demo.sh` строит изолирован-
 ный Python-репозиторий и прогоняет три сценария (PASS / test_modify violation /
 JUnit failure при exit code команды 0), каждый со своим bundle и verify;
-`ci-gate-demo.yaml` — один version-pinned workflow (ai-team по зафиксированному
+`ci-gate-demo.yaml` — один version-pinned workflow (WorkAiStrator по зафиксированному
 SHA, actions по SHA), который на PR считает merge-base, выполняет gate, затем в
 любом случае verify и upload bundle артефактом. README честно разделяет run и
 gate, integrity (гарантируется цепочкой хэшей) и authenticity (P1-5: DSSE-ed25519
@@ -700,7 +699,7 @@ failures/errors/skips выводятся только из реальных `<te
 из атрибутов-агрегатов (jest/maven/gradle заполняют их непоследовательно);
 zero-test/zero-passed отчёты отклоняются (не evidence). DOCTYPE/entity и
 прочие processing instructions запрещены, глубина ≤32, размер ≤64 MiB. В
-pkg/checks новый adapter `junit-xml` с `report_file` (repo-relative обязательный
+pkg/engine/stage/checks новый adapter `junit-xml` с `report_file` (repo-relative обязательный
 путь внутри target): command запускается в confined workingDir и пишет отчёт,
 adapter читает его строгим parser'ом и дигирует сырой файл (StructuredOutput-
 Bytes/SHA256), #тестов (discovered/passed/failed/errored/skipped) попадают в
@@ -757,7 +756,7 @@ server-side principal, выбранная роль обязана принадл
 При `--worker-command` web controller использует process-backed RunEngine.
 Он сериализует строгий job schema v1 для одной операции start/resume/cancel,
 передаёт его через stdin без shell и ограничивает diagnostics. Subcommand
-`ai-team worker` повторно загружает config/agent registry внутри exact
+`workaistrator worker` повторно загружает config/agent registry внутри exact
 mounted target, подключает общий SQLite recorder и вызывает обычный
 RunEngine. Поэтому candidate, approvals, checks, delivery и evidence не имеют
 альтернативной cloud-семантики. Локальный subprocess — reference launcher;
@@ -776,7 +775,7 @@ per-target lock проверяются атомарно, истёкший lease 
 непрерывности и требования к общему тому описаны в [руководстве по
 восстановлению worker](guides/worker-recovery.md).
 
-`ai-team scheduler-worker` поддерживает one-shot platform job и loop poller.
+`workaistrator scheduler-worker` поддерживает one-shot platform job и loop poller.
 Он продлевает lease, передаёт cancel в context disposable process и после
 execution архивирует immutable run tree. Reference artifact backend хранит
 blobs по SHA-256 и отдельную content-addressed manifest reference; restore
@@ -863,14 +862,14 @@ tamper-evident `{RunDir}/delivery.json`. Трейлеры персистятся
 
 `FindDelivered` сначала читает controller terminal record, а при его отсутствии
 падает на attempt manifests. Если post-terminal hook упал, доставка повторяема
-командой `ai-team deliver --run <run_id> [--target <dir>] [--feature <name>]`;
+командой `workaistrator deliver --run <run_id> [--target <dir>] [--feature <name>]`;
 run должен быть терминальным `completed`, plan обязан совпасть с
 `delivery_deferred`, а существующий controller stage receipt переиспользуется
 без повторного commit или PR.
 
 ## Layered agent registry
 
-`ai-team list` показывает источник победившего definition агента. Registry
+`workaistrator list` показывает источник победившего definition агента. Registry
 разрешает агентов слоями, от наиболее специфичного к built-in:
 
 ```text

@@ -10,7 +10,7 @@ import (
 
 // isLoopbackHostname reports whether host (a Host or Origin hostname, with
 // or without a port) is one of the forms the CLI restricts binding to
-// (cmd/ai-team's cmdWeb rejects any --host other than these). Checking the
+// (cmd/workaistrator's cmdWeb rejects any --host other than these). Checking the
 // claimed Host/Origin string against this fixed set — rather than comparing
 // Origin's host to the request's own Host header — is what actually defeats
 // DNS rebinding: during a rebind, the browser's Origin and Host both reflect

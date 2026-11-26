@@ -95,7 +95,7 @@ type Config struct {
 	// Reference, Community, Project).
 	SectionOrder []string
 	// GitHubRepo is the "owner/repo" used to rewrite directory links to
-	// GitHub blob URLs (e.g. "arturpanteleev/ai-team").
+	// GitHub blob URLs (e.g. "arturpanteleev/workaistrator").
 	GitHubRepo string
 	// HeaderLinks are shown in the site header; HeroActions are the buttons
 	// on the home page.

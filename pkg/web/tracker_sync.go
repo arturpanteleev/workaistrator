@@ -8,8 +8,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/arturpanteleev/ai-team/pkg/tracker"
-	"github.com/arturpanteleev/ai-team/pkg/web/store"
+	"github.com/arturpanteleev/workaistrator/pkg/runtime/tracker"
+	"github.com/arturpanteleev/workaistrator/pkg/web/store"
 )
 
 // trackerSync is the outbound synchronization of tasks with the configured

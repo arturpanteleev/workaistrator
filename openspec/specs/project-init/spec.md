@@ -6,7 +6,7 @@
 Система MUST создавать `.ai-team/config.yaml` с разумными значениями по умолчанию.
 
 #### Scenario: Структура конфига
-- **КОГДА** `ai-team init` запускается
+- **КОГДА** `workaistrator init` запускается
 - **ТОГДА** config.yaml MUST содержать:
   - `schema_version: 6`
   - one `template` ID and `title`
@@ -18,10 +18,10 @@
 
 #### Scenario: Legacy schema v4
 - **КОГДА** config loader встречает `schema_version: 4`
-- **ТОГДА** config MUST быть отклонён с подсказкой запустить `ai-team init --force` или перенести его вручную по документации
+- **ТОГДА** config MUST быть отклонён с подсказкой запустить `workaistrator init --force` или перенести его вручную по документации
 
 #### Scenario: Явная перезапись конфига
-- **КОГДА** пользователь запускает `ai-team init --force` в уже инициализированном проекте
+- **КОГДА** пользователь запускает `workaistrator init --force` в уже инициализированном проекте
 - **ТОГДА** init MUST заменить существующий regular `.ai-team/config.yaml` шаблоном выбранного профиля
 - **И** без `--force` пользовательский конфиг MUST сохраниться
 
@@ -29,7 +29,7 @@
 Система MUST поддерживать флаг `--target` для указания директории целевого проекта.
 
 #### Scenario: Init в кастомной директории
-- **КОГДА** пользователь запускает `ai-team init --target /path/to/project`
+- **КОГДА** пользователь запускает `workaistrator init --target /path/to/project`
 - **ТОГДА** система MUST создать `/path/to/project/.ai-team/` вместо `./.ai-team/`
 
 ### Requirement: Gitignore
@@ -38,7 +38,7 @@
 записать разделяемое правило в `.gitignore`.
 
 #### Scenario: Чистая инициализация по умолчанию
-- **КОГДА** пользователь запускает `ai-team init` в Git-репозитории
+- **КОГДА** пользователь запускает `workaistrator init` в Git-репозитории
 - **ТОГДА** система MUST идемпотентно добавить `.ai-team/` в локальный
   `.git/info/exclude`
 - **И** MUST NOT создавать или изменять `.gitignore`
@@ -46,7 +46,7 @@
   чистым до запуска
 
 #### Scenario: Явная разделяемая ignore policy
-- **КОГДА** пользователь запускает `ai-team init --write-gitignore`
+- **КОГДА** пользователь запускает `workaistrator init --write-gitignore`
 - **ТОГДА** система MUST идемпотентно добавить `.ai-team/` в корневой
   `.gitignore`
 - **И** изменение `.gitignore` MUST быть видимым в Git workspace
@@ -62,10 +62,10 @@
 - **И** MUST NOT записывать данные по symlink
 
 ### Requirement: Директория reports при инициализации
-Система MUST создавать `.ai-team/reports/` при `ai-team init`.
+Система MUST создавать `.ai-team/reports/` при `workaistrator init`.
 
 #### Scenario: Init создаёт reports
-- **КОГДА** `ai-team init` запускается
+- **КОГДА** `workaistrator init` запускается
 - **ТОГДА** система MUST создать `.ai-team/reports/` директорию
 - **И** `.ai-team/` MUST быть исключён выбранной Git ignore policy
 
@@ -73,7 +73,7 @@
 Конфиг по умолчанию MUST включать schema v6, один процессный шаблон, `effort`, stage timeout и стек-специфичные deterministic checks.
 
 #### Scenario: Структура конфига
-- **КОГДА** `ai-team init` запускается
+- **КОГДА** `workaistrator init` запускается
 - **ТОГДА** config.yaml MUST содержать:
   - `template: idea-to-prod` и список `stages`
   - `cli: opencode`

@@ -164,7 +164,7 @@ func fixtureSite(t *testing.T, pages []SourcedPage, files map[string]string, dir
 		Title:       "fixture",
 		Version:     "dev",
 		CleanOutput: true,
-		GitHubRepo:  "arturpanteleev/ai-team",
+		GitHubRepo:  "arturpanteleev/workaistrator",
 		Sources:     pages,
 	}
 	if err := Build(cfg); err != nil {
@@ -204,7 +204,7 @@ func TestBuildCopiesReferencedAssets(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(idx), "https://github.com/arturpanteleev/ai-team/tree/docsgen") {
+	if !strings.Contains(string(idx), "https://github.com/arturpanteleev/workaistrator/tree/docsgen") {
 		t.Errorf("docsgen/ link not rewritten to GitHub tree URL; got:\n%s", string(idx))
 	}
 
@@ -309,7 +309,7 @@ func TestCopyAssetsRejectsPathEscapeFromNestedPage(t *testing.T) {
 		Title:       "fixture",
 		Version:     "dev",
 		CleanOutput: true,
-		GitHubRepo:  "arturpanteleev/ai-team",
+		GitHubRepo:  "arturpanteleev/workaistrator",
 		Sources: []SourcedPage{
 			{Source: "docs/demo/README.md", Title: "Demo", URL: "/demo/"},
 		},
@@ -416,7 +416,7 @@ func TestGithubTreeURLFromNestedPageIsRepoRootRelative(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(demo), "https://github.com/arturpanteleev/ai-team/tree/docsgen") {
+	if !strings.Contains(string(demo), "https://github.com/arturpanteleev/workaistrator/tree/docsgen") {
 		t.Errorf("expected repo-root-relative GitHub tree URL for docsgen/, got:\n%s", string(demo))
 	}
 	if strings.Contains(string(demo), "tree/../../docsgen") {

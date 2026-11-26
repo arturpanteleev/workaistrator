@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/arturpanteleev/ai-team/pkg/web/store"
+	"github.com/arturpanteleev/workaistrator/pkg/web/store"
 )
 
 const maxIdempotencyBody = maxSubmissionBody

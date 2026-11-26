@@ -11,7 +11,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/arturpanteleev/ai-team/pkg/safeio"
+	"github.com/arturpanteleev/workaistrator/pkg/safeio"
 )
 
 // ListControllerStageDeliveryReceipts returns the validated stage delivery

@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/web/store"
+	"github.com/arturpanteleev/workaistrator/pkg/web/store"
 )
 
 // The task timeline reads per-stage aggregates for one task through the same

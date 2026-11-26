@@ -8,8 +8,8 @@ evidence. Отдельный процесс, контейнер, read-only root 
 
 ## Почему deployment сейчас заблокирован
 
-`ai-team web --scheduler-db` ставит задания в durable очередь. Отдельный
-`ai-team scheduler-worker` забирает задание и запускает `ai-team worker`, но
+`workaistrator web --scheduler-db` ставит задания в durable очередь. Отдельный
+`workaistrator scheduler-worker` забирает задание и запускает `workaistrator worker`, но
 worker исполняет весь pipeline. В scheduler и web worker режимах approvals
 хранятся в SQLite `web.db`: controller читает их и принимает решения через
 аутентифицированный API. Worker pipeline использует application-level adapter,
@@ -61,7 +61,7 @@ Linux child probe проверяет, что заранее сохранённы
 Каталог маскируется в bubblewrap, API проверяет schema/run ID и не позволяет
 читать или адресовать другой run. Значения остаются worker-supplied и не
 считаются attestation истинности usage; Resume/Recover может обновить summary
-после interrupted finalization. `ai-team usage` сначала читает controller
+после interrupted finalization. `workaistrator usage` сначала читает controller
 state; если оно существует, отсутствие или повреждение envelope является
 ошибкой без fallback к worker-visible evidence. Локальные runs продолжают
 использовать `.ai-team/runs/<run_id>/usage.json`. Loopback API workers без
@@ -146,9 +146,9 @@ SQLite и общий storage port упрощают подключение contro
    задаются TLS ingress, restart/health policy, persistent controller storage,
    least-purpose secrets, backup/restore и deny-by-default network policy.
 
-`ai-team db backup --db <path> --out <new-path>` создаёт согласованный онлайн
+`workaistrator db backup --db <path> --out <new-path>` создаёт согласованный онлайн
 snapshot только controller SQLite database, включая committed WAL state.
-`ai-team db restore --from <snapshot> --out <new-path>` проверяет целостность
+`workaistrator db restore --from <snapshot> --out <new-path>` проверяет целостность
 и копирует snapshot в новый database path. Обе команды отказывают при
 существующем output и публикуют файл с режимом 0600. Это не полный
 backup/restore: run evidence, artifacts и прочие файлы требуют отдельной
@@ -168,7 +168,7 @@ backup/restore: run evidence, artifacts и прочие файлы требую�
 
 - запущенный worker не может прочитать секрет control plane, изменить или
   удалить approval/decision, lifecycle или уже записанное evidence; попытка
-  завершается отказом ОС/API, после чего `ai-team verify` подтверждает
+  завершается отказом ОС/API, после чего `workaistrator verify` подтверждает
   неизменность сохранённого evidence;
 - worker не может соединиться с control/admin HTTP endpoints, даже если знает
   URL; ingress policy допускает браузерный HTTPS, но не worker-originated

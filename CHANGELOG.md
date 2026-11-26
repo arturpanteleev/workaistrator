@@ -143,7 +143,7 @@ v0.2.0. Номер релиза не назначен. Итог спринта �
   advance|return`, необязательными `stage` и `to_stage`) превращает смену
   статуса в трекере в запрос, а не в команду: опрос с durable-курсором и ручной
   `POST /api/tracker/sync`; идемпотентность по ID внешнего изменения; собственные
-  переходы ai-team (`origin: ai-team`) не вызывают входящих запросов. Автоматически
+  переходы WorkAiStrator (`origin: ai-team`) не вызывают входящих запросов. Автоматически
   выполняется только продолжение готового этапа (`run-agent`); подтверждения,
   решения по проваленным гейтам и возвраты остаются ожидающим запросом или
   конфликтом с причиной и допустимыми действиями (преждевременный «Done»
@@ -241,7 +241,7 @@ v0.2.0. Номер релиза не назначен. Итог спринта �
   агента. Фактический исполнитель попытки (`executor_info`) записан в манифест
   и в `attempt_finished` (`executor_kind`, `executor_name`).
 
-- **Сетевой MCP для Claude и Codex (S12).** `POST /mcp` на `ai-team web`:
+- **Сетевой MCP для Claude и Codex (S12).** `POST /mcp` на `workaistrator web`:
   stateless Streamable HTTP по спецификации MCP 2026-07-28 (клиенты 2025-11-25
   подключаются через `initialize`), официальный Go SDK. Авторизация только
   Bearer-токеном: персональные долгоживущие токены `aitm_…` (SHA-256 в SQLite,
@@ -327,9 +327,9 @@ v0.2.0. Номер релиза не назначен. Итог спринта �
   последней группе. Временный мост S02
   (`projectGates` и его ограничения) удалён.
 
-- **Уведомления из `ai-team run` и `scheduler-worker` (B-81).** Каналы из
-  раздела `notifications` теперь получают события не только от `ai-team web`:
-  локальный `ai-team run` и `ai-team scheduler-worker` отправляют их тем же
+- **Уведомления из `workaistrator run` и `scheduler-worker` (B-81).** Каналы из
+  раздела `notifications` теперь получают события не только от `workaistrator web`:
+  локальный `workaistrator run` и `workaistrator scheduler-worker` отправляют их тем же
   диспетчером из той же базы `.ai-team/web.db`, каждый по своему курсору.
   Пара «канал — событие» атомарно захватывается в общем журнале
   `notification_deliveries` до отправки, поэтому web и run на одной базе и
@@ -338,7 +338,7 @@ v0.2.0. Номер релиза не назначен. Итог спринта �
   не меняется.
 
 - **Вход через SSO (OIDC) и постоянные сессии дашборда (B-83).** В облачном
-  режиме `ai-team web --oidc-issuer … --oidc-client-id … --oidc-redirect-url …`
+  режиме `workaistrator web --oidc-issuer … --oidc-client-id … --oidc-redirect-url …`
   включает вход через OpenID Connect: authorization code + PKCE, проверка
   `state`, `nonce`, подписи `id_token` по JWKS, issuer, audience и срока.
   Client secret — только из переменной окружения. Функции пользователя
@@ -400,7 +400,7 @@ v0.2.0. Номер релиза не назначен. Итог спринта �
   того же размера выдаётся только явным решением человека с причиной:
   `POST /api/runs/{runID}/resume` с `{"grant_budget_allowance": true,
   "reason": "..."}`, кнопка «Выдать бюджет и продолжить» или
-  `ai-team run --resume <id> --grant-budget-allowance "<причина>"`. Выдача
+  `workaistrator run --resume <id> --grant-budget-allowance "<причина>"`. Выдача
   пишется в evidence (`budget_allowance_granted`) и в `run_resume_requested`
   (`budget_allowance_granted: true`, `reason`). Дневной бюджет не выдаётся и
   не сбрасывается никогда.
@@ -411,7 +411,7 @@ v0.2.0. Номер релиза не назначен. Итог спринта �
   есть gofmt, `go mod verify`, coverage-гейт с per-package floors, `-race`,
   e2e, фронтенд (build + сверка встроенного `web/dist` + lint + test + audit),
   govulncheck и строгую OpenSpec-валидацию. Заодно `go build` в CI расширен с
-  `./cmd/ai-team` до `./...`. Текст release notes приведён в соответствие с
+  `./cmd/workaistrator` до `./...`. Текст release notes приведён в соответствие с
   тем, что действительно прогоняется (#102).
 
 ### Security
@@ -443,7 +443,7 @@ v0.2.0. Номер релиза не назначен. Итог спринта �
   изменённые адреса и токены трекера и CI — проверьте `.ai-team/config.yaml` и
   сохранённые версии шаблонов (`.ai-team/templates/versions`) на
   `external_program`, `docker_program` и новые `executor_adapters`.** При
-  старте `ai-team web` печатает список сохранённых версий, чьи команды или
+  старте `workaistrator web` печатает список сохранённых версий, чьи команды или
   инфраструктура не совпадают с активным шаблоном; запуск не блокируется, так
   как у хранилища нет происхождения версий.
 - **Выкладка через TeamCity: второй раунд усиления (BL-32).** Запуск сборки
@@ -498,7 +498,7 @@ v0.2.0. Номер релиза не назначен. Итог спринта �
   длительность, таймер вооружается всегда, а непарсящееся значение даёт
   дефолт, а не отсутствие лимита (#143).
 - **`stage_timeout` получил дефолт на уровне кода (`30m`).** Прежде значение
-  писал только `ai-team init`; конфиг, написанный руками, шёл и без бюджета
+  писал только `workaistrator init`; конфиг, написанный руками, шёл и без бюджета
   стадии, и без бюджета run'а. Неположительный `timeout` теперь отвергается,
   а не трактуется как «без таймаута» (#143).
 - **Журнал событий привязан к своему прогону (QS-13).** Корень hash-chain
@@ -507,7 +507,7 @@ v0.2.0. Номер релиза не назначен. Итог спринта �
   принадлежность лога своему прогону держалась на одном сравнении полей: целый
   валидный `events.jsonl` другого прогона, перештампованный под чужой `run_id`
   и пересобранный от общего корня, проходил проверку целостности и принимался
-  `ai-team run --resume` как собственная история прогона. Теперь принадлежность
+  `workaistrator run --resume` как собственная история прогона. Теперь принадлежность
   — часть самой цепочки (#163).
 - `docs/demo/run-demo.sh` снова проходит все три сценария: JUnit-отчёт
   первого сценария больше не остаётся неотслеживаемым файлом и не блокирует
@@ -580,7 +580,7 @@ v0.2.0. Номер релиза не назначен. Итог спринта �
 
 ### Added
 
-- **CLI / config.** `ai-team template audit` — разовый dry-run аудит
+- **CLI / config.** `workaistrator template audit` — разовый dry-run аудит
   сохранённых версий шаблона без якоря доверия; `--rewrite` пересохраняет
   проверенные версии через доверенный файловый якорь. Добавлена справка и
   понятный вывод, когда аудировать нечего.
@@ -770,7 +770,7 @@ v0.2.0. Номер релиза не назначен. Итог спринта �
 
 ## [0.1.0] - 2026-08-24
 
-Первый публичный релиз ai-team — строгого workflow-контроллера AI-агентов.
+Первый публичный релиз WorkAiStrator — строгого workflow-контроллера AI-агентов.
 
 *Дата версии vs дата публикации:* строка выше — **version date** (дата
 release-коммита тега `v0.1.0`, 2026-08-24). Сама **публикация** на GitHub
@@ -792,28 +792,28 @@ Releases произошла позже (в конце августа 2026 г.), 
   append-only evidence manifests.
 - Scheduler для оркестрации задач разработки (dev-task-workflow) в ручном
   и автоматическом режиме.
-- CLI: `ai-team version`, exit-коды run (OK/FAILED/BLOCKED/USER_STOPPED),
+- CLI: `workaistrator version`, exit-коды run (OK/FAILED/BLOCKED/USER_STOPPED),
   E2E-тесты на mock-opencode.
 
-[Unreleased]: https://github.com/arturpanteleev/ai-team/compare/v0.2.44...HEAD
-[0.2.44]: https://github.com/arturpanteleev/ai-team/compare/v0.2.43...v0.2.44
-[0.2.43]: https://github.com/arturpanteleev/ai-team/compare/v0.2.42...v0.2.43
-[0.2.42]: https://github.com/arturpanteleev/ai-team/compare/v0.2.41...v0.2.42
-[0.2.41]: https://github.com/arturpanteleev/ai-team/compare/v0.2.40...v0.2.41
-[0.2.40]: https://github.com/arturpanteleev/ai-team/compare/v0.2.39...v0.2.40
-[0.2.39]: https://github.com/arturpanteleev/ai-team/compare/v0.2.38...v0.2.39
-[0.2.38]: https://github.com/arturpanteleev/ai-team/compare/v0.2.37...v0.2.38
-[0.2.37]: https://github.com/arturpanteleev/ai-team/compare/v0.2.36...v0.2.37
-[0.2.36]: https://github.com/arturpanteleev/ai-team/compare/v0.2.35...v0.2.36
-[0.2.35]: https://github.com/arturpanteleev/ai-team/compare/v0.2.34...v0.2.35
-[0.2.34]: https://github.com/arturpanteleev/ai-team/compare/v0.2.33...v0.2.34
-[0.2.33]: https://github.com/arturpanteleev/ai-team/compare/v0.2.32...v0.2.33
-[0.2.32]: https://github.com/arturpanteleev/ai-team/compare/v0.2.31...v0.2.32
-[0.2.31]: https://github.com/arturpanteleev/ai-team/compare/v0.2.30...v0.2.31
-[0.2.30]: https://github.com/arturpanteleev/ai-team/compare/v0.2.29...v0.2.30
-[0.2.29]: https://github.com/arturpanteleev/ai-team/compare/v0.2.28...v0.2.29
-[0.2.28]: https://github.com/arturpanteleev/ai-team/compare/v0.2.27...v0.2.28
-[0.2.27]: https://github.com/arturpanteleev/ai-team/compare/v0.2.26...v0.2.27
-[0.2.26]: https://github.com/arturpanteleev/ai-team/compare/v0.2.25...v0.2.26
-[0.2.0]: https://github.com/arturpanteleev/ai-team/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/arturpanteleev/ai-team/releases/tag/v0.1.0
+[Unreleased]: https://github.com/arturpanteleev/workaistrator/compare/v0.2.44...HEAD
+[0.2.44]: https://github.com/arturpanteleev/workaistrator/compare/v0.2.43...v0.2.44
+[0.2.43]: https://github.com/arturpanteleev/workaistrator/compare/v0.2.42...v0.2.43
+[0.2.42]: https://github.com/arturpanteleev/workaistrator/compare/v0.2.41...v0.2.42
+[0.2.41]: https://github.com/arturpanteleev/workaistrator/compare/v0.2.40...v0.2.41
+[0.2.40]: https://github.com/arturpanteleev/workaistrator/compare/v0.2.39...v0.2.40
+[0.2.39]: https://github.com/arturpanteleev/workaistrator/compare/v0.2.38...v0.2.39
+[0.2.38]: https://github.com/arturpanteleev/workaistrator/compare/v0.2.37...v0.2.38
+[0.2.37]: https://github.com/arturpanteleev/workaistrator/compare/v0.2.36...v0.2.37
+[0.2.36]: https://github.com/arturpanteleev/workaistrator/compare/v0.2.35...v0.2.36
+[0.2.35]: https://github.com/arturpanteleev/workaistrator/compare/v0.2.34...v0.2.35
+[0.2.34]: https://github.com/arturpanteleev/workaistrator/compare/v0.2.33...v0.2.34
+[0.2.33]: https://github.com/arturpanteleev/workaistrator/compare/v0.2.32...v0.2.33
+[0.2.32]: https://github.com/arturpanteleev/workaistrator/compare/v0.2.31...v0.2.32
+[0.2.31]: https://github.com/arturpanteleev/workaistrator/compare/v0.2.30...v0.2.31
+[0.2.30]: https://github.com/arturpanteleev/workaistrator/compare/v0.2.29...v0.2.30
+[0.2.29]: https://github.com/arturpanteleev/workaistrator/compare/v0.2.28...v0.2.29
+[0.2.28]: https://github.com/arturpanteleev/workaistrator/compare/v0.2.27...v0.2.28
+[0.2.27]: https://github.com/arturpanteleev/workaistrator/compare/v0.2.26...v0.2.27
+[0.2.26]: https://github.com/arturpanteleev/workaistrator/compare/v0.2.25...v0.2.26
+[0.2.0]: https://github.com/arturpanteleev/workaistrator/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/arturpanteleev/workaistrator/releases/tag/v0.1.0

@@ -1,8 +1,8 @@
 # Команды CLI
 
-Здесь собраны все команды `ai-team`: что делает каждая, какие у неё флаги и
+Здесь собраны все команды `workaistrator`: что делает каждая, какие у неё флаги и
 как её вызвать. Список сверен с кодом CLI и с встроенной справкой
-`ai-team help`. Справку по флагам любой команды выводит `ai-team <команда> --help`.
+`workaistrator help`. Справку по флагам любой команды выводит `WorkAiStrator <команда> --help`.
 
 > [!TIP]
 > Если вы только начинаете, сначала пройдите [учебник](../tutorial/install.md).
@@ -12,31 +12,31 @@
 
 | Команда | Что делает |
 |---|---|
-| `ai-team init` | готовит проект: создаёт `.ai-team/config.yaml` и рабочие каталоги |
-| `ai-team run` | проводит задачу по конвейеру агентов или продолжает остановленный прогон |
-| `ai-team runs` | показывает задачи проекта, этап и состояние каждого прогона |
-| `ai-team show` | показывает этапы, попытки, ожидание, токены и следующую команду для прогона |
-| `ai-team cancel` | отменяет незавершённый прогон с указанной причиной |
-| `ai-team decision` | записывает решение человека по ожидающему подтверждению |
-| `ai-team stage` | сдаёт результат этапа человека: Markdown, ссылку или approve |
-| `ai-team deliver` | повторяет отложенную delivery (коммит, push, PR) завершённого прогона |
-| `ai-team list` | показывает доступных агентов и откуда каждый загружен |
-| `ai-team gate` | проверяет diff без модели: политика изменений, проверки, подписываемый bundle |
-| `ai-team ci-import` | показывает, какие проверки можно взять из CI проекта, ничего не запуская |
-| `ai-team usage` | показывает входные, выходные и суммарные токены, а при настройке — приблизительную долю подписки |
-| `ai-team export` | собирает переносимый bundle с доказательствами завершённого прогона |
-| `ai-team verify` | проверяет целостность доказательств прогона или bundle |
-| `ai-team redact` | ищет секреты в доказательствах и делает очищенную копию |
-| `ai-team eval` | оценивает качество артефакта отдельной LLM-оценкой |
-| `ai-team web` | запускает веб-дашборд |
-| `ai-team auth-token` | выпускает короткоживущий токен для дашборда в облачном режиме |
-| `ai-team worker` | исполняет одно задание из stdin; вызывается дашбордом, не вручную |
-| `ai-team scheduler-worker` | забирает задания из постоянной очереди и исполняет их |
-| `ai-team gc` | убирает старые прогоны, worktree и состояние из `.ai-team` |
-| `ai-team db` | операции обслуживания controller database, сейчас — backup |
-| `ai-team template` | аудит сохранённых версий шаблона с недоверенными командами/инфраструктурой (dry-run) и пересохранение проверенных версий через файловый якорь |
-| `ai-team version` | печатает версию |
-| `ai-team help` | печатает краткую справку (то же — `--help`, `-h`) |
+| `workaistrator init` | готовит проект: создаёт `.ai-team/config.yaml`, `workflow.yaml`, `.env.example` и рабочие каталоги |
+| `workaistrator run` | проводит задачу по конвейеру агентов или продолжает остановленный прогон |
+| `workaistrator runs` | показывает задачи проекта, этап и состояние каждого прогона |
+| `workaistrator show` | показывает этапы, попытки, ожидание, токены и следующую команду для прогона |
+| `workaistrator cancel` | отменяет незавершённый прогон с указанной причиной |
+| `workaistrator decision` | записывает решение человека по ожидающему подтверждению |
+| `workaistrator stage` | сдаёт результат этапа человека: Markdown, ссылку или approve |
+| `workaistrator deliver` | повторяет отложенную delivery (коммит, push, PR) завершённого прогона |
+| `workaistrator list` | показывает доступных агентов и откуда каждый загружен |
+| `workaistrator gate` | проверяет diff без модели: политика изменений, проверки, подписываемый bundle |
+| `workaistrator ci-import` | показывает, какие проверки можно взять из CI проекта, ничего не запуская |
+| `workaistrator usage` | показывает входные, выходные и суммарные токены, а при настройке — приблизительную долю подписки |
+| `workaistrator export` | собирает переносимый bundle с доказательствами завершённого прогона |
+| `workaistrator verify` | проверяет целостность доказательств прогона или bundle |
+| `workaistrator redact` | ищет секреты в доказательствах и делает очищенную копию |
+| `workaistrator eval` | оценивает качество артефакта отдельной LLM-оценкой |
+| `workaistrator web` | запускает веб-дашборд |
+| `workaistrator auth-token` | выпускает короткоживущий токен для дашборда в облачном режиме |
+| `workaistrator worker` | исполняет одно задание из stdin; вызывается дашбордом, не вручную |
+| `workaistrator scheduler-worker` | забирает задания из постоянной очереди и исполняет их |
+| `workaistrator gc` | убирает старые прогоны, worktree и состояние из `.ai-team` |
+| `workaistrator db` | операции обслуживания controller database, сейчас — backup |
+| `workaistrator template` | аудит сохранённых версий шаблона с недоверенными командами/инфраструктурой (dry-run) и пересохранение проверенных версий через файловый якорь |
+| `workaistrator version` | печатает версию |
+| `workaistrator help` | печатает краткую справку (то же — `--help`, `-h`) |
 
 Коды выхода всех команд собраны на странице
 [Статусы и коды выхода](statuses.md).
@@ -51,26 +51,28 @@
 | `--quiet`, `-q` | убирает второстепенный человеческий вывод |
 
 Большинство команд принимает `--target <путь>` — каталог проекта. По умолчанию
-это текущий каталог. Команды, которым нужен `.ai-team/`, без `ai-team init`
+это текущий каталог. Команды, которым нужен `.ai-team/`, без `workaistrator init`
 откажутся работать с подсказкой выполнить его.
 
 ## Подготовка проекта
 
-### ai-team init
+### workaistrator init
 
-Создаёт `.ai-team/config.yaml` и каталоги `artifacts/`, `reports/`, `logs/`.
-Существующий конфиг не перезаписывает. Каталог `.ai-team/` исключается из Git
-локально, через `.git/info/exclude`, поэтому рабочее дерево остаётся чистым.
+Создаёт `.ai-team/config.yaml`, `workflow.yaml`, `.env.example` и каталоги
+`artifacts/`, `reports/`, `logs/`. Существующие файлы не перезаписывает.
+Каталог `.ai-team/` исключается из Git локально, через `.git/info/exclude`,
+поэтому рабочее дерево остаётся чистым: сгенерированные `workflow.yaml` и
+`.env.example` — обычные файлы проекта, которые можно править и коммитить.
 
 ```text
-ai-team init [--target <путь>] [--profile fast|standard|regulated] [--force] [--write-gitignore]
+workaistrator init [--target <путь>] [--profile fast|standard|regulated] [--force] [--write-gitignore]
 ```
 
 | Флаг | По умолчанию | Что делает |
 |---|---|---|
 | `--target` | `.` | каталог проекта |
 | `--profile` | `standard` | сколько подтверждений спрашивать; см. [профили](config.md#профили-init) |
-| `--force` | выключен | заменить существующий `.ai-team/config.yaml` выбранным шаблоном |
+| `--force` | выключен | заменить существующие `.ai-team/config.yaml`, `workflow.yaml` и `.env.example` выбранным шаблоном |
 | `--write-gitignore` | выключен | записать правило в `.gitignore` вместо локального exclude |
 
 Если в проекте есть `go.mod`, `init` сам добавляет проверки `go test` и
@@ -79,23 +81,23 @@ delivery будет запрещена, пока вы не настроите о
 (см. [Настроить проверки проекта](../guides/project-checks.md)).
 
 ```bash
-ai-team init --profile regulated
+workaistrator init --profile regulated
 ```
 
-### ai-team list
+### workaistrator list
 
 Показывает агентов, которых видит проект: имя, тип runtime, CLI, источник
 (слой реестра) и описание. Агент, который не удалось загрузить, выводится
 предупреждением в stderr.
 
 ```text
-ai-team list [--target <путь>]
+workaistrator list [--target <путь>]
 ```
 
 Каталог `--target` обязан существовать. Без `.ai-team/` в нём команда покажет
 только встроенных агентов.
 
-### ai-team ci-import
+### workaistrator ci-import
 
 Читает workflow GitHub Actions проекта и показывает ограниченный, объяснимый
 набор проверок, который из них можно взять, и его отпечаток (fingerprint).
@@ -103,19 +105,21 @@ ai-team list [--target <путь>]
 меняется. Пропущенные шаги перечисляются с причиной.
 
 ```text
-ai-team ci-import [--target <путь>] [--format github-actions]
+workaistrator ci-import [--target <путь>] [--format github-actions]
 ```
 
 ## Прогон задачи
 
-### ai-team run
+### workaistrator run
 
 Проводит задачу по конвейеру агентов: от анализа до готового к delivery
 кода. Перед стартом печатает отчёт preflight (см. [ниже](#preflight-перед-запуском)).
 
 ```text
-ai-team run --feature <имя> --task "<описание>" [--target <путь>] [--template <id>] [--mode auto] [--approve-gates] [--approve-plan <sha256>]
-ai-team run --resume <run_id> [--target <путь>] [--approve-gates] [--approve-plan <sha256>]
+workaistrator run --feature <имя> --task "<описание>" [--target <путь>] [--template <id>] [--mode auto] [--approve-gates] [--approve-plan <sha256>]
+workaistrator run --resume <run_id> [--target <путь>] [--approve-gates] [--approve-plan <sha256>]
+workaistrator run --workflow <путь> [--feature <имя> --task "<описание>"]
+workaistrator run --demo
 ```
 
 | Флаг | Что делает |
@@ -125,6 +129,8 @@ ai-team run --resume <run_id> [--target <путь>] [--approve-gates] [--approve
 | `--target <путь>` | каталог проекта, по умолчанию `.` |
 | `--template <id>` | проверить, что выбран активный шаблон проекта. В проекте действует один шаблон; run закрепляет его версию |
 | `--mode auto` | закрепляет для этого run шаблон, где этапы с агентом исполняются агентом и обычные переходы подтверждаются автоматически; этапы без агента, вопросы, согласование спецификации и delivery-план остаются человеческими точками. После первой неудачной проверки агент получает один retry с замечаниями; повторный провал останавливает run для решения человека. Активный конфиг проекта не изменяется |
+| `--workflow <путь>` | проверить канонический YAML workflow (stages, transitions, gates). Без `--feature` команда выполняет только валидацию графа и завершается с кодом `0` |
+| `--demo` | прогнать встроенный demo-workflow на агентах-заглушках: без API-ключей, Docker и Git-репозитория |
 | `--resume <run_id>` | продолжить незавершённый прогон с тем же `run_id` и его закреплённым шаблоном; preflight проверяет этот шаблон, а не текущую активную конфигурацию. Нельзя сочетать с `--feature` и `--task` |
 | `--approve-gates` | подтвердить обычные точки подтверждения в неинтерактивном режиме; это **не** подтверждение delivery. В профилях `standard` и `fast` переходы отложены до решения о delivery, поэтому там флаг обычно не нужен |
 | `--approve-plan <sha256>` | подтвердить ровно тот delivery-план, который показал контроллер; заодно подтверждает отложенные переходы прогона |
@@ -134,25 +140,25 @@ ai-team run --resume <run_id> [--target <путь>] [--approve-gates] [--approve
 запуск того же прогона:
 
 ```bash
-ai-team run --feature add-jwt-auth --task "Реализовать JWT авторизацию"
-ai-team run --resume <run_id> --approve-plan <sha256-из-вывода>
+workaistrator run --feature add-jwt-auth --task "Реализовать JWT авторизацию"
+workaistrator run --resume <run_id> --approve-plan <sha256-из-вывода>
 ```
 
 При другой остановке команда печатает подходящее следующее действие, если оно
 известно: сдачу результата человеческого этапа или продолжение прогона. Список
 и подробности сохранённых задач доступны через `runs` и `show`.
 
-### ai-team runs
+### workaistrator runs
 
 Показывает сохранённые прогоны проекта в порядке последнего обновления.
 
 ```text
-ai-team runs [--target <путь>]
+workaistrator runs [--target <путь>]
 ```
 
 В `--json` команда выдаёт один JSON record с `data.runs` и `data.count`.
 
-### ai-team show
+### workaistrator show
 
 Показывает состояние lifecycle, историю попыток и текущее ожидание. Команда
 проверяет цепочку evidence перед показом. Для завершённых прогонов показываются
@@ -161,19 +167,19 @@ ai-team runs [--target <путь>]
 прогонам месяца; тариф API не рассчитывается.
 
 ```text
-ai-team show <run_id> [--target <путь>]
+workaistrator show <run_id> [--target <путь>]
 ```
 
 Если прогон ждёт результат human-этапа, вывод содержит готовую команду
-`ai-team stage submit`. Замените пример пути, URL или заметку фактическим
-значением. При запросе решения по gate команда подсказывает `ai-team decision`.
+`workaistrator stage submit`. Замените пример пути, URL или заметку фактическим
+значением. При запросе решения по gate команда подсказывает `workaistrator decision`.
 
-### ai-team cancel
+### workaistrator cancel
 
 Отменяет незавершённый прогон и сохраняет причину в evidence.
 
 ```text
-ai-team cancel <run_id> --reason "<почему отменяем>" [--target <путь>]
+workaistrator cancel <run_id> --reason "<почему отменяем>" [--target <путь>]
 ```
 
 В интерактивном терминале контроллер печатает план и сам спрашивает
@@ -187,14 +193,14 @@ ai-team cancel <run_id> --reason "<почему отменяем>" [--target <п
 и снимки конфигурации и продолжает с сохранённого этапа, без нового
 `run_started`.
 
-### ai-team decision
+### workaistrator decision
 
 Записывает решение человека по ожидающему подтверждению. Нужные значения
 контроллер печатает сам, когда останавливается на подтверждении. Решение с
 устаревшим хешем, чужой ролью или противоречащее уже записанному отклоняется.
 
 ```text
-ai-team decision --run <run_id> --approval <id> --actor <кто> --role <роль> --action <действие> --subject <sha256> [--comment "<текст>"] [--target <путь>] [--db <путь-к-SQLite-в-.ai-team>]
+workaistrator decision --run <run_id> --approval <id> --actor <кто> --role <роль> --action <действие> --subject <sha256> [--comment "<текст>"] [--target <путь>] [--db <путь-к-SQLite-в-.ai-team>]
 ```
 
 Все флаги, кроме `--comment`, `--target` и `--db`, обязательны. Без `--db`
@@ -203,7 +209,7 @@ ai-team decision --run <run_id> --approval <id> --actor <кто> --role <рол�
 указать существующий файл базы внутри `.ai-team`, например:
 
 ```bash
-ai-team decision --target . --db .ai-team/web.db --run <run_id> \
+workaistrator decision --target . --db .ai-team/web.db --run <run_id> \
   --approval <id> --actor alice --role release_manager \
   --action approve --subject <sha256>
 ```
@@ -215,16 +221,16 @@ ai-team decision --target . --db .ai-team/web.db --run <run_id> \
 `override_approve`. Когда кворум собран, команда подсказывает продолжить:
 
 ```bash
-ai-team decision --run <run_id> --approval <id> --actor alice \
+workaistrator decision --run <run_id> --approval <id> --actor alice \
   --role release_manager --action approve --subject <sha256>
-ai-team run --resume <run_id>
+workaistrator run --resume <run_id>
 ```
 
 Локальные файловые подтверждения лежат в
 `.ai-team/state/approvals/<run_id>/<approval_id>.json`. В web и scheduler-worker
 режимах approvals хранятся в SQLite `.ai-team/web.db`.
 
-### ai-team stage
+### workaistrator stage
 
 Сдаёт результат ожидающего human stage и разрешает его input approval. Для
 Markdown можно передать файл или текст, для ссылки обязательны URL и вид
@@ -234,7 +240,7 @@ Markdown можно передать файл или текст, для ссыл
 Команда выводит номер версии и SHA-256 сохранённого результата.
 
 ```text
-ai-team stage submit <run_id> --stage <id> (--md <файл> | --text <текст> | --link <url> --kind <вид> | --approve) [--note <текст>] [--description <текст>] [--target <путь>] [--db <путь-в-.ai-team>]
+workaistrator stage submit <run_id> --stage <id> (--md <файл> | --text <текст> | --link <url> --kind <вид> | --approve) [--note <текст>] [--description <текст>] [--target <путь>] [--db <путь-в-.ai-team>]
 ```
 
 `--md` и `--text` сдают Markdown; размер ограничен 10 MiB. Ссылки принимают
@@ -244,15 +250,15 @@ scheduler-worker, команда автоматически выбирает `.a
 локальное файловое хранилище approvals.
 
 ```bash
-ai-team stage submit <run_id> --stage product_spec --md ./spec.md \
+workaistrator stage submit <run_id> --stage product_spec --md ./spec.md \
   --description "Зафиксированы требования и критерии приёмки"
-ai-team stage submit <run_id> --stage implementation \
+workaistrator stage submit <run_id> --stage implementation \
   --link https://github.com/acme/app/pull/42 --kind pr \
   --description "Создан pull request"
-ai-team stage submit <run_id> --stage intent --approve --note "Идея принята"
+workaistrator stage submit <run_id> --stage intent --approve --note "Идея принята"
 ```
 
-### ai-team stage take
+### workaistrator stage take
 
 Закрепляет текущий ожидающий human stage за участником, чей actor и роли
 определяет web controller. Сервер проверяет, что это текущий этап, что у
@@ -261,7 +267,7 @@ ai-team stage submit <run_id> --stage intent --approve --note "Идея прин
 клиенте.
 
 ```text
-ai-team stage take <run_id> --stage <id> [--target <путь>] [--web-url <url>]
+workaistrator stage take <run_id> --stage <id> [--target <путь>] [--web-url <url>]
 ```
 
 В локальном режиме URL по умолчанию — `http://127.0.0.1:8080`, а bearer token
@@ -271,12 +277,12 @@ ai-team stage take <run_id> --stage <id> [--target <путь>] [--web-url <url>]
 `/api/session`, затем вызывает защищённый endpoint `take`.
 
 ```bash
-ai-team stage take <run_id> --stage product_spec
+workaistrator stage take <run_id> --stage product_spec
 AI_TEAM_WEB_URL=https://team.example.test AI_TEAM_WEB_TOKEN="$TOKEN" \
-  ai-team stage take <run_id> --stage product_spec
+  workaistrator stage take <run_id> --stage product_spec
 ```
 
-### ai-team deliver
+### workaistrator deliver
 
 Повторяет отложенную delivery завершённого прогона: коммит, push и PR с
 trailer-строками (run id, runtime, digest аттестации). Нужна, когда delivery
@@ -284,13 +290,13 @@ trailer-строками (run id, runtime, digest аттестации). Нуж�
 сверяет ранее подтверждённый план; доставить ей произвольный diff нельзя.
 
 ```text
-ai-team deliver --run <run_id> [--target <путь>] [--feature <имя>]
+workaistrator deliver --run <run_id> [--target <путь>] [--feature <имя>]
 ```
 
 `--target` — каталог проекта (тот, где лежит `.ai-team/`). Без `--feature`
 имя фичи берётся из манифеста прогона.
 
-### ai-team eval
+### workaistrator eval
 
 Отдельная LLM-оценка качества артефакта в изолированном временном каталоге.
 Результат (выборки, медиана, среднее, стандартное отклонение) сохраняется
@@ -298,8 +304,8 @@ ai-team deliver --run <run_id> [--target <путь>] [--feature <имя>]
 в [Агенты и этапы](pipeline.md#оценка-качества-eval).
 
 ```text
-ai-team eval --agent <имя> --artifact <путь> [--samples N] [--json-out <путь>] [--target <путь>]
-ai-team eval --agent <имя> --feature <имя> --task "<описание>" [--samples N] [--target <путь>]
+workaistrator eval --agent <имя> --artifact <путь> [--samples N] [--json-out <путь>] [--target <путь>]
+workaistrator eval --agent <имя> --feature <имя> --task "<описание>" [--samples N] [--target <путь>]
 ```
 
 `--samples` — от 1 до 20, по умолчанию 1. Вторая форма запускает одного
@@ -307,14 +313,14 @@ ai-team eval --agent <имя> --feature <имя> --task "<описание>" [--
 
 ## Проверки и доказательства
 
-### ai-team gate
+### workaistrator gate
 
 Проверяет изменения без модели: политика diff, типизированные проверки и
 bundle с аттестацией. Работает с доверенными локальными ref. Подходит для CI —
 см. [Проверки в CI без модели](../guides/ci-gate.md).
 
 ```text
-ai-team gate [--target <путь>] [--base <ref>] [--candidate <ref>|WORKTREE] [--config <файл>] [--out <каталог>] [--sign-key <ключ>]
+workaistrator gate [--target <путь>] [--base <ref>] [--candidate <ref>|WORKTREE] [--config <файл>] [--out <каталог>] [--sign-key <ключ>]
 ```
 
 | Флаг | По умолчанию | Что делает |
@@ -329,10 +335,10 @@ ai-team gate [--target <путь>] [--base <ref>] [--candidate <ref>|WORKTREE] [
 Коды выхода: `0` — PASS, `1` — FAIL, `2` — BLOCKED.
 
 ```bash
-ai-team gate --base origin/master --candidate WORKTREE
+workaistrator gate --base origin/master --candidate WORKTREE
 ```
 
-### ai-team usage
+### workaistrator usage
 
 Печатает входные, выходные и суммарные токены завершённой задачи. Если runtime
 не сообщил полный usage, вместо нулей показывает `нет данных`. При явно
@@ -343,30 +349,30 @@ UTC-месяц; это не цена API. Если нужных данных н�
 формат не отличал полный итог от частичной суммы.
 
 ```text
-ai-team usage [--target <путь>] <run_id>
+workaistrator usage [--target <путь>] <run_id>
 ```
 
-### ai-team export
+### workaistrator export
 
 Собирает переносимый bundle завершённого прогона: типизированные записи и
 их digest. Перед публикацией bundle проходит проверку на секреты. Успешный
 экспорт записывается в `state/exports` — это разрешает `gc --prune-runs`.
 
 ```text
-ai-team export [--target <путь>] [--out <каталог>] [--sign-key <ключ>] <run_id>
+workaistrator export [--target <путь>] [--out <каталог>] [--sign-key <ключ>] <run_id>
 ```
 
 По умолчанию bundle пишется в `.ai-team/exports/<run_id>.bundle`.
 
-### ai-team verify
+### workaistrator verify
 
 Проверяет доказательства прогона. Принимает либо `run_id` в проекте, либо
 каталог bundle (run- или gate-bundle) — тогда ни репозиторий, ни `.ai-team/`
 не нужны.
 
 ```text
-ai-team verify [--target <путь>] <run_id>
-ai-team verify [--verify-key <ключ>] <каталог-bundle>
+workaistrator verify [--target <путь>] <run_id>
+workaistrator verify [--verify-key <ключ>] <каталог-bundle>
 ```
 
 `--verify-key` — публичный ключ ed25519. С ним подпись bundle обязана быть и
@@ -375,16 +381,16 @@ ai-team verify [--verify-key <ключ>] <каталог-bundle>
 [Граница безопасности](security.md#целостность-и-подлинность).
 
 ```bash
-ai-team export --out /tmp/run.bundle <run_id>
-ai-team verify /tmp/run.bundle
+workaistrator export --out /tmp/run.bundle <run_id>
+workaistrator verify /tmp/run.bundle
 ```
 
-### ai-team redact
+### workaistrator redact
 
 Работает с секретами в доказательствах. Подкоманда пишется **перед** флагами.
 
 ```text
-ai-team redact scan|verify|redact [--target <путь>] [--run <run_id>] [--path <путь>] [--out <каталог>]
+workaistrator redact scan|verify|redact [--target <путь>] [--run <run_id>] [--path <путь>] [--out <каталог>]
 ```
 
 | Подкоманда | Что делает |
@@ -399,14 +405,14 @@ ai-team redact scan|verify|redact [--target <путь>] [--run <run_id>] [--path
 
 ## Дашборд и облачный режим
 
-### ai-team web
+### workaistrator web
 
 Запускает локальный дашборд: прогоны, логи, проверки, подтверждения. Из него
 можно создать прогон, подтвердить, продолжить или отменить. Подробно — в
 [Веб-дашборд](../guides/dashboard.md).
 
 ```text
-ai-team web [--target <путь>] [--host 127.0.0.1] [--port 8080] [другие флаги]
+workaistrator web [--target <путь>] [--host 127.0.0.1] [--port 8080] [другие флаги]
 ```
 
 | Флаг | По умолчанию | Что делает |
@@ -422,7 +428,7 @@ ai-team web [--target <путь>] [--host 127.0.0.1] [--port 8080] [другие
 | `--oidc-redirect-url` | `$AI_TEAM_OIDC_REDIRECT_URL` | зарегистрированный callback `https://<хост>/api/auth/oidc/callback` |
 | `--oidc-client-secret-env` | `AI_TEAM_OIDC_CLIENT_SECRET` | имя переменной окружения с client secret; сам секрет флагом не передаётся |
 | `--mcp-allowed-origins` | `$AI_TEAM_MCP_ALLOWED_ORIGINS` | через запятую: браузерные `Origin` (`https://host[:port]`), которым разрешён `POST /mcp` помимо собственного origin; запросы без `Origin` разрешены всегда. См. [Сетевой MCP](mcp.md) |
-| `--worker-command <путь>` | — | исполнять прогоны в отдельном процессе `ai-team worker` |
+| `--worker-command <путь>` | — | исполнять прогоны в отдельном процессе `workaistrator worker` |
 | `--scheduler-db <путь>` | — | только ставить задания в постоянную очередь |
 | `--max-concurrent`, `--per-target` | `4`, `1` | лимиты параллельности очереди |
 
@@ -432,7 +438,7 @@ ai-team web [--target <путь>] [--host 127.0.0.1] [--port 8080] [другие
 отдельный CSRF-токен; каждый пишущий запрос требует оба.
 
 Сессии хранятся в базе дашборда (`--db`), а не в памяти процесса, поэтому
-переживают перезапуск `ai-team web`. В базе лежит только SHA-256 cookie.
+переживают перезапуск `workaistrator web`. В базе лежит только SHA-256 cookie.
 Сессия истекает после 8 часов бездействия (активность продлевает её) и в любом
 случае через 7 дней. Кнопка «Выйти» (`DELETE /api/session` с CSRF-токеном)
 отзывает сессию. Сессия, созданная в локальном режиме, не действует в
@@ -455,10 +461,10 @@ code с PKCE (S256), проверка `state` (привязан к браузе�
 ```bash
 export AI_TEAM_AUTH_SECRET='<случайный-секрет-не-короче-32-байт>'
 export AI_TEAM_OIDC_ISSUER='https://login.example.com/realms/team'
-export AI_TEAM_OIDC_CLIENT_ID='ai-team'
+export AI_TEAM_OIDC_CLIENT_ID='WorkAiStrator'
 export AI_TEAM_OIDC_CLIENT_SECRET='<секрет клиента>'
 export AI_TEAM_OIDC_REDIRECT_URL='https://ai-team.example.com/api/auth/oidc/callback'
-ai-team web --host 0.0.0.0
+workaistrator web --host 0.0.0.0
 ```
 
 Пользователь определяется по подтверждённому провайдером e-mail
@@ -469,17 +475,17 @@ ai-team web --host 0.0.0.0
 новую учётную запись. Входов с одного адреса клиента не больше 20 за 10 минут
 (`429`). Функции берутся только из назначений участника в
 команде, а не из claims токена; войти через SSO может лишь активный участник.
-Первого администратора по-прежнему заводит токен `ai-team auth-token`, а
+Первого администратора по-прежнему заводит токен `workaistrator auth-token`, а
 участники активируют приглашение как раньше. Любой сбой провайдера, discovery
 или JWKS отклоняет вход: понижения до другого способа входа нет.
 
-### ai-team auth-token
+### workaistrator auth-token
 
 Выпускает подписанный токен для облачного режима дашборда. Секрет — не
 короче 32 байт, один и тот же при выпуске токена и запуске `web`.
 
 ```text
-ai-team auth-token --actor <id> --roles <роли через запятую> [--ttl 1h] [--secret-env AI_TEAM_AUTH_SECRET]
+workaistrator auth-token --actor <id> --roles <роли через запятую> [--ttl 1h] [--secret-env AI_TEAM_AUTH_SECRET]
 ```
 
 Роли: `product_owner`, `architect`, `developer`, `reviewer`, `qa`,
@@ -488,8 +494,8 @@ ai-team auth-token --actor <id> --roles <роли через запятую> [--
 
 ```bash
 export AI_TEAM_AUTH_SECRET='<случайный-секрет-не-короче-32-байт>'
-ai-team auth-token --actor architect-1 --roles architect,reviewer --ttl 1h
-ai-team web --host 0.0.0.0
+workaistrator auth-token --actor architect-1 --roles architect,reviewer --ttl 1h
+workaistrator web --host 0.0.0.0
 ```
 
 Токен нужен только для создания персональной сессии в браузере. Дальше все
@@ -503,16 +509,16 @@ ai-team web --host 0.0.0.0
 
 > [!WARNING]
 > Для публичного размещения TLS должен завершаться на внешнем ingress или
-> reverse proxy. Сам `ai-team web` TLS не поднимает.
+> reverse proxy. Сам `workaistrator web` TLS не поднимает.
 
-### ai-team worker
+### workaistrator worker
 
 Исполняет ровно одно задание (start, resume или cancel) из stdin и
 завершается. Его вызывает дашборд с `--worker-command`; вручную запускать не
 нужно.
 
 ```text
-ai-team worker --target <путь> [--db <абсолютный путь>]
+workaistrator worker --target <путь> [--db <абсолютный путь>]
 ```
 
 Это эталонный запускатель для разработки и self-hosted. В production тот же
@@ -527,7 +533,7 @@ ai-team worker --target <путь> [--db <абсолютный путь>]
 
 ```bash
 export OPENAI_API_KEY='<ваш-ключ>'
-AI_TEAM_WORKER_ENV_ALLOW=OPENAI_API_KEY ai-team web --worker-command /opt/ai-team/bin/ai-team
+AI_TEAM_WORKER_ENV_ALLOW=OPENAI_API_KEY workaistrator web --worker-command /opt/ai-team/bin/workaistrator
 ```
 
 Список содержит имена, не значения; `HOME`, `TMPDIR` и XDG config/cache/data/state
@@ -536,14 +542,14 @@ AI_TEAM_WORKER_ENV_ALLOW=OPENAI_API_KEY ai-team web --worker-command /opt/ai-tea
 доступные файлы и не заменяет изоляцию ОС. Не разрешайте имена control-plane
 секретов без конкретной необходимости.
 
-### ai-team scheduler-worker
+### workaistrator scheduler-worker
 
 Забирает задания из постоянной очереди (SQLite) и исполняет каждое через
-`ai-team worker`. Нужен, когда дашборд запущен с `--scheduler-db` и
+`workaistrator worker`. Нужен, когда дашборд запущен с `--scheduler-db` и
 исполнителей несколько.
 
 ```text
-ai-team scheduler-worker [--target <путь>] [--scheduler-db <путь>] [--db <путь>] [--artifact-store <путь>] [--worker-command <путь>] [--worker-id <id>] [--once]
+workaistrator scheduler-worker [--target <путь>] [--scheduler-db <путь>] [--db <путь>] [--artifact-store <путь>] [--worker-command <путь>] [--worker-id <id>] [--once]
 ```
 
 | Флаг | По умолчанию | Что делает |
@@ -551,18 +557,18 @@ ai-team scheduler-worker [--target <путь>] [--scheduler-db <путь>] [--db
 | `--scheduler-db` | `.ai-team/scheduler.db` | очередь |
 | `--db` | `.ai-team/web.db` | проекция событий для дашборда |
 | `--artifact-store` | `.ai-team/cloud-artifacts` | хранилище CAS по SHA-256 для архивов прогонов |
-| `--worker-command` | текущий бинарник | исполняемый `ai-team` |
+| `--worker-command` | текущий бинарник | исполняемый `workaistrator` |
 | `--worker-id` | `<hostname>-<pid>` | владелец аренды (lease) |
 | `--once` | выключен | одна попытка взять задание и выход |
 | `--poll-interval`, `--lease` | `1s`, `30s` | опрос пустой очереди и длительность аренды |
 | `--max-concurrent`, `--per-target` | `4`, `1` | лимиты параллельности |
 
 ```bash
-ai-team web --scheduler-db .ai-team/scheduler.db
-ai-team scheduler-worker \
+workaistrator web --scheduler-db .ai-team/scheduler.db
+workaistrator scheduler-worker \
   --scheduler-db .ai-team/scheduler.db \
   --artifact-store .ai-team/cloud-artifacts \
-  --worker-command /opt/ai-team/bin/ai-team
+  --worker-command /opt/ai-team/bin/workaistrator
 ```
 
 Очередь хранит задания до захвата, не даёт запустить две одинаковые активные
@@ -576,14 +582,14 @@ ai-team scheduler-worker \
 
 ## Обслуживание
 
-### ai-team gc
+### workaistrator gc
 
 Убирает растущие артефакты `.ai-team`: worktree, состояние и (по запросу)
 доказательства старых прогонов. Берёт блокировку рабочего каталога и не
 работает параллельно с прогоном.
 
 ```text
-ai-team gc [--target <путь>] [--older-than 720h] [--keep-last 20] [--dry-run] [--prune-runs] [--db <путь>]
+workaistrator gc [--target <путь>] [--older-than 720h] [--keep-last 20] [--dry-run] [--prune-runs] [--db <путь>]
 ```
 
 | Флаг | По умолчанию | Что делает |
@@ -603,10 +609,10 @@ ai-team gc [--target <путь>] [--older-than 720h] [--keep-last 20] [--dry-run
 (см. [Конфигурация](config.md#retention)).
 
 ```bash
-ai-team gc --dry-run
+workaistrator gc --dry-run
 ```
 
-### ai-team db
+### workaistrator db
 
 `backup` создаёт новый согласованный онлайн snapshot controller SQLite
 database, включая committed WAL state. `restore` проверяет целостность SQLite
@@ -614,15 +620,15 @@ database, включая committed WAL state. `restore` проверяет це�
 перезаписывается.
 
 ```text
-ai-team db backup --db <существующая-база.sqlite> --out <новый-снимок.sqlite>
-ai-team db restore --from <снимок.sqlite> --out <новая-база.sqlite>
+workaistrator db backup --db <существующая-база.sqlite> --out <новый-снимок.sqlite>
+workaistrator db restore --from <снимок.sqlite> --out <новая-база.sqlite>
 ```
 
 Выходные файлы ограничены SQLite database и записываются с правами `0600`.
 Они не включают run evidence, artifacts, конфигурацию или другие файлы; это
 не полный backup/restore пилота.
 
-### ai-team template
+### workaistrator template
 
 Разовая работа с происхождением сохранённых версий шаблона. Подкоманда `audit`
 показывает версии, у которых есть командные гейты, адаптеры, проверки,
@@ -634,7 +640,7 @@ MCP-серверы или инфраструктура, которых нет в
 [Безопасности](security.md).
 
 ```text
-ai-team template audit [--target <путь>] [--rewrite [<версия>...]]
+workaistrator template audit [--target <путь>] [--rewrite [<версия>...]]
 ```
 
 | Флаг | Что делает |
@@ -653,20 +659,20 @@ ai-team template audit [--target <путь>] [--rewrite [<версия>...]]
 инфраструктурой по-прежнему проверяются `trusted_config_only`.
 
 ```bash
-ai-team template audit
-ai-team template audit --target /path/to/project
-ai-team template audit --rewrite 3f2b...        # только проверенная версия
-ai-team template audit --rewrite                # все найденные аудитом версии
+workaistrator template audit
+workaistrator template audit --target /path/to/project
+workaistrator template audit --rewrite 3f2b...        # только проверенная версия
+workaistrator template audit --rewrite                # все найденные аудитом версии
 ```
 
-### ai-team version
+### workaistrator version
 
 Печатает версию бинарника. Сборка из исходников без меток печатает `dev`.
 
-### ai-team help
+### workaistrator help
 
-Печатает краткую справку по командам и флагам. То же делают `ai-team --help`
-и `ai-team -h`. Запуск `ai-team` без аргументов печатает справку и
+Печатает краткую справку по командам и флагам. То же делают `workaistrator --help`
+и `workaistrator -h`. Запуск `workaistrator` без аргументов печатает справку и
 завершается с кодом `1`.
 
 ## Preflight перед запуском

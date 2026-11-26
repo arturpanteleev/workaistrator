@@ -1,22 +1,22 @@
 ## Purpose
 
-CLI команда `ai-team web` для запуска web-сервера.
+CLI команда `workaistrator web` для запуска web-сервера.
 
 ## Requirements
 
-### Requirement: Команда ai-team web
+### Requirement: Команда workaistrator web
 Система MUST предоставить CLI команду для запуска web-сервера.
 
 #### Scenario: Запуск с портом
-- **КОГДА** пользователь запускает `ai-team web --port 9090`
+- **КОГДА** пользователь запускает `workaistrator web --port 9090`
 - **ТОГДА** сервер MUST запуститься на порту 9090
 
 #### Scenario: Запуск по умолчанию
-- **КОГДА** пользователь запускает `ai-team web`
+- **КОГДА** пользователь запускает `workaistrator web`
 - **ТОГДА** сервер MUST запуститься на порту 8080
 
 #### Scenario: Путь к dist
-- **КОГДА** пользователь запускает `ai-team web --dist ./build`
+- **КОГДА** пользователь запускает `workaistrator web --dist ./build`
 - **ТОГДА** сервер MUST раздавать статику из указанной директории
 
 #### Scenario: Информация при запуске

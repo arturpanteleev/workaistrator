@@ -32,7 +32,7 @@
 - [x] 4.10 DI: `WithRuntimeFactory`, `WithPrompter` для тестируемости; удалить мёртвый код (gate.go-каркас, artifacts var, targetDir)
 - [x] 4.11 Recorder-интерфейс (RunStarted/StageStarted/StageFinished/RunFinished) + вызовы из Run
 
-## 5. cmd/ai-team — CLI
+## 5. cmd/workaistrator — CLI
 
 - [x] 5.1 Exit-коды 0/1/2/3 по типу ошибки пайплайна
 - [x] 5.2 `--help`/`-h`/`help` → usage, код 0; usage дополнен web/--retry-from
@@ -45,7 +45,7 @@
 
 - [x] 6.1 `agents/verifier/def.yaml`: `prompt_file: prompt.md`, `cli: opencode`
 - [x] 6.2 reviewer/tester/verifier prompt.md: канонический формат вердикта (line-anchored) явно указан
-- [x] 6.3 deployer prompt.md: шаг создания ветки `ai-team/{feature}` при default-ветке; запрет push в default
+- [x] 6.3 deployer prompt.md: шаг создания ветки `WorkAiStrator/{feature}` при default-ветке; запрет push в default
 - [x] 6.4 verifier prompt.md: формат `**Verdict:**` вместо `## Общий вердикт:`
 
 ## 7. pkg/eval

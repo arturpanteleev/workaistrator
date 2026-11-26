@@ -1,0 +1,35 @@
+# Embedded demo workflow. Runs with stub agents only: no API keys, no Docker
+# and no git repository are required.
+#
+# The same canonical schema is written by `workaistrator init` as a starting
+# point.
+name: demo
+title: Demo workflow with stub agents
+
+stages:
+  - id: plan
+    title: Plan the change
+    executor: agent
+    agent: stub-planner
+    result: md
+    max_visits: 2
+    transitions:
+      on_pass: implement
+      on_fail: plan
+  - id: implement
+    title: Implement the change
+    executor: agent
+    agent: stub-coder
+    result: md
+    max_visits: 3
+    transitions:
+      on_pass: verify
+      on_fail: implement
+  - id: verify
+    title: Verify the change
+    executor: agent
+    agent: stub-verifier
+    result: md
+    transitions:
+      on_pass: done
+      on_fail: implement

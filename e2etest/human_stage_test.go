@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arturpanteleev/ai-team/pkg/approval"
-	"github.com/arturpanteleev/ai-team/pkg/evidence"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/approval"
+	"github.com/arturpanteleev/workaistrator/pkg/store/evidence"
 )
 
 func TestE2E_HumanExecutorInputFlowThroughCLI(t *testing.T) {

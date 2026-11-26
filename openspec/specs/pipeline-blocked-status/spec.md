@@ -20,20 +20,20 @@ Pipeline MUST останавливаться при получении BLOCKED �
 - **КОГДА** analyst вернул BLOCKED (требования противоречивы)
 - **ТОГДА** pipeline MUST остановиться
 - **И** показать: `Требования неоднозначны: {детали}`
-- **И** предложить: `Исправьте задачу и запустите: ai-team run --feature <feature> --task "<описание>"`
+- **И** предложить: `Исправьте задачу и запустите: workaistrator run --feature <feature> --task "<описание>"`
 
 #### Scenario: BLOCKED от architect
 - **КОГДА** architect вернул BLOCKED (технически нереализуемо)
 - **ТОГДА** pipeline MUST остановиться
 - **И** показать: `Техническое решение невозможно: {детали}`
-- **И** предложить: `Исправьте задачу и запустите: ai-team run --feature <feature> --task "<описание>"`
+- **И** предложить: `Исправьте задачу и запустите: workaistrator run --feature <feature> --task "<описание>"`
 
 ### Requirement: Подсказка перезапуска при BLOCKED
 Pipeline MUST предлагать перезапуск задачи с исправленным описанием.
 
 #### Scenario: Подсказка после BLOCKED
 - **КОГДА** агент вернул BLOCKED
-- **ТОГДА** pipeline MUST вывести подсказку вида `Для исправления уточните задачу и запустите заново: ai-team run --feature {feature} --task "<описание>"`
+- **ТОГДА** pipeline MUST вывести подсказку вида `Для исправления уточните задачу и запустите заново: workaistrator run --feature {feature} --task "<описание>"`
 - **И** pipeline MUST завершиться с кодом выхода, указывающим на BLOCKED
 
 ### Requirement: BLOCKED vs failed
@@ -53,7 +53,7 @@ Pipeline MUST предлагать перезапуск задачи с испр
 BLOCKED MUST сохранять ту же доменную семантику независимо от наличия TTY и MUST NOT ожидать ввод.
 
 #### Scenario: CI/pipe режим
-- **КОГДА** `ai-team run` запущен с перенаправленным stdin (pipe)
+- **КОГДА** `workaistrator run` запущен с перенаправленным stdin (pipe)
 - **И** агент вернул BLOCKED
 - **ТОГДА** pipeline MUST завершиться с кодом выхода 2
 - **И** MUST NOT ожидать ввод от пользователя

@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arturpanteleev/ai-team/pkg/agent"
-	"github.com/arturpanteleev/ai-team/pkg/checks"
-	"github.com/arturpanteleev/ai-team/pkg/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/agent"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/stage/checks"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/workflow"
 	"gopkg.in/yaml.v3"
 )
 
@@ -372,7 +372,7 @@ func TestSchemaV4RejectedWithMigrationInstructions(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, err := Load(path)
-	if err == nil || !strings.Contains(err.Error(), "ai-team init --force") || !strings.Contains(err.Error(), "manual") && !strings.Contains(err.Error(), "вручную") {
+	if err == nil || !strings.Contains(err.Error(), "workaistrator init --force") || !strings.Contains(err.Error(), "manual") && !strings.Contains(err.Error(), "вручную") {
 		t.Fatalf("expected actionable v4 migration error, got %v", err)
 	}
 }
@@ -886,7 +886,7 @@ func TestLegacyApproveSpecContractIsOnlyForInMemoryFixture(t *testing.T) {
 	if err := os.WriteFile(path, []byte("schema_version: 4\n"), 0600); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := Load(path); err == nil || !strings.Contains(err.Error(), "ai-team init --force") {
+	if _, err := Load(path); err == nil || !strings.Contains(err.Error(), "workaistrator init --force") {
 		t.Fatalf("the public parser must still reject v4: %v", err)
 	}
 }

@@ -16,8 +16,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/oidc"
-	"github.com/arturpanteleev/ai-team/pkg/oidc/oidctest"
+	"github.com/arturpanteleev/workaistrator/pkg/oidc"
+	"github.com/arturpanteleev/workaistrator/pkg/oidc/oidctest"
 )
 
 func newProvider(t *testing.T) (*oidctest.Provider, *oidc.Provider, *time.Time) {

@@ -82,7 +82,7 @@ func TestSlackPostsTextToIncomingWebhook(t *testing.T) {
 		t.Fatal(err)
 	}
 	body := <-bodies
-	if !strings.HasPrefix(body["text"], "[ai-team] stage_stalled · task #9 · stage qa · warning\n") || !strings.HasSuffix(body["text"], "/tasks/run-42") {
+	if !strings.HasPrefix(body["text"], "[WorkAiStrator] stage_stalled · task #9 · stage qa · warning\n") || !strings.HasSuffix(body["text"], "/tasks/run-42") {
 		t.Fatalf("slack text=%q", body["text"])
 	}
 }

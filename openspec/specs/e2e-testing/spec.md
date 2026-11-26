@@ -3,13 +3,13 @@
 Спецификация определяет нормативное поведение capability `e2e-testing`.
 ## Requirements
 ### Requirement: E2E-тест полного пайплайна
-Система MUST иметь тест, проверяющий `ai-team run` от начала до конца, включая
+Система MUST иметь тест, проверяющий `workaistrator run` от начала до конца, включая
 первый запуск сразу после инициализации.
 
 #### Scenario: Успешный пайплайн
 - **КОГДА** E2E-тест запускается
 - **ТОГДА** он создаёт временный проект
-- **И** запускает `ai-team init`
+- **И** запускает `workaistrator init`
 - **И** первый запуск с `--approve-gates` останавливается до side effects и публикует canonical plan SHA-256
 - **И** второй запуск продолжает тот же run через `--resume <run_id> --approve-plan <точный-sha256>`
 - **И** проверяет proposal.md, specs/, design.md, tasks.md, review.md, test-report.md, verification.md и delivery-plan.json
@@ -17,9 +17,9 @@
 - **И** проверяет exit code первого запуска == 3 и второго == 0
 
 #### Scenario: Успешный pipeline после init
-- **КОГДА** E2E-тест создаёт чистый Git project и запускает `ai-team init`
+- **КОГДА** E2E-тест создаёт чистый Git project и запускает `workaistrator init`
 - **ТОГДА** `git status --porcelain` MUST остаться пустым
-- **И** тест MUST запустить `ai-team run` без ручного изменения или коммита
+- **И** тест MUST запустить `workaistrator run` без ручного изменения или коммита
   `.gitignore`
 - **И** baseline guard MUST принять workspace
 
@@ -38,7 +38,7 @@
 - **ТОГДА** pipeline MUST сохранить причину и завершиться с exit code 2
 
 #### Scenario: Init проверяет структуру
-- **КОГДА** `ai-team init` запускается
+- **КОГДА** `workaistrator init` запускается
 - **ТОГДА** E2E-тест проверяет, что созданы `.ai-team/config.yaml` и все директории артефактов
 
 ### Requirement: Реальный worktree delivery E2E

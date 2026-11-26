@@ -1,8 +1,8 @@
 package agent
 
 import (
-	"github.com/arturpanteleev/ai-team/pkg/checks"
-	"github.com/arturpanteleev/ai-team/pkg/verdict"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/stage/checks"
+	"github.com/arturpanteleev/workaistrator/pkg/store/verdict"
 )
 
 type Agent struct {

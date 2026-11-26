@@ -22,7 +22,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/arturpanteleev/ai-team/pkg/verdict"
+	"github.com/arturpanteleev/workaistrator/pkg/store/verdict"
 )
 
 // Kind — вид проверки. Совпадает со значением config.TemplateCheck.Kind.

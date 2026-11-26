@@ -32,7 +32,7 @@ environment variables to the sandboxed process; it MUST NOT pass the calling
 process's full environment by default.
 
 #### Scenario: Secret in parent environment
-- **WHEN** the process invoking `ai-team run` has a credential set in its environment that is not on the allow-list
+- **WHEN** the process invoking `workaistrator run` has a credential set in its environment that is not on the allow-list
 - **THEN** the sandboxed agent or check process MUST NOT receive that variable
 
 ### Requirement: Resource limits

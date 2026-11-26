@@ -2,7 +2,7 @@
 
 ### Requirement: Human stage submit command
 
-The CLI MUST provide `ai-team stage submit <run_id> --stage <id>` with exactly
+The CLI MUST provide `workaistrator stage submit <run_id> --stage <id>` with exactly
 one result form: `--md <file>`, `--text <markdown>`, `--link <url> --kind
 <pr|build|other>`, or `--approve`. It MUST accept optional `--note`,
 `--description`, `--actor`, `--role`, and `--target` values. Markdown file input

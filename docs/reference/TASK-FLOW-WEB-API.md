@@ -266,7 +266,7 @@ stage tokens (non-invalidated, non-skipped agent attempts of selected runs).
 `cache_price_missing`, `usage_unknown`, `usage_invalid`, `mixed_currency`,
 `no_agent_attempts`), with `priced_attempts`, `unpriced_attempts` and
 `unpriced_models`. `tariff_dates` and `tariff_sources` list the tariff entries
-used. ai-team ships no prices: without configured tariffs the cost is unknown,
+used. WorkAiStrator ships no prices: without configured tariffs the cost is unknown,
 never zero. The subscription estimate stays a separate field. The CSV adds
 `cost_by_tariff` and `stage_cost_by_tariff` rows whose attestation is `priced`
 or `unavailable:<reason>` and whose basis lists the tariff dates.

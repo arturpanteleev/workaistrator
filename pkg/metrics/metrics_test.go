@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/workflow"
 )
 
 func fixedResult(name, attemptID string, duration time.Duration, superseded bool) workflow.StageResult {

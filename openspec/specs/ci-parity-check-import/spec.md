@@ -52,7 +52,7 @@ suite and its fingerprint, without executing the checks.
 
 #### Scenario: ci-import prints suite and fingerprint
 
-- **WHEN** `ai-team ci-import --target <dir>` runs
+- **WHEN** `workaistrator ci-import --target <dir>` runs
 - **THEN** the effective suite, skipped steps and the fingerprint are shown
 - **AND** no check is executed
 - **AND** in `--json` mode a stable record with `type: ci-import` and

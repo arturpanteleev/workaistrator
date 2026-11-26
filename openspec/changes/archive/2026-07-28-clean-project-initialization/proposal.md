@@ -2,9 +2,9 @@
 
 ## Зачем
 
-`ai-team init` безусловно изменяет `.gitignore`. Сразу после установки это
+`workaistrator init` безусловно изменяет `.gitignore`. Сразу после установки это
 оставляет рабочее дерево грязным, поэтому baseline guard отклоняет первый
-`ai-team run`. Базовый сценарий `init → run` должен работать без служебного
+`workaistrator run`. Базовый сценарий `init → run` должен работать без служебного
 коммита пользователя.
 
 ## Что меняется
@@ -20,7 +20,7 @@
 
 ## Затронутые области
 
-- `cmd/ai-team`: команда `init` и Git ignore helper.
+- `cmd/workaistrator`: команда `init` и Git ignore helper.
 - `e2etest`: сквозной сценарий первого запуска.
 - `README.md`: CLI и поведение ignore policy.
 - OpenSpec capabilities: `project-init`, `cli-interface`, `e2e-testing`.

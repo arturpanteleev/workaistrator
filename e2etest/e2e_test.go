@@ -18,10 +18,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/approval"
-	"github.com/arturpanteleev/ai-team/pkg/config"
-	"github.com/arturpanteleev/ai-team/pkg/scheduler"
-	"github.com/arturpanteleev/ai-team/pkg/worker"
+	"github.com/arturpanteleev/workaistrator/pkg/config"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/approval"
+	"github.com/arturpanteleev/workaistrator/pkg/scheduler"
+	"github.com/arturpanteleev/workaistrator/pkg/worker"
 )
 
 // synchronizedOutput captures a subprocess's combined stdout and stderr while
@@ -45,12 +45,12 @@ func (o *synchronizedOutput) String() string {
 
 func buildBinary(t *testing.T) string {
 	t.Helper()
-	binPath := filepath.Join(t.TempDir(), "ai-team")
-	cmd := exec.Command("go", "build", "-tags=e2etest", "-o", binPath, "./cmd/ai-team")
+	binPath := filepath.Join(t.TempDir(), "WorkAiStrator")
+	cmd := exec.Command("go", "build", "-tags=e2etest", "-o", binPath, "./cmd/workaistrator")
 	cmd.Dir = findModuleRoot()
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
-		t.Fatalf("build ai-team: %v", err)
+		t.Fatalf("build WorkAiStrator: %v", err)
 	}
 	return binPath
 }
@@ -91,7 +91,7 @@ func runAI(t *testing.T, binPath, dir string, envs []string, args ...string) (in
 			t.Fatalf("run %v: %v", args, err)
 		}
 	}
-	t.Logf("ai-team %v → exit %d", args, code)
+	t.Logf("WorkAiStrator %v → exit %d", args, code)
 	return code, out.String()
 }
 
@@ -142,7 +142,7 @@ func setupDeliveryGit(t *testing.T, dir string) {
 	}
 	runGit(dir, "init", "-b", "master")
 	runGit(dir, "config", "user.name", "AI Team E2E")
-	runGit(dir, "config", "user.email", "ai-team@example.test")
+	runGit(dir, "config", "user.email", "WorkAiStrator@example.test")
 	if err := os.WriteFile(filepath.Join(dir, "README.md"), []byte("fixture\n"), 0644); err != nil {
 		t.Fatal(err)
 	}
@@ -310,7 +310,7 @@ func TestE2E_RunJSONColonContract_PureJSONL(t *testing.T) {
 	setupDeliveryGit(t, dir)
 
 	if code, out := runAI(t, bin, dir, []string{pathEnv}, "init"); code != 0 {
-		t.Fatalf("ai-team init failed (%d):\n%s", code, out)
+		t.Fatalf("workaistrator init failed (%d):\n%s", code, out)
 	}
 
 	// Первый run: останавливается на точном delivery-approval (exit 3).
@@ -362,7 +362,7 @@ func extractMachineHints(t *testing.T, stderr string) (planHash, resumeCmd strin
 	if len(hashMatch) != 2 {
 		t.Fatalf("canonical delivery plan hash missing in stderr:\n%s", stderr)
 	}
-	resumeMatch := regexp.MustCompile(`ai-team run --resume ([^ ]+) --approve-plan`).FindStringSubmatch(stderr)
+	resumeMatch := regexp.MustCompile(`workaistrator run --resume ([^ ]+) --approve-plan`).FindStringSubmatch(stderr)
 	if len(resumeMatch) != 2 {
 		t.Fatalf("resume command missing in stderr:\n%s", stderr)
 	}
@@ -382,10 +382,17 @@ func TestE2E_SuccessfulPipeline(t *testing.T) {
 	liveHeadBefore := strings.TrimSpace(runCommand(t, dir, "git", "rev-parse", "HEAD"))
 
 	if code, out := runAI(t, bin, dir, []string{pathEnv}, "init"); code != 0 {
-		t.Fatalf("ai-team init failed (%d):\n%s", code, out)
+		t.Fatalf("workaistrator init failed (%d):\n%s", code, out)
 	}
 	if status := strings.TrimSpace(runCommand(t, dir, "git", "status", "--porcelain")); status != "" {
-		t.Fatalf("workspace должен остаться чистым после init, получено:\n%s", status)
+		for _, line := range strings.Split(status, "\n") {
+			switch strings.TrimSpace(line) {
+			case "", "?? .env.example", "?? workflow.yaml":
+				continue
+			default:
+				t.Fatalf("workspace должен остаться чистым после init, получено:\n%s", status)
+			}
+		}
 	}
 	configData, err := os.ReadFile(filepath.Join(dir, ".ai-team", "config.yaml"))
 	if err != nil || !strings.Contains(string(configData), "name: go-test") {
@@ -403,7 +410,7 @@ func TestE2E_SuccessfulPipeline(t *testing.T) {
 	if len(hashMatch) != 2 {
 		t.Fatalf("canonical delivery plan hash missing:\n%s", firstOut)
 	}
-	resumeMatch := regexp.MustCompile(`ai-team run --resume ([^ ]+) --approve-plan`).FindStringSubmatch(firstOut)
+	resumeMatch := regexp.MustCompile(`workaistrator run --resume ([^ ]+) --approve-plan`).FindStringSubmatch(firstOut)
 	if len(resumeMatch) != 2 {
 		t.Fatalf("resume command missing:\n%s", firstOut)
 	}
@@ -638,7 +645,7 @@ func TestE2E_InitCreatesStructure(t *testing.T) {
 	runCommand(t, dir, "git", "init", "-b", "master")
 
 	if code, out := runAI(t, bin, dir, []string{pathEnv}, "init", "--write-gitignore"); code != 0 {
-		t.Fatalf("ai-team init failed (%d):\n%s", code, out)
+		t.Fatalf("workaistrator init failed (%d):\n%s", code, out)
 	}
 
 	cfgPath := filepath.Join(dir, ".ai-team", "config.yaml")
@@ -657,6 +664,30 @@ func TestE2E_InitCreatesStructure(t *testing.T) {
 	checkDir(t, dir, ".ai-team", "artifacts", "tasks")
 	checkDir(t, dir, ".ai-team", "reports")
 	checkDir(t, dir, ".ai-team", "logs")
+
+	workflowData, err := os.ReadFile(filepath.Join(dir, "workflow.yaml"))
+	if err != nil {
+		t.Fatalf("workflow.yaml should exist after init: %v", err)
+	}
+	workflow := string(workflowData)
+	for _, want := range []string{"executor:", "result:", "transitions:", "max_visits:", "on_pass: done"} {
+		if !strings.Contains(workflow, want) {
+			t.Errorf("workflow.yaml должен содержать %q:\n%s", want, workflow)
+		}
+	}
+	envData, err := os.ReadFile(filepath.Join(dir, ".env.example"))
+	if err != nil {
+		t.Fatalf(".env.example should exist after init: %v", err)
+	}
+	if !strings.Contains(string(envData), "AI_TEAM_HARNESS_ENV_ALLOW=") {
+		t.Errorf(".env.example должен документировать allowlist рантайма:\n%s", envData)
+	}
+	if code, out := runAI(t, bin, dir, []string{pathEnv}, "run", "--workflow", "workflow.yaml"); code != 0 {
+		t.Fatalf("run --workflow workflow.yaml должен пройти валидацию (%d):\n%s", code, out)
+	} else if !strings.Contains(out, "граф валиден") {
+		t.Fatalf("run --workflow не сообщил об успешной валидации:\n%s", out)
+	}
+
 	// Исключение пишется в .git/info/exclude, версионируемый .gitignore не меняется.
 	exclude, err := os.ReadFile(filepath.Join(dir, ".git", "info", "exclude"))
 	if err != nil || !strings.Contains(string(exclude), ".ai-team/") {
@@ -672,7 +703,7 @@ func TestE2E_InitLoadsAndCompilesV5Template(t *testing.T) {
 	bin := buildBinary(t)
 	setupMock(t)
 	if code, out := runAI(t, bin, dir, nil, "init"); code != 0 {
-		t.Fatalf("ai-team init failed (%d):\n%s", code, out)
+		t.Fatalf("workaistrator init failed (%d):\n%s", code, out)
 	}
 	cfg, err := config.Load(filepath.Join(dir, ".ai-team", "config.yaml"))
 	if err != nil {
@@ -706,7 +737,7 @@ func TestE2E_HelpFlag(t *testing.T) {
 		if code != 0 {
 			t.Errorf("%s: ожидался код 0, got %d", arg, code)
 		}
-		if !strings.Contains(out, "ai-team run") || !strings.Contains(out, "ai-team web") {
+		if !strings.Contains(out, "workaistrator run") || !strings.Contains(out, "workaistrator web") {
 			t.Errorf("%s: справка неполная:\n%s", arg, out)
 		}
 	}
@@ -744,7 +775,7 @@ func TestE2E_InvalidConfigDoesNotMutateTaskArtifacts(t *testing.T) {
 
 	feature := "invalid-config"
 	code, out := runAI(t, bin, dir, []string{pathEnv}, "run", "--feature", feature, "--task", "must not persist")
-	if code == 0 || !strings.Contains(out, "ai-team init --force") || !strings.Contains(out, "вручную") {
+	if code == 0 || !strings.Contains(out, "workaistrator init --force") || !strings.Contains(out, "вручную") {
 		t.Fatalf("invalid config must fail before execution: code=%d\n%s", code, out)
 	}
 	checkAbsent(t, filepath.Join(dir, ".ai-team", "artifacts", "tasks", feature, "task.md"))
@@ -1141,7 +1172,7 @@ func waitUntil(t *testing.T, timeout time.Duration, condition func() bool, diagn
 // process environment) actually reaches the real child process spawned via
 // exec.Command — not just that the env slice is constructed correctly in
 // isolation (already covered by pkg/runtime unit tests), but that a real
-// `ai-team run` invocation of the real built binary genuinely delivers it.
+// `workaistrator run` invocation of the real built binary genuinely delivers it.
 // Independent audit Finding 7: this mechanism previously had zero test
 // coverage proving a subprocess actually receives it.
 func TestE2E_OpenCodeSandboxEnvironmentReachesRealSubprocess(t *testing.T) {
@@ -1155,7 +1186,7 @@ func TestE2E_OpenCodeSandboxEnvironmentReachesRealSubprocess(t *testing.T) {
 	setupDeliveryGit(t, dir)
 
 	if code, out := runAI(t, bin, dir, []string{pathEnv}, "init"); code != 0 {
-		t.Fatalf("ai-team init failed (%d):\n%s", code, out)
+		t.Fatalf("workaistrator init failed (%d):\n%s", code, out)
 	}
 
 	captureDir := filepath.Join(t.TempDir(), "env-capture")

@@ -9,13 +9,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/checks"
-	"github.com/arturpanteleev/ai-team/pkg/cloudidentity"
-	"github.com/arturpanteleev/ai-team/pkg/gatelib"
-	"github.com/arturpanteleev/ai-team/pkg/redact"
-	"github.com/arturpanteleev/ai-team/pkg/runtime"
-	"github.com/arturpanteleev/ai-team/pkg/stageexec"
-	"github.com/arturpanteleev/ai-team/pkg/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/cloudidentity"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/gate/lib"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/stage/checks"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/stage/exec"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/redact"
+	"github.com/arturpanteleev/workaistrator/pkg/runtime"
 	"gopkg.in/yaml.v3"
 )
 
@@ -74,7 +74,7 @@ type Config struct {
 	Effort         string          `yaml:"effort,omitempty"`
 	StageTimeout   string          `yaml:"stage_timeout,omitempty"`
 	// GateConcurrency limits how many gates of one group run at the same time
-	// (pkg/gatesched). Zero means gatesched.DefaultMaxParallel.
+	// (pkg/engine/gate/sched). Zero means gatesched.DefaultMaxParallel.
 	GateConcurrency int `yaml:"gate_concurrency,omitempty" json:",omitempty"`
 	// PreflightTimeout — бюджет одной внешней команды preflight (опрос версии
 	// CLI-рантайма, git, gh). Холодный старт CLI-рантайма на порядок дороже
@@ -216,7 +216,7 @@ func (ac *AutoPickupConfig) Validate(budget *BudgetConfig) error {
 // UsageConfig enables an explicitly approximate allocation of a monthly
 // subscription across recorded runs (never an API price estimate) and,
 // separately, a per-model provider tariff table (B-66). The tariff table is
-// empty by default: ai-team ships no prices, the project records the
+// empty by default: WorkAiStrator ships no prices, the project records the
 // provider's published prices together with their date and source.
 type UsageConfig struct {
 	MonthlySubscriptionAmount   float64        `yaml:"monthly_subscription_amount,omitempty"`
@@ -249,7 +249,7 @@ type TrackerConfig struct {
 	// Adapter is the name of the adapter in use. It may be omitted when
 	// exactly one adapter block is configured.
 	Adapter string `yaml:"adapter,omitempty"`
-	// WebBaseURL is the public address of the ai-team dashboard used for the
+	// WebBaseURL is the public address of the WorkAiStrator dashboard used for the
 	// task link in tracker comments; it defaults to tracker.jira.web_base_url.
 	WebBaseURL string `yaml:"web_base_url,omitempty"`
 	// OnEnter maps a stage ID to the tracker status/transition name that is
@@ -601,7 +601,7 @@ const (
 const DefaultBudgetMaxWallTimeDuration = 24 * time.Hour
 
 // DefaultStageTimeout — бюджет одной стадии по умолчанию. То же значение,
-// которое `ai-team init` пишет в сгенерированный конфиг (stage_timeout: 30m);
+// которое `workaistrator init` пишет в сгенерированный конфиг (stage_timeout: 30m);
 // здесь оно продублировано на уровне кода, потому что конфиг, написанный
 // руками, этого поля может не содержать, а стадия без таймаута — это зависший
 // CLI-рантайм без верхней границы.
@@ -753,7 +753,7 @@ func (rc *RedactionConfig) EffectiveFailExportOnSecrets() bool {
 	return !rc.DisableExportBlock
 }
 
-// RetentionConfig — настраиваемая retention (P1-6): дефолты для `ai-team gc`
+// RetentionConfig — настраиваемая retention (P1-6): дефолты для `workaistrator gc`
 // без обещания legal compliance (это техническая уборка, не obligations-контракт).
 type RetentionConfig struct {
 	OlderThan string `yaml:"older_than,omitempty"`
@@ -812,7 +812,7 @@ type TreeHashConfig struct {
 }
 
 // ValidIgnoreDirName — строгий шаблон имени каталога для tree-hash ignore
-// (канонический — в pkg/checks, где живёт tree hashing).
+// (канонический — в pkg/engine/stage/checks, где живёт tree hashing).
 func ValidIgnoreDirName(name string) bool { return checks.ValidIgnoreDirName(name) }
 
 func (tc *TreeHashConfig) Validate() error {
@@ -888,13 +888,13 @@ func (c *Config) UnmarshalYAML(value *yaml.Node) error {
 		}
 	}
 	if version == 4 {
-		return fmt.Errorf("config: схема v4 больше не поддерживается; выполните `ai-team init --force` или перенесите конфиг вручную по docs/reference/config.md")
+		return fmt.Errorf("config: схема v4 больше не поддерживается; выполните `workaistrator init --force` или перенесите конфиг вручную по docs/reference/config.md")
 	}
 	if !supportedSchemaVersion(version) {
 		if version == 0 {
 			return fmt.Errorf("config: schema_version обязателен (поддерживаются %d и %d, а также %d для workflow-метаданных)", LegacySchemaVersion, CurrentSchemaVersion, WorkflowSchemaVersion)
 		}
-		return fmt.Errorf("config: schema_version %d не поддерживается (поддерживаются %d и %d, а также %d для workflow-метаданных); выполните `ai-team init --force` или перенесите конфиг вручную по docs/reference/config.md", version, LegacySchemaVersion, CurrentSchemaVersion, WorkflowSchemaVersion)
+		return fmt.Errorf("config: schema_version %d не поддерживается (поддерживаются %d и %d, а также %d для workflow-метаданных); выполните `workaistrator init --force` или перенесите конфиг вручную по docs/reference/config.md", version, LegacySchemaVersion, CurrentSchemaVersion, WorkflowSchemaVersion)
 	}
 	hasWorkflows := false
 	for index := 0; index+1 < len(value.Content); index += 2 {
@@ -1327,7 +1327,7 @@ func (c *Config) Validate(reg AgentLookup) error {
 	}
 	if !supportedSchemaVersion(c.SchemaVersion) {
 		if c.SchemaVersion == 4 {
-			addMigration := "схема v4 больше не поддерживается; выполните `ai-team init --force` или перенесите конфиг вручную по docs/reference/config.md"
+			addMigration := "схема v4 больше не поддерживается; выполните `workaistrator init --force` или перенесите конфиг вручную по docs/reference/config.md"
 			errs = append(errs, addMigration)
 		} else {
 			validate(false,

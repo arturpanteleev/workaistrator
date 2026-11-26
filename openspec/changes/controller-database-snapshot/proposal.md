@@ -8,7 +8,7 @@ state, without implying that this single file is a complete system backup.
 
 ## Scope
 
-Add `ai-team db backup --db <path> --out <path>`. It must not replace an
+Add `workaistrator db backup --db <path> --out <path>`. It must not replace an
 existing destination, must restrict snapshot permissions, and must publish only
 after SQLite finishes a consistent online snapshot. Run evidence, artifacts,
 secrets, and other files are explicitly outside this command's scope.

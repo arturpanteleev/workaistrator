@@ -3,7 +3,7 @@
 `ApplyDetectedChecks` looks up the pipeline stage named exactly `"tester"` to
 attach detected required checks to. If a project's config renames or removes
 that stage, detection silently returns as if nothing was found — the same
-generic "unknown stack" warning appears as for a project `ai-team` genuinely
+generic "unknown stack" warning appears as for a project `workaistrator` genuinely
 doesn't recognize, even though the stack WAS correctly identified.
 Independent audit Finding 14 (Medium).
 
@@ -23,4 +23,4 @@ Independent audit Finding 14 (Medium).
 ## Impact
 - `pkg/config/detect.go` (`ApplyDetectedChecks` signature: now returns
   `(profile, warning string)`)
-- `cmd/ai-team/main.go` (`cmdInit` call site)
+- `cmd/workaistrator/main.go` (`cmdInit` call site)

@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arturpanteleev/ai-team/pkg/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/workflow"
 )
 
 // v7Doc wraps a stage body in a minimal, valid schema-v7 config. A v7 file

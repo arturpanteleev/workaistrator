@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/notifier"
+	"github.com/arturpanteleev/workaistrator/pkg/notifier"
 	_ "modernc.org/sqlite"
 )
 
@@ -486,8 +486,8 @@ const NotificationClaimLease = 2 * time.Minute
 const notificationClaimPrefix = "claimed:"
 
 // ClaimNotification atomically claims a channel/event delivery for this
-// process. Every process sharing the database (`ai-team web`, `ai-team run`,
-// `ai-team scheduler-worker`) uses the same channel/event key, so only one of
+// process. Every process sharing the database (`workaistrator web`, `workaistrator run`,
+// `workaistrator scheduler-worker`) uses the same channel/event key, so only one of
 // them sends a given notification. On ClaimAcquired the returned token
 // identifies this claim: only its holder can record or release it.
 func (s *Store) ClaimNotification(channel string, eventID int64) (notifier.ClaimState, string, error) {

@@ -5,7 +5,7 @@
 
 #### Scenario: Запуск на push
 - **КОГДА** происходит push в main
-- **ТОГДА** workflow MUST запустить `go build ./cmd/ai-team`
+- **ТОГДА** workflow MUST запустить `go build ./cmd/workaistrator`
 - **И** запустить `go test ./...`
 - **И** запустить `go vet ./...`
 

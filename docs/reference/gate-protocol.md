@@ -4,7 +4,7 @@
 репозитория, передаёт ей JSON-контекст и читает один JSON-вердикт. Тот же
 протокол `ai-team.gate/v1` использует Docker-адаптер: меняется только способ
 запуска, не формат документов и не правила классификации. Код — пакет
-`pkg/gaterun`, демо-программа — `pkg/gaterun/testdata/demo-gate.sh`.
+`pkg/engine/gate/run`, демо-программа — `pkg/engine/gate/run/testdata/demo-gate.sh`.
 
 ## Входные гейты и контракт артефактов
 
@@ -16,7 +16,7 @@
 - `GateDefinition` — что гейт **есть**: ID, точная версия, вид (`builtin`,
   `llm`, `human`, `external`, `docker`), схема параметров и применимость к
   типам артефактов. Определение неизменяемо; новая семантика — новая версия
-  в `pkg/gatelib`.
+  в `pkg/engine/gate/lib`.
 - `GateRef` — как этап гейт **использует**: `gate`, точная `version`, `name`
   экземпляра, `params`, режим `required|advisory`. Ссылка без версии
   отклоняется; «latest» не существует.
@@ -99,7 +99,7 @@ exit_gate_groups:
   "attempt_id": "att-7f3a",
   "gate": {"id": "external_program", "version": 1, "name": "license_scan"},
   "artifact": {"type": "md", "sha256": "<64 hex>", "path": "/abs/result.md"},
-  "paths": {"repo_root": "/abs/repo", "evidence_dir": "/tmp/ai-team-gate-work-1234"},
+  "paths": {"repo_root": "/abs/repo", "evidence_dir": "/tmp/workaistrator-gate-work-1234"},
   "limits": {"timeout_seconds": 120, "max_output_bytes": 1048576}
 }
 ```
@@ -209,8 +209,8 @@ exit_gate_groups:
 ## Docker-адаптер: `docker_program@1`
 
 Тот же протокол и та же классификация, но команда выполняется в контейнере из
-образа, закреплённого digest. Код — `pkg/gaterun/docker.go` (`DockerLauncher`,
-второй `Launcher`) поверх переиспользуемого пакета `pkg/dockerrun` (сборка argv
+образа, закреплённого digest. Код — `pkg/engine/gate/run/docker.go` (`DockerLauncher`,
+второй `Launcher`) поверх переиспользуемого пакета `pkg/engine/stage/dockerrun` (сборка argv
 `docker run`, запуск без shell, удаление контейнера по имени); `executor` попытки
 — `docker`. Запускается `docker` CLI контроллера; демон и образ — внешние
 зависимости, их недоступность — `error`.

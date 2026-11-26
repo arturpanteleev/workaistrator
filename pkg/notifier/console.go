@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/logging"
-	"github.com/arturpanteleev/ai-team/pkg/ui"
+	"github.com/arturpanteleev/workaistrator/pkg/logging"
+	"github.com/arturpanteleev/workaistrator/pkg/ui"
 )
 
 type ConsoleNotifier struct{}
@@ -46,7 +46,7 @@ func (n *ConsoleNotifier) Notify(ctx context.Context, stage StageResult) error {
 	}
 
 	logging.Printf("%s [%s] %s%s (%v)\n",
-		ui.Colorize("ai-team", ui.ColorBold+ui.ColorCyan),
+		ui.Colorize("WorkAiStrator", ui.ColorBold+ui.ColorCyan),
 		ui.Colorize(stage.Name, ui.ColorYellow),
 		status, detail, duration,
 	)

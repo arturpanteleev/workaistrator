@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/runtime"
+	"github.com/arturpanteleev/workaistrator/pkg/runtime"
 )
 
 type mockNotifier struct {

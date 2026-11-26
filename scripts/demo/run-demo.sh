@@ -3,8 +3,8 @@
 #
 #   bash scripts/demo/run-demo.sh
 #
-# Что делает: собирает ai-team, поднимает временный проект и настоящий
-# `ai-team web` на 127.0.0.1, проходит сценарий через Web UI (Playwright), затем
+# Что делает: собирает WorkAiStrator, поднимает временный проект и настоящий
+# `workaistrator web` на 127.0.0.1, проходит сценарий через Web UI (Playwright), затем
 # повторяет ключевые действия по сетевому MCP и доводит цикл код-ревью.
 # Скриншоты — docs/demo/screens/. Ничего не публикует наружу; секретов не нужно;
 # сеть нужна только для `docker pull` закреплённого образа alpine (один раз).
@@ -43,11 +43,11 @@ cleanup() {
   # --filter label=… объединяются по И, поэтому метки опрашиваются двумя отдельными запросами,
   # а удаляются только контейнеры, у которых смонтирован сам каталог ЭТОГО демо или вложенный в
   # него путь: источник mount сравнивается с полным физическим путём DEMO_HOME (pwd -P), а не с
-  # подстрокой имени, поэтому чужие контейнеры ai-team на той же машине не трогаются.
+  # подстрокой имени, поэтому чужие контейнеры WorkAiStrator на той же машине не трогаются.
   local label id source phys match
   phys="$(cd "$DEMO_HOME" 2>/dev/null && pwd -P || true)"
   if [[ -n "$phys" && "$phys" != "/" ]]; then
-    for label in ai-team.stage-attempt ai-team.gate-attempt; do
+    for label in ai-team.stage-attempt WorkAiStrator.gate-attempt; do
       for id in $(docker ps -aq --filter "label=$label" 2>/dev/null); do
         match=0
         for source in $(docker inspect -f '{{range .Mounts}}{{.Source}}{{"\n"}}{{end}}' "$id" 2>/dev/null || true); do
@@ -76,7 +76,7 @@ docker pull -q "$IMAGE" >/dev/null
 
 bash "$HERE/setup.sh" "$DEMO_HOME"
 
-echo "⟶ ai-team web на 127.0.0.1:$PORT"
+echo "⟶ workaistrator web на 127.0.0.1:$PORT"
 (
   cd "$DEMO_HOME/repo"
   export PATH="$DEMO_HOME/bin:$PATH"

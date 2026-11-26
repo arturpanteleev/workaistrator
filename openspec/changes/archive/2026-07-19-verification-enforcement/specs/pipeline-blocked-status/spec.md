@@ -14,7 +14,7 @@ Pipeline MUST предлагать retry-from агента, вернувшего
 
 #### Scenario: Предложение retry
 - **КОГДА** агент вернул BLOCKED
-- **ТОГДА** pipeline MUST вывести: `Для исправления уточните задачу и запустите: ai-team run --feature {feature} --retry-from {agent}`
+- **ТОГДА** pipeline MUST вывести: `Для исправления уточните задачу и запустите: workaistrator run --feature {feature} --retry-from {agent}`
 
 ### Requirement: BLOCKED vs failed
 Система MUST различать BLOCKED и failed статусы через exit-код.

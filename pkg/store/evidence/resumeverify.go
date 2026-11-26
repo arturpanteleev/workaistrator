@@ -1,0 +1,222 @@
+package evidence
+
+import (
+	"bytes"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"path/filepath"
+	"time"
+
+	"github.com/arturpanteleev/workaistrator/pkg/safeio"
+)
+
+// ErrResumeEvidence — сентинель: apply-осведомлённая evidence chain/snapshots
+// run'а не прошла fail-closed проверку перед resume (OPS-3).
+var ErrResumeEvidence = errors.New("resume evidence verification failed")
+
+// ResumeEvidenceReason — стабильный машинный код причины отказа, чтобы
+// rejection reason можно было явно фиксировать и однозначно обрабатывать.
+type ResumeEvidenceReason string
+
+const (
+	ReasonManifestIdentity ResumeEvidenceReason = "manifest_identity" // run.json schema/run_id mismatch
+	ReasonConfigSnapshot   ResumeEvidenceReason = "config_snapshot"   // config digest не совпадает с manifest
+	ReasonWorkflowSnapshot ResumeEvidenceReason = "workflow_snapshot" // workflow digest не совпадает с manifest
+	ReasonEventChain       ResumeEvidenceReason = "event_chain"       // events.jsonl hash chain / parse сломан
+	ReasonAttemptManifest  ResumeEvidenceReason = "attempt_manifest"  // digest attempt manifest не совпадает
+	ReasonAlreadyTerminal  ResumeEvidenceReason = "already_terminal"
+)
+
+// ResumeEvidenceError детализирует ошибку fail-closed проверки evidence.
+type ResumeEvidenceError struct {
+	Reason ResumeEvidenceReason
+	Detail string
+}
+
+// AppendBlockedEvent записывает событие resume_blocked с указанной причиной
+// (OPS-3), если event chain run'а аппендабельна (целостна). Возвращает ошибку
+// только если лог недоступен или повреждён — тогда cause нефиксируемо, но и
+// сам провал уже означает fail-closed отказ resume.
+func AppendBlockedEvent(runDir, runID string, reason ResumeEvidenceReason, detail string) error {
+	return AppendBlockedEventWithSources(runDir, runID, reason, detail, nil, nil)
+}
+
+func AppendBlockedEventWithSources(runDir, runID string, reason ResumeEvidenceReason, detail string, eventsSource EventLog, _ AttemptManifestSource) error {
+	store, err := openStoreForAppendWithSources(runDir, runID, eventsSource)
+	if err != nil {
+		return err
+	}
+	return store.Append(Event{
+		Type: "resume_blocked", Timestamp: time.Now().UTC(),
+		Data: map[string]any{"reason": string(reason), "detail": detail},
+	})
+}
+
+// openStoreForAppend пере-открывает store по валидной event chain, чтобы
+// записать событие без повторного прохода всей snapshot-проверки Resume.
+func openStoreForAppend(runDir, runID string) (*Store, error) {
+	return openStoreForAppendWithSources(runDir, runID, nil)
+}
+
+func openStoreForAppendWithSources(runDir, runID string, eventsSource EventLog) (*Store, error) {
+	events, err := VerifyEventLogWithSource(filepath.Join(runDir, "events.jsonl"), runID, eventsSource)
+	if err != nil {
+		return nil, fmt.Errorf("blocked event: event chain: %w", err)
+	}
+	if len(events) == 0 {
+		return nil, fmt.Errorf("blocked event: пустой event log")
+	}
+	if eventsSource == nil {
+		if resolved, ok, resolveErr := defaultEventLogSource(filepath.Join(runDir, "events.jsonl"), runID); resolveErr != nil {
+			return nil, resolveErr
+		} else if ok {
+			eventsSource = resolved
+		}
+	}
+	store := &Store{
+		root: filepath.Dir(runDir), runID: runID,
+		eventLog: newFileEventLog(filepath.Join(runDir, "events.jsonl")),
+		nextID:   uint64(len(events)), lastEventHash: events[len(events)-1].SHA256,
+		provenance: make(map[string]ArtifactRecord),
+	}
+	if eventsSource != nil {
+		store.eventLog = eventsSource
+	}
+	return store, nil
+}
+
+func (e *ResumeEvidenceError) Error() string {
+	if e.Detail == "" {
+		return fmt.Sprintf("%s: %s", ErrResumeEvidence, e.Reason)
+	}
+	return fmt.Sprintf("%s: %s: %s", ErrResumeEvidence, e.Reason, e.Detail)
+}
+
+func (e *ResumeEvidenceError) Unwrap() error { return ErrResumeEvidence }
+
+func resumeErr(reason ResumeEvidenceReason, format string, args ...interface{}) *ResumeEvidenceError {
+	return &ResumeEvidenceError{Reason: reason, Detail: fmt.Sprintf(format, args...)}
+}
+
+// VerifyResumeEvidence — fail-closed проверка применимой evidence
+// chain/snapshots НЕ-терминального run перед его продолжением (OPS-3).
+// Выполняется строго детерминированно и возвращает структурированную причину
+// (Reasion) при любом расхождении: manifest identity, config/workflow snapshot
+// digests, event hash chain, attempt manifest digests. Терминальный run
+// отклоняется отдельной причиной.
+func VerifyResumeEvidence(runDir string) error {
+	return VerifyResumeEvidenceWithAttemptManifestSource(runDir, nil)
+}
+
+// VerifyResumeEvidenceWithAttemptManifestSource performs the same fail-closed
+// checks as VerifyResumeEvidence, using source for attempt manifest bytes.
+// Source-backed reads are limited to MaxAttemptManifestSize; a nil source uses
+// streaming filesystem digests for compatibility with large legacy files.
+func VerifyResumeEvidenceWithAttemptManifestSource(runDir string, source AttemptManifestSource) error {
+	return VerifyResumeEvidenceWithSources(runDir, source, nil)
+}
+
+// VerifyResumeEvidenceWithSources verifies the run using separately scoped
+// event and attempt-manifest authorities.
+func VerifyResumeEvidenceWithSources(runDir string, manifestSource AttemptManifestSource, eventSource EventLog) error {
+	manifestData, err := safeio.ReadRegularFile(filepath.Join(runDir, "run.json"), 1<<20)
+	if err != nil {
+		return resumeErr(ReasonManifestIdentity, "run.json: %v", err)
+	}
+	decoder := json.NewDecoder(bytes.NewReader(manifestData))
+	decoder.DisallowUnknownFields()
+	var manifest RunManifest
+	if err := decoder.Decode(&manifest); err != nil {
+		return resumeErr(ReasonManifestIdentity, "run manifest decode: %v", err)
+	}
+	if manifest.SchemaVersion != SchemaVersion || manifest.RunID == "" || filepath.Base(manifest.RunID) != manifest.RunID {
+		return resumeErr(ReasonManifestIdentity, "schema/run_id mismatch (schema=%d run=%q)", manifest.SchemaVersion, manifest.RunID)
+	}
+
+	configData, err := safeio.ReadRegularFile(filepath.Join(runDir, manifest.ConfigEvidence), 8<<20)
+	if err != nil || sha256Bytes(configData) != manifest.ConfigSHA256 {
+		return resumeErr(ReasonConfigSnapshot, "config snapshot identity mismatch")
+	}
+	workflowData, err := safeio.ReadRegularFile(filepath.Join(runDir, manifest.ResolvedWorkflow), 8<<20)
+	if err != nil || sha256Bytes(workflowData) != manifest.ResolvedWorkflowSHA256 {
+		return resumeErr(ReasonWorkflowSnapshot, "resolved workflow snapshot identity mismatch")
+	}
+
+	eventPath := filepath.Join(runDir, "events.jsonl")
+	events, err := VerifyEventLogWithSource(eventPath, manifest.RunID, eventSource)
+	if err != nil {
+		return resumeErr(ReasonEventChain, "event chain: %v", err)
+	}
+	events, err = reconcileMissingAgentFinishedEvent(runDir, manifest.RunID, eventSource, manifestSource, events)
+	if err != nil {
+		return resumeErr(ReasonEventChain, "agent completion recovery: %v", err)
+	}
+	replayed, err := replayEventsWithAttemptManifestSource(events, manifest.RunID, runDir, manifestSource)
+	if err != nil {
+		return resumeErr(ReasonEventChain, "event chain: %v", err)
+	}
+	if err := verifyAttemptManifestsWithSource(runDir, manifest.RunID, replayed.Attempts, manifestSource); err != nil {
+		return err
+	}
+	if !replayed.FinishedAt.IsZero() {
+		return resumeErr(ReasonAlreadyTerminal, "run %s уже terminal", manifest.RunID)
+	}
+	return nil
+}
+
+func verifyAttemptManifests(runDir string, attempts []ReplayedAttempt) error {
+	return verifyAttemptManifestsWithSource(runDir, inferRunID(runDir), attempts, nil)
+}
+
+func verifyAttemptManifestsWithSource(runDir, runID string, attempts []ReplayedAttempt, source AttemptManifestSource) error {
+	for _, attempt := range attempts {
+		if attempt.ManifestSHA256 == "" {
+			continue
+		}
+		digest, size, digestErr := attemptManifestDigest(source, runDir, runID, attempt.AttemptID)
+		if digestErr != nil || size == 0 || digest != attempt.ManifestSHA256 {
+			return resumeErr(ReasonAttemptManifest, "attempt %s manifest digest mismatch", attempt.AttemptID)
+		}
+	}
+	return nil
+}
+
+func inferRunID(runDir string) string { return filepath.Base(filepath.Clean(runDir)) }
+
+// VerifyTerminalEvidence verifies the immutable manifest, snapshots, hash
+// chain, attempts, and terminal event for a run that must not be resumed.
+func VerifyTerminalEvidence(runDir, runID, targetDir string) (ReplayedRun, error) {
+	return VerifyTerminalEvidenceWithSources(runDir, runID, targetDir, nil, nil)
+}
+
+func VerifyTerminalEvidenceWithSources(runDir, runID, targetDir string, manifestSource AttemptManifestSource, eventSource EventLog) (ReplayedRun, error) {
+	err := VerifyResumeEvidenceWithSources(runDir, manifestSource, eventSource)
+	if err != nil {
+		var resumeErr *ResumeEvidenceError
+		if !errors.As(err, &resumeErr) || resumeErr.Reason != ReasonAlreadyTerminal {
+			return ReplayedRun{}, err
+		}
+	}
+	manifestData, err := safeio.ReadRegularFile(filepath.Join(runDir, "run.json"), 1<<20)
+	if err != nil {
+		return ReplayedRun{}, err
+	}
+	decoder := json.NewDecoder(bytes.NewReader(manifestData))
+	decoder.DisallowUnknownFields()
+	var manifest RunManifest
+	if err := decoder.Decode(&manifest); err != nil {
+		return ReplayedRun{}, err
+	}
+	if manifest.SchemaVersion != SchemaVersion || manifest.RunID != runID || manifest.TargetDir != targetDir {
+		return ReplayedRun{}, errors.New("terminal evidence manifest identity mismatch")
+	}
+	replayed, err := ReplayEventLogWithEventSources(filepath.Join(runDir, "events.jsonl"), runID, eventSource, manifestSource)
+	if err != nil {
+		return ReplayedRun{}, err
+	}
+	if replayed.FinishedAt.IsZero() {
+		return ReplayedRun{}, errors.New("terminal evidence has no run_finished event")
+	}
+	return replayed, nil
+}

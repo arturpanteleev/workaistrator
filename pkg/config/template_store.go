@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/safeio"
+	"github.com/arturpanteleev/workaistrator/pkg/safeio"
 )
 
 const MaxTemplateYAMLBytes = 1 << 20

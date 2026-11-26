@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/process"
-	"github.com/arturpanteleev/ai-team/pkg/safeio"
-	"github.com/arturpanteleev/ai-team/pkg/verdict"
+	"github.com/arturpanteleev/workaistrator/pkg/process"
+	"github.com/arturpanteleev/workaistrator/pkg/safeio"
+	"github.com/arturpanteleev/workaistrator/pkg/store/verdict"
 )
 
 // DefaultCLI — бинарник харнесса по умолчанию (первый зарегистрированный

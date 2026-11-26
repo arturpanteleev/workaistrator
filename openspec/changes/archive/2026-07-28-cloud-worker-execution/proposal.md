@@ -10,7 +10,7 @@ Web control plane сейчас выполняет AI pipeline внутри со�
 
 - вводится строгий versioned worker job protocol для start/resume/cancel;
 - control plane получает process-backed RunEngine;
-- добавляется `ai-team worker`, исполняющий ровно один job в mounted target;
+- добавляется `workaistrator worker`, исполняющий ровно один job в mounted target;
 - worker пишет существующие evidence, lifecycle, SQLite и WebSocket stream;
 - infrastructure launcher может заменить локальный subprocess disposable
   container-ом без изменения pipeline и approvals.

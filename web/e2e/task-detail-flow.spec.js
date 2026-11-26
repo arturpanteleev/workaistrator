@@ -161,7 +161,7 @@ function detail(mode, { stage: currentStage, phase, status, pending, owners }) {
     stages: mode === 'manual' && ['analysis', 'qa', 'idea', 'delivery'].includes(currentStage) ? [{
       id: 19, pipeline_run_id: 1, attempt_id: 'analysis-attempt', stage_index: 2, agent_name: 'analysis', status: 'passed',
       started_at: now, completed_at: now, duration_ms: 9000,
-      checks_json: JSON.stringify([{ name: 'required-sections', class: 'content', command: ['ai-team', 'check'], policy: 'required', status: 'passed', exit_code: 0 }]),
+      checks_json: JSON.stringify([{ name: 'required-sections', class: 'content', command: ['WorkAiStrator', 'check'], policy: 'required', status: 'passed', exit_code: 0 }]),
     }] : [],
     approvals: [...(approval ? [approval] : []), ...resolvedGrill], stage_owners: owners,
     results: mode === 'manual' ? { idea: [revision('idea-v1', 'Первая версия идеи', 1), revision('idea-v2', 'Вторая версия идеи', 2)] } : {},
@@ -254,13 +254,13 @@ function installController(page) {
 test('task detail traverses the manual and automatic templates using allowed actions', async ({ page }) => {
   const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'ai-team-task-detail-e2e-'))
   const target = path.join(tempRoot, 'target')
-  const binary = path.join(tempRoot, 'ai-team')
+  const binary = path.join(tempRoot, 'WorkAiStrator')
   const port = await unusedPort()
   const baseURL = `http://127.0.0.1:${port}`
   let webServer
 
   try {
-    run('go', ['build', '-o', binary, './cmd/ai-team'], { cwd: repoDir })
+    run('go', ['build', '-o', binary, './cmd/workaistrator'], { cwd: repoDir })
     await mkdir(target, { recursive: true })
     run(binary, ['init', '--target', target], { cwd: repoDir })
     webServer = start(binary, ['web', '--target', target, '--port', String(port), '--dist', path.join(webDir, 'dist'), '--scheduler-db', '.ai-team/scheduler.db'], { cwd: target })
@@ -441,13 +441,13 @@ function installLoopback(page) {
 test('loop-internal: review feedback is visible on the returned implementation stage', async ({ page }) => {
   const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'ai-team-loopback-e2e-'))
   const target = path.join(tempRoot, 'target')
-  const binary = path.join(tempRoot, 'ai-team')
+  const binary = path.join(tempRoot, 'WorkAiStrator')
   const port = await unusedPort()
   const baseURL = `http://127.0.0.1:${port}`
   let webServer
 
   try {
-    run('go', ['build', '-o', binary, './cmd/ai-team'], { cwd: repoDir })
+    run('go', ['build', '-o', binary, './cmd/workaistrator'], { cwd: repoDir })
     await mkdir(target, { recursive: true })
     run(binary, ['init', '--target', target], { cwd: repoDir })
     webServer = start(binary, ['web', '--target', target, '--port', String(port), '--dist', path.join(webDir, 'dist'), '--scheduler-db', '.ai-team/scheduler.db'], { cwd: target })

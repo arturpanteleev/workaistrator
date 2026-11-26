@@ -2,7 +2,7 @@
 # Reproducible fixture of an external container review agent (S10).
 #
 # It runs inside a tiny image (alpine, pinned by digest) and follows the stage
-# executor contract (pkg/stageexec, schema_version 1): one JSON request on
+# executor contract (pkg/engine/stage/exec, schema_version 1): one JSON request on
 # stdin, one JSON result on stdout. It is a stand-in for any real container
 # reviewer: it reads the declared input "diff" (mounted read-only) and answers
 #

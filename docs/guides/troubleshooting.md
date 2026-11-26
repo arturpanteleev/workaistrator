@@ -1,6 +1,6 @@
 # Остановки и BLOCKED
 
-Прогон ai-team останавливается, когда продолжать небезопасно или нужен
+Прогон WorkAiStrator останавливается, когда продолжать небезопасно или нужен
 человек. Это нормальная часть работы, а не авария. Здесь собраны частые
 остановки: какой симптом вы видите, почему так вышло и что сделать.
 
@@ -12,7 +12,7 @@
 
 ## Понять, что произошло, по коду выхода
 
-| Код `ai-team run` | Что это значит | Что делать |
+| Код `workaistrator run` | Что это значит | Что делать |
 |---|---|---|
 | `0` | Прогон завершён | Прочитать итог и результат delivery, сохранить доказательства |
 | `1` | Ошибка, отказ проверки или отрицательный вердикт | Найти причину в последней строке `✗ Пайплайн остановлен: …` |
@@ -36,9 +36,9 @@
 4. Если нужна delivery, проверьте Git identity, `remote origin` и `gh auth
    status`.
 5. Берите небольшую задачу с проверяемым результатом и запишите SHA сборки
-   `ai-team`.
+   `workaistrator`.
 
-Перед каждым прогоном ai-team печатает отчёт готовности:
+Перед каждым прогоном WorkAiStrator печатает отчёт готовности:
 
 ```text
   ✓ cli (required): 1.18.33
@@ -61,10 +61,10 @@ CLI отказывается стартовать только при прова
 печатается в выводе:
 
 ```bash
-ai-team run --target /path/to/project --resume <run_id>
+workaistrator run --target /path/to/project --resume <run_id>
 ```
 
-При продолжении сохраняется тот же `run_id`, ai-team перепроверяет
+При продолжении сохраняется тот же `run_id`, WorkAiStrator перепроверяет
 доказательства и продолжает нумерацию попыток. Если прогон ждёт
 подтверждения delivery-плана, добавьте `--approve-plan` с проверенным SHA-256
 (см. [ниже](#прогон-ждёт-подтверждения-код-3)).
@@ -78,19 +78,19 @@ ai-team run --target /path/to/project --resume <run_id>
 Завершёнными считаются прогоны, остановленные отказом проверки, отрицательным
 вердиктом или BLOCKED. После исправления причины начните новый прогон с
 `--feature` и `--task`. Исключение — неудавшаяся delivery после завершения,
-для неё есть `ai-team deliver` (см. [ниже](#delivery-не-удалась-после-подтверждения)).
+для неё есть `workaistrator deliver` (см. [ниже](#delivery-не-удалась-после-подтверждения)).
 
 ## Частые остановки
 
 ### Грязное рабочее дерево
 
-**Симптом.** `ai-team run` завершается с кодом 1:
+**Симптом.** `workaistrator run` завершается с кодом 1:
 
 ```text
 ✗ Пайплайн остановлен: candidate требует clean git workspace
 ```
 
-`ai-team gate` с `--candidate HEAD` возвращает код 2:
+`workaistrator gate` с `--candidate HEAD` возвращает код 2:
 
 ```text
 ✗ Gate: BLOCKED: Git working tree содержит untracked-файлы вне .gitignore (…): report.xml
@@ -113,7 +113,7 @@ worktree) от последнего коммита. Незакоммиченны
 ```
 
 **Причина.** В конфигурации указан runtime, которого нет в `PATH` того
-процесса, где запущен `ai-team`. По умолчанию это `opencode`.
+процесса, где запущен `workaistrator`. По умолчанию это `opencode`.
 
 **Что сделать.** Установите runtime или поменяйте поле `cli` в
 `.ai-team/config.yaml` на `codex` или `claude`. Проверьте `opencode --version`
@@ -141,19 +141,19 @@ worktree) от последнего коммита. Незакоммиченны
 ```bash
 # ANTHROPIC_API_KEY уже задан в окружении безопасным способом.
 export AI_TEAM_HARNESS_ENV_ALLOW=ANTHROPIC_API_KEY
-ai-team run --feature greet --task "Добавить приветствие по имени"
+workaistrator run --feature greet --task "Добавить приветствие по имени"
 ```
 
 Тогда отчёт покажет `✓ credentials: заданы: ANTHROPIC_API_KEY`, а если
 переменной нет в окружении — `отсутствуют: ANTHROPIC_API_KEY`. Значение
-разрешённой переменной передаётся в runtime как есть; сам ai-team не пишет его
+разрешённой переменной передаётся в runtime как есть; сам WorkAiStrator не пишет его
 в логи и доказательства прогона. Не храните ключи в конфигурации, промптах и
 Git. Подробнее — [Конфигурация: runtime и ключи](../reference/config.md#runtime-и-ключи).
 
 > [!WARNING]
 > Разрешение по имени ограничивает, какие переменные видит runtime, но не
 > гарантирует, что модель или CLI никогда не выведут значение в лог. Перед
-> передачей доказательств наружу выполните `ai-team redact verify` — см.
+> передачей доказательств наружу выполните `workaistrator redact verify` — см.
 > [Проверить и передать результат](evidence.md).
 
 ### Агент вернул BLOCKED
@@ -161,10 +161,10 @@ Git. Подробнее — [Конфигурация: runtime и ключи](..
 **Симптом.** Код 2:
 
 ```text
-ai-team [analyst] ⊘ BLOCKED: требования противоречивы
+WorkAiStrator [analyst] ⊘ BLOCKED: требования противоречивы
 
 ⊘ Блокер: требования противоречивы
-  Для исправления уточните задачу и запустите заново: ai-team run --feature blk --task "<описание>"
+  Для исправления уточните задачу и запустите заново: workaistrator run --feature blk --task "<описание>"
 …
 ✗ Пайплайн остановлен: агент analyst заблокирован: требования противоречивы
 ```
@@ -181,18 +181,18 @@ ai-team [analyst] ⊘ BLOCKED: требования противоречивы
 ### Прогон ждёт подтверждения (код 3)
 
 **Симптом.** В неинтерактивном запуске (CI, скрипт, ввод не из терминала)
-прогон останавливается с кодом 3. Перед delivery ai-team печатает delivery-план и готовые команды:
+прогон останавливается с кодом 3. Перед delivery WorkAiStrator печатает delivery-план и готовые команды:
 
 ```text
 Plan SHA-256: f19b6297…71d4a8
-Решение: ai-team decision --run <run_id> --approval approval-f018… --actor <id> --role release_manager --action approve|reject --subject f19b6297…71d4a8
-Для продолжения с явным подтверждением плана: ai-team run --resume <run_id> --approve-plan f19b6297…71d4a8
+Решение: workaistrator decision --run <run_id> --approval approval-f018… --actor <id> --role release_manager --action approve|reject --subject f19b6297…71d4a8
+Для продолжения с явным подтверждением плана: workaistrator run --resume <run_id> --approve-plan f19b6297…71d4a8
 ✗ Пайплайн остановлен: delivery перед deployer: требуется решение человека (run=… approval=… subject=…)
 ```
 
 **Причина.** Перед commit, push и PR нужно явное подтверждение именно этого
 [delivery-плана](../start/concepts.md#delivery-план) (canonical delivery plan). В
-интерактивном терминале ai-team спрашивает `Продолжить? [y/N]`, без терминала
+интерактивном терминале WorkAiStrator спрашивает `Продолжить? [y/N]`, без терминала
 — останавливается и ждёт.
 
 **Что сделать.** Прочитайте план: список файлов, ветку, сообщение коммита и
@@ -201,15 +201,15 @@ Plan SHA-256: f19b6297…71d4a8
 - подтвердить и продолжить одной командой:
 
   ```bash
-  ai-team run --resume <run_id> --approve-plan <sha256-из-вывода>
+  workaistrator run --resume <run_id> --approve-plan <sha256-из-вывода>
   ```
 
 - записать решение отдельно и продолжить:
 
   ```bash
-  ai-team decision --run <run_id> --approval <approval_id> --actor alice \
+  workaistrator decision --run <run_id> --approval <approval_id> --actor alice \
     --role release_manager --action approve --subject <sha256-из-вывода>
-  ai-team run --resume <run_id>
+  workaistrator run --resume <run_id>
   ```
 
 - нажать кнопку решения в [веб-дашборде](dashboard.md) и затем **Resume**.
@@ -221,7 +221,7 @@ delivery не будет.
 > Остановка с кодом 3 бывает и на других переходах, например когда ревьюер
 > вернул `CHANGES_REQUESTED`:
 > `переход reviewer → coder: требуется решение человека (run=… approval=… subject=…)`.
-> Здесь ai-team не печатает готовую команду `decision`. Роль и допустимые
+> Здесь WorkAiStrator не печатает готовую команду `decision`. Роль и допустимые
 > действия лежат в `.ai-team/state/approvals/<run_id>/<approval_id>.json`
 > (поля `required_roles` и `actions`, например `return_to_coder`,
 > `override_approve`, `reject`). Проще всего принять такое решение в
@@ -254,7 +254,7 @@ action`.
 **Симптом.** Код 1:
 
 ```text
-ai-team [tester] ✗ агент tester: детерминированные проверки: required check always-fail failed: exit status 1 (800ms)
+WorkAiStrator [tester] ✗ агент tester: детерминированные проверки: required check always-fail failed: exit status 1 (800ms)
 …
 ✗ Пайплайн остановлен: агент tester: детерминированные проверки: required check always-fail failed: exit status 1
 ```
@@ -297,7 +297,7 @@ read-only` или `tool <имя> unavailable`, исправьте описани
 **Что сделать.** Устраните причину и повторите только delivery:
 
 ```bash
-ai-team deliver --run <run_id> --target /path/to/project
+workaistrator deliver --run <run_id> --target /path/to/project
 ```
 
 `deliver` заново сверяет подтверждённый план с кандидатом, берёт блокировку и
@@ -305,7 +305,7 @@ ai-team deliver --run <run_id> --target /path/to/project
 нельзя.
 
 > [!CAUTION]
-> Не запускайте `ai-team gc` до успешного `deliver`. Уборка удаляет каталоги
+> Не запускайте `workaistrator gc` до успешного `deliver`. Уборка удаляет каталоги
 > кандидатов всех завершённых прогонов, и после неё `deliver` не сможет найти
 > рабочую копию: `deliver: workspace lock: lstat …/.ai-team/worktrees/<run_id>: no such file or directory`.
 
@@ -314,7 +314,7 @@ ai-team deliver --run <run_id> --target /path/to/project
 | Сообщение | Что проверить |
 |---|---|
 | `Ошибка загрузки конфига: …` | Синтаксис и значения в `.ai-team/config.yaml`; текст ошибки указывает поле |
-| `проект не инициализирован … — сначала выполните ai-team init` | Команда запущена не в том каталоге или без `--target` |
+| `проект не инициализирован … — сначала выполните workaistrator init` | Команда запущена не в том каталоге или без `--target` |
 | `агент coder не создал изменений в коде` | Задача не привела к изменениям; уточните её |
 | `resume run: config/workflow identity mismatch` | Конфигурацию изменили после старта прогона; верните её или начните новый прогон |
 | `resume approval: candidate worktree отсутствует` | Каталог кандидата удалён или перемещён; начните новый прогон |
@@ -323,8 +323,8 @@ ai-team deliver --run <run_id> --target /path/to/project
 
 ## Если причина неясна
 
-Откройте [issue](https://github.com/arturpanteleev/ai-team/issues) и
-приложите SHA сборки `ai-team`, команду, `run_id` и вывод без секретов. Не
+Откройте [issue](https://github.com/arturpanteleev/workaistrator/issues) и
+приложите SHA сборки `workaistrator`, команду, `run_id` и вывод без секретов. Не
 прикладывайте сырые логи runtime: в них могут оказаться ключи.
 
 ## Что дальше

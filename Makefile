@@ -38,10 +38,10 @@ go-toolchain:
 	@go version
 
 build:
-	go build -o bin/ai-team ./cmd/ai-team
+	go build -o bin/workaistrator ./cmd/workaistrator
 
 docs:
-	go run ./docsgen/cmd/docsgen --out docs/_site --github-repo arturpanteleev/ai-team
+	go run ./docsgen/cmd/docsgen --out docs/_site --github-repo arturpanteleev/workaistrator
 
 test:
 	go test ./...
@@ -94,6 +94,6 @@ release-binaries:
 	@mkdir -p bin
 	@for platform in $(PLATFORMS); do \
 		os="$${platform%%-*}"; arch="$${platform##*-}"; \
-		echo "GOOS=$$os GOARCH=$$arch go build -ldflags \"-X main.version=$(TAG)\" -o bin/ai-team-$${platform} ./cmd/ai-team"; \
-		GOOS=$$os GOARCH=$$arch CGO_ENABLED=0 go build -ldflags "-X main.version=$(TAG)" -o bin/ai-team-$${platform} ./cmd/ai-team || exit 1; \
+		echo "GOOS=$$os GOARCH=$$arch go build -ldflags \"-X main.version=$(TAG)\" -o bin/workaistrator-$${platform} ./cmd/workaistrator"; \
+		GOOS=$$os GOARCH=$$arch CGO_ENABLED=0 go build -ldflags "-X main.version=$(TAG)" -o bin/workaistrator-$${platform} ./cmd/workaistrator || exit 1; \
 	done

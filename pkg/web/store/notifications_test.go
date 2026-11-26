@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/notifier"
+	"github.com/arturpanteleev/workaistrator/pkg/notifier"
 )
 
 func openSharedStores(t *testing.T) (*Store, *Store) {

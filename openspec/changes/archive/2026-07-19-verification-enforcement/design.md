@@ -57,7 +57,7 @@ Alternative considered: `verdict.json` рядом с артефактом (чи�
 
 Старая спека pipeline-blocked-status содержала внутреннее противоречие (blocked = «код 0, не ошибка» и одновременно «код, указывающий на BLOCKED»; в CI — 1). Унифицировано: **blocked → 2 всегда** — CI и скрипты различают исходы без парсинга stderr.
 
-`cmd/ai-team run` использует `signal.NotifyContext(SIGINT, SIGTERM)`; при отмене пайплайн генерирует итоговый отчёт и summary (сейчас при ctx.Done отчёта нет).
+`cmd/workaistrator run` использует `signal.NotifyContext(SIGINT, SIGTERM)`; при отмене пайплайн генерирует итоговый отчёт и summary (сейчас при ctx.Done отчёта нет).
 
 ## 4. Таймауты
 

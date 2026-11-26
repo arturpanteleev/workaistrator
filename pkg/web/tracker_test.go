@@ -12,9 +12,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/cloudidentity"
-	"github.com/arturpanteleev/ai-team/pkg/tracker"
-	"github.com/arturpanteleev/ai-team/pkg/web/store"
+	"github.com/arturpanteleev/workaistrator/pkg/cloudidentity"
+	"github.com/arturpanteleev/workaistrator/pkg/runtime/tracker"
+	"github.com/arturpanteleev/workaistrator/pkg/web/store"
 )
 
 var trackerTestMaps = tracker.Maps{
@@ -179,7 +179,7 @@ func TestTrackerStageEventsDriveExactlyTheConfiguredTransitionsAndNeverDuplicate
 		t.Fatalf("transition calls=%s, want exactly the configured ones", got)
 	}
 	comment := fake.Comments("APP-1")[0]
-	for _, want := range []string{"https://ai-team.example/pipelines/", "Stage result: implementation", "outcome=passed", "ai-team attempt: att-1"} {
+	for _, want := range []string{"https://ai-team.example/pipelines/", "Stage result: implementation", "outcome=passed", "WorkAiStrator attempt: att-1"} {
 		if !strings.Contains(comment, want) {
 			t.Errorf("comment missing %q: %s", want, comment)
 		}

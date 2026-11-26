@@ -58,13 +58,13 @@ async function waitForServer(url, child) {
 test('observability page shows an empty period and blocks CSV export for it', async ({ page }) => {
   const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'ai-team-observability-e2e-'))
   const target = path.join(tempRoot, 'target')
-  const binary = path.join(tempRoot, 'ai-team')
+  const binary = path.join(tempRoot, 'WorkAiStrator')
   const port = await unusedPort()
   const baseURL = `http://127.0.0.1:${port}`
   let webServer
 
   try {
-    run('go', ['build', '-o', binary, './cmd/ai-team'], { cwd: repoDir })
+    run('go', ['build', '-o', binary, './cmd/workaistrator'], { cwd: repoDir })
     await mkdir(target, { recursive: true })
     run(binary, ['init', '--target', target], { cwd: repoDir })
     webServer = start(binary, ['web', '--target', target, '--port', String(port), '--dist', path.join(webDir, 'dist'), '--scheduler-db', '.ai-team/scheduler.db'], { cwd: target })
@@ -103,14 +103,14 @@ test('observability page shows an empty period and blocks CSV export for it', as
 test('observability page shows a recorded stage attempt and exports it as CSV', async ({ page }) => {
   const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'ai-team-observability-data-e2e-'))
   const target = path.join(tempRoot, 'target')
-  const binary = path.join(tempRoot, 'ai-team')
+  const binary = path.join(tempRoot, 'WorkAiStrator')
   const mockBin = path.join(tempRoot, 'mockbin')
   const port = await unusedPort()
   const baseURL = `http://127.0.0.1:${port}`
   let webServer
 
   try {
-    run('go', ['build', '-tags=e2etest', '-o', binary, './cmd/ai-team'], { cwd: repoDir })
+    run('go', ['build', '-tags=e2etest', '-o', binary, './cmd/workaistrator'], { cwd: repoDir })
     await mkdir(target, { recursive: true })
     const remoteDir = `${target}.origin.git`
     run('git', ['init', '--bare', '-b', 'master', remoteDir], { cwd: repoDir })

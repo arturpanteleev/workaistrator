@@ -29,7 +29,7 @@
 
 - [x] 5.1 Добавить обработку `StatusBlocked` в цикле `Pipeline.Run()` — остановка pipeline
 - [x] 5.2 Реализовать показ блокера: `Блокер: {описание}`
-- [x] 5.3 Реализовать предложение retry-from: `ai-team run --retry-from {agent_name}`
+- [x] 5.3 Реализовать предложение retry-from: `workaistrator run --retry-from {agent_name}`
 - [x] 5.4 Установить код выхода 0 для BLOCKED (отличие от failed)
 
 ## 6. Неинтерактивный режим

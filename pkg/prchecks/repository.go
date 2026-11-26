@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/arturpanteleev/ai-team/pkg/delivery"
+	"github.com/arturpanteleev/workaistrator/pkg/delivery"
 )
 
 var scpRemote = regexp.MustCompile(`^(?:[A-Za-z0-9._-]+@)?([A-Za-z0-9.-]+):([^/].*)$`)

@@ -184,7 +184,7 @@ describe('Task detail', () => {
       stages: [{
         id: 8, pipeline_run_id: 5, attempt_id: 'agent-attempt-8', stage_index: 1, agent_name: 'analysis',
         status: 'passed', started_at: '2026-10-12T09:10:00Z', completed_at: '2026-10-12T09:12:00Z', duration_ms: 120000,
-        checks_json: JSON.stringify([{ name: 'required-sections', class: 'content', command: ['ai-team', 'check'], policy: 'required', status: 'passed', exit_code: 0 }]),
+        checks_json: JSON.stringify([{ name: 'required-sections', class: 'content', command: ['WorkAiStrator', 'check'], policy: 'required', status: 'passed', exit_code: 0 }]),
       }],
       approvals: [{
         id: 'check-1', run_id: 'run-detail-1', attempt_id: 'agent-attempt-8', from_stage: 'analysis', to_stage: 'release',
@@ -243,7 +243,7 @@ describe('Task detail', () => {
         trigger: 'delivery_plan', subject_hash: planHash, required_roles: ['release_manager'], quorum: 'any',
         actions: ['approve', 'reject'], status: 'pending', created_at: '2026-10-12T09:04:00Z',
         payload: {
-          schema_version: 1, branch: 'ai-team/run-detail-1', base_branch: 'main', remote: 'origin',
+          schema_version: 1, branch: 'WorkAiStrator/run-detail-1', base_branch: 'main', remote: 'origin',
           files: ['web/src/pages/TaskDetail.tsx', 'pkg/web/task_api.go'],
           commit_message: 'feat: task detail', pr_title: 'Страница задачи', pr_body: 'Добавлена панель этапа.',
         },
@@ -255,7 +255,7 @@ describe('Task detail', () => {
     renderDetail();
 
     const content = await screen.findByRole('region', { name: 'Содержимое плана доставки' });
-    expect(content).toHaveTextContent('ai-team/run-detail-1');
+    expect(content).toHaveTextContent('WorkAiStrator/run-detail-1');
     expect(content).toHaveTextContent('main');
     expect(content).toHaveTextContent('web/src/pages/TaskDetail.tsx');
     expect(content).toHaveTextContent('pkg/web/task_api.go');
@@ -575,7 +575,7 @@ function detailsAt(stage: TaskRunDetails['template'] extends infer T ? T extends
   };
 }
 
-const draftKey = (stage = 'intent') => `ai-team:stage-result-draft:v1:run-detail-1:${stage}`;
+const draftKey = (stage = 'intent') => `WorkAiStrator:stage-result-draft:v1:run-detail-1:${stage}`;
 
 function hidePage() {
   act(() => { window.dispatchEvent(new Event('pagehide')); });

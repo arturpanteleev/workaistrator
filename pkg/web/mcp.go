@@ -11,8 +11,8 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/arturpanteleev/ai-team/pkg/cloudidentity"
-	"github.com/arturpanteleev/ai-team/pkg/web/store"
+	"github.com/arturpanteleev/workaistrator/pkg/cloudidentity"
+	"github.com/arturpanteleev/workaistrator/pkg/web/store"
 )
 
 // Network MCP endpoint (S12). One stateless Streamable HTTP endpoint,
@@ -35,7 +35,7 @@ const (
 	mcpServerName     = "ai-team"
 )
 
-const mcpInstructions = `ai-team: process-gated delivery of tasks through a configurable template. ` +
+const mcpInstructions = `WorkAiStrator: process-gated delivery of tasks through a configurable template. ` +
 	`Everything here acts as the person who owns the access token, with exactly that person's roles; ` +
 	`you cannot see or do more than they can in the web UI. Start with whoami, then list_projects and list_tasks. ` +
 	`Actions (start_task, confirm_stage, decide_approval, ...) need an idempotency_key: resending a call with the same key never repeats the action. ` +
@@ -225,7 +225,7 @@ func (s *Server) mcpAuthenticate(r *http.Request) (browserSession, string, error
 // wraps it in the guard. The SDK server is shared; identity travels in the
 // request context, never in server state.
 func (s *Server) newMCPHandler() http.Handler {
-	sdk := mcp.NewServer(&mcp.Implementation{Name: mcpServerName, Title: "ai-team", Version: mcpServerVersion()},
+	sdk := mcp.NewServer(&mcp.Implementation{Name: mcpServerName, Title: "WorkAiStrator", Version: mcpServerVersion()},
 		&mcp.ServerOptions{Instructions: mcpInstructions,
 			// Stateless endpoint: no server-initiated messages, so no listChanged
 			// promises and no logging channel.

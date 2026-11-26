@@ -1,7 +1,7 @@
-# ai-team web frontend
+# workaistrator web frontend
 
-React + TypeScript + Vite SPA для дашборда ai-team. Продакшн-сборка
-встраивается в Go-бинарник через `go:embed` (`web/dist`); `ai-team web
+React + TypeScript + Vite SPA для дашборда WorkAiStrator. Продакшн-сборка
+встраивается в Go-бинарник через `go:embed` (`web/dist`); `workaistrator web
 --dist <path>` позволяет подменить её локальной сборкой.
 
 ## Разработка
@@ -20,7 +20,7 @@ npm run test:e2e   # браузерный тест web UI + настоящий s
 соответствует свежей сборке — после изменений фронта выполните
 `npm run build` и закоммитьте dist.
 
-`npm run test:e2e` поднимает временный проект и настоящий `ai-team web` с
+`npm run test:e2e` поднимает временный проект и настоящий `workaistrator web` с
 persistent scheduler, открывает production React bundle в Chromium, проверяет
 queued → running → worker preflight failure, перезагрузку UI и отмену второй
 queued задачи. CI ставит Chromium и запускает тот же сценарий.

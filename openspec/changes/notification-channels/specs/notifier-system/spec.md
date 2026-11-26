@@ -40,7 +40,7 @@ of them.
 
 #### Scenario: Unknown subscription type
 
-- **WHEN** a channel lists an event type that ai-team does not emit
+- **WHEN** a channel lists an event type that WorkAiStrator does not emit
 - **THEN** configuration validation MUST fail
 
 ### Requirement: Durable, deduplicated notification delivery

@@ -17,7 +17,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/delivery"
+	"github.com/arturpanteleev/workaistrator/pkg/delivery"
 )
 
 const (

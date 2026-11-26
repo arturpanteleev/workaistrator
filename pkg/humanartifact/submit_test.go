@@ -6,7 +6,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/arturpanteleev/ai-team/pkg/approval"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/approval"
 )
 
 type submissionController struct {

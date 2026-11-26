@@ -10,7 +10,7 @@ OpenCode subprocess MUST получать только явный allow-list о�
 
 #### Scenario: Unlisted variable
 
-- **WHEN** process, вызвавший `ai-team run`, содержит variable вне baseline и
+- **WHEN** process, вызвавший `workaistrator run`, содержит variable вне baseline и
   вне `AI_TEAM_OPENCODE_ENV_ALLOW`
 - **THEN** OpenCode subprocess MUST NOT получить эту variable
 

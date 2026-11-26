@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/safeio"
+	"github.com/arturpanteleev/workaistrator/pkg/safeio"
 )
 
 // ExportSchema — версия контракта «проверенного экспорта» (state/exports

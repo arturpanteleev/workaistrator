@@ -1,7 +1,7 @@
 ## Context
 
 The server can only ever be started bound to a loopback address —
-`cmd/ai-team`'s `cmdWeb` fatals on any other `--host` before `ListenAndServe`
+`cmd/workaistrator`'s `cmdWeb` fatals on any other `--host` before `ListenAndServe`
 is ever called. Given that invariant, the only way a browser can reach this
 server at all is via a URL whose hostname resolves to loopback. DNS
 rebinding is the one attack that breaks the naive assumption that "the

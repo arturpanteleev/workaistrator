@@ -25,7 +25,7 @@ logs должны быть opt-in, а retention — настраиваемой �
    `pkg/scope`), verify (fail-closed) и redaction-копия `[REDACTED:...]`.
 2. Config: `redaction` (include/exclude, raw_logs opt-in, disable_export_block)
    и `retention` (older_than, keep_last, prune_runs) + валидация.
-3. CLI `ai-team redact verify|scan|redact`; `export` — fail-closed блокер;
+3. CLI `workaistrator redact verify|scan|redact`; `export` — fail-closed блокер;
    `gc` берёт дефолты из config.
 4. OpenSpec delta.
 

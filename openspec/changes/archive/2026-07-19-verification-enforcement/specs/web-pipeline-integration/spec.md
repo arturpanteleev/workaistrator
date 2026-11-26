@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: Запись запусков в SQLite из CLI
-Каждый `ai-team run` MUST записывать запуск и этапы в `{target}/.ai-team/web.db` через `Recorder`-интерфейс пайплайна (WebSocket-хаб для межпроцессных событий не используется).
+Каждый `workaistrator run` MUST записывать запуск и этапы в `{target}/.ai-team/web.db` через `Recorder`-интерфейс пайплайна (WebSocket-хаб для межпроцессных событий не используется).
 
 #### Scenario: Pipeline started
 - **КОГДА** пайплайн запускается

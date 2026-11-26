@@ -1,10 +1,10 @@
 # 1. Установка
 
-На этой странице вы поставите `ai-team` и убедитесь, что он запускается. Дальше по учебнику вы возьмёте маленький Go-проект greeter и проведёте через `ai-team` одну задачу: от описания до pull request.
+На этой странице вы поставите `workaistrator` и убедитесь, что он запускается. Дальше по учебнику вы возьмёте маленький Go-проект greeter и проведёте через `workaistrator` одну задачу: от описания до pull request.
 
 > [!LEARN]
 > - что понадобится для учебника и для настоящей работы
-> - три способа установить `ai-team`: готовый бинарник, `go install`, сборка из исходников
+> - три способа установить `workaistrator`: готовый бинарник, `go install`, сборка из исходников
 > - как проверить подпись релиза
 > - как убедиться, что команда работает
 
@@ -12,8 +12,8 @@
 
 | Что | Зачем | Проверка |
 |---|---|---|
-| Go 1.26.11 или новее | собрать `ai-team` и запускать проверки Go-проекта | `go version` |
-| Git | кандидат и delivery в `ai-team` работают через Git | `git --version` |
+| Go 1.26.11 или новее | собрать `workaistrator` и запускать проверки Go-проекта | `go version` |
+| Git | кандидат и delivery в `workaistrator` работают через Git | `git --version` |
 | Bash | агенты-заглушки в учебнике — Bash-скрипт | `bash --version` |
 | [`gh`](https://cli.github.com), авторизованный | открывать pull request при настоящей delivery | `gh auth status` |
 
@@ -30,7 +30,7 @@
 | [Сборка из исходников](#вариант-в-собрать-из-исходников) | нужен актуальный `master` или вы идёте по учебнику |
 
 > [!TIP]
-> Для учебника удобнее всего вариант В. Заглушки агентов лежат в репозитории `ai-team`, поэтому клон понадобится в любом случае. Если вы поставили бинарник другим способом, всё равно склонируйте репозиторий: `git clone https://github.com/arturpanteleev/ai-team.git`.
+> Для учебника удобнее всего вариант В. Заглушки агентов лежат в репозитории `workaistrator`, поэтому клон понадобится в любом случае. Если вы поставили бинарник другим способом, всё равно склонируйте репозиторий: `git clone https://github.com/arturpanteleev/workaistrator.git`.
 
 ## Вариант А: готовый бинарник
 
@@ -39,7 +39,7 @@
 Подмену выявляет не наличие подписи, а её проверка. Для неё нужен cosign версии 2.4.2 или новее (рекомендуется 3.x): `cosign version`. Установка — по [docs.sigstore.dev](https://docs.sigstore.dev/cosign/system_config/installation/).
 
 > [!IMPORTANT]
-> `v0.2.0` и всё, что опубликовано раньше, подписей не имеет: команды ниже упадут с «no such file or directory». Это не признак подмены, просто такой релиз этим способом не проверить. У всего, что опубликовано после `v0.2.0`, подписи обязаны быть. Если у нового релиза нет `sha256sums.txt` или `.cosign.bundle` хотя бы к одному архиву, не доверяйте его файлам. Список файлов релиза: `gh release view <tag> --repo arturpanteleev/ai-team --json assets`.
+> `v0.2.0` и всё, что опубликовано раньше, подписей не имеет: команды ниже упадут с «no such file or directory». Это не признак подмены, просто такой релиз этим способом не проверить. У всего, что опубликовано после `v0.2.0`, подписи обязаны быть. Если у нового релиза нет `sha256sums.txt` или `.cosign.bundle` хотя бы к одному архиву, не доверяйте его файлам. Список файлов релиза: `gh release view <tag> --repo arturpanteleev/workaistrator --json assets`.
 
 Сохраните блок в файл `install.sh`, подставьте тег и запустите `bash install.sh`. Строка `set -euo pipefail` обязательна: без неё бинарник установится даже после проваленной проверки. Не вставляйте блок в интерактивный шелл: `set -e` закроет окно вместе с сообщением об ошибке.
 
@@ -47,7 +47,7 @@
 set -euo pipefail
 
 VERSION=vX.Y.Z                # тег нужного релиза
-REPO=arturpanteleev/ai-team
+REPO=arturpanteleev/workaistrator
 IDENTITY="https://github.com/$REPO/.github/workflows/release.yaml@refs/tags/$VERSION"
 ISSUER=https://token.actions.githubusercontent.com
 
@@ -64,7 +64,7 @@ case "$(uname -m)" in
   x86_64|amd64)  ARCH=amd64 ;;
   *) echo "неподдерживаемая архитектура: $(uname -m)" >&2; exit 1 ;;
 esac
-ARCHIVE="ai-team-${OS}-${ARCH}.tar.gz"
+ARCHIVE="workaistrator-${OS}-${ARCH}.tar.gz"
 
 gh release download "$VERSION" --repo "$REPO" \
   --pattern "$ARCHIVE*" \
@@ -82,7 +82,7 @@ grep " $ARCHIVE\$" sha256sums.txt | sha256check
 
 # 3. Установка — только если обе проверки прошли.
 tar -xzf "$ARCHIVE"
-mv "${ARCHIVE%.tar.gz}" /usr/local/bin/ai-team
+mv "${ARCHIVE%.tar.gz}" /usr/local/bin/workaistrator
 ```
 
 Если `cosign verify-blob` или сверка сумм вернули ненулевой код на подписанном релизе, не запускайте этот бинарник.
@@ -106,7 +106,7 @@ mv "${ARCHIVE%.tar.gz}" /usr/local/bin/ai-team
 ## Вариант Б: go install
 
 ```bash
-go install github.com/arturpanteleev/ai-team/cmd/ai-team@latest
+go install github.com/arturpanteleev/workaistrator/cmd/workaistrator@latest
 ```
 
 Команда ставит последний **тег**, он может отставать от `master`. Бинарник окажется в `$(go env GOPATH)/bin` — этот каталог должен быть в `PATH`.
@@ -114,20 +114,20 @@ go install github.com/arturpanteleev/ai-team/cmd/ai-team@latest
 ## Вариант В: собрать из исходников
 
 ```bash
-git clone https://github.com/arturpanteleev/ai-team.git
-cd ai-team
-go build -o bin/ai-team ./cmd/ai-team
+git clone https://github.com/arturpanteleev/workaistrator.git
+cd WorkAiStrator
+go build -o bin/workaistrator ./cmd/workaistrator
 export PATH="$PWD/bin:$PATH"
 ```
 
-`export` действует только в текущем окне терминала. Чтобы `ai-team` был доступен всегда, добавьте каталог `bin` в `PATH` в настройках шелла или скопируйте бинарник в каталог, который уже там есть.
+`export` действует только в текущем окне терминала. Чтобы `workaistrator` был доступен всегда, добавьте каталог `bin` в `PATH` в настройках шелла или скопируйте бинарник в каталог, который уже там есть.
 
 Для воспроизводимости запишите, из какого коммита собран бинарник: `git rev-parse --short HEAD`.
 
 ## Проверить установку
 
 ```bash
-ai-team version
+workaistrator version
 ```
 
 Сборка из исходников и `go install` печатают `dev`, релизный бинарник — свой тег:
@@ -136,9 +136,9 @@ ai-team version
 dev
 ```
 
-Полный список команд — `ai-team help` или [Команды CLI](../reference/cli.md).
+Полный список команд — `workaistrator help` или [Команды CLI](../reference/cli.md).
 
 ## Что дальше
 
 - [2. Первая задача без модели](first-run.md) — подготовить проект greeter и прогнать задачу на агентах-заглушках.
-- [Подходит ли вам](../start/fit.md) — если вы ещё решаете, нужен ли вам `ai-team`.
+- [Подходит ли вам](../start/fit.md) — если вы ещё решаете, нужен ли вам `workaistrator`.

@@ -37,8 +37,8 @@
 
 ## 7. CLI команда
 
-- [x] 7.1 Добавить команду `web` в `cmd/ai-team/main.go` с флагом `--port`
-- [x] 7.2 Реализовать запуск HTTP-сервера при `ai-team web`
+- [x] 7.1 Добавить команду `web` в `cmd/workaistrator/main.go` с флагом `--port`
+- [x] 7.2 Реализовать запуск HTTP-сервера при `workaistrator web`
 - [x] 7.3 Добавить graceful shutdown при Ctrl+C
 
 ## 8. Тесты

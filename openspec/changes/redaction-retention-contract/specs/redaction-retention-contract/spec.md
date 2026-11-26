@@ -26,7 +26,7 @@ and assignment patterns); confirmed findings are recordable and machine-readable
 
 #### Scenario: Redact command produces sanitized copy
 
-- **WHEN** `ai-team redact redact` runs over evidence
+- **WHEN** `workaistrator redact redact` runs over evidence
 - **THEN** a detached copy is written where every secret match is replaced
   with `[REDACTED:<reason>]`
 
@@ -59,7 +59,7 @@ contains secrets, unless the operator explicitly disables the blocker.
 
 #### Scenario: Export refused on secrets
 
-- **WHEN** `ai-team export <run_id>` runs over evidence containing secrets
+- **WHEN** `workaistrator export <run_id>` runs over evidence containing secrets
 - **THEN** export MUST fail and name the redaction reason
 - **AND** no bundle or verified-export record is produced
 
@@ -90,7 +90,7 @@ housekeeping contract — not a legal-compliance obligation.
 
 - **WHEN** `retention.older_than`, `retention.keep_last` or `retention.prune_runs`
   are set in config
-- **THEN** `ai-team gc` uses them as defaults
+- **THEN** `workaistrator gc` uses them as defaults
 - **AND** explicit `gc` flags take precedence over config
 
 #### Scenario: Invalid retention config is rejected

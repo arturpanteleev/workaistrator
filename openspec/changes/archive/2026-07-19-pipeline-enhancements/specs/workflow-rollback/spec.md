@@ -4,7 +4,7 @@
 CLI команда `run` MUST поддерживать флаг `--retry-from <agent-name>`.
 
 #### Scenario: Перезапуск с указанного агента
-- **КОГДА** пользователь запускает `ai-team run --retry-from coder`
+- **КОГДА** пользователь запускает `workaistrator run --retry-from coder`
 - **ТОГДА** пайплайн MUST пропустить всех агентов до `coder` (включительно: analyst, architect — пропущены)
 - **И** начать выполнение с агента `coder`
 - **И** артефакты пропущенных этапов MUST NOT удаляться
@@ -22,6 +22,6 @@ CLI команда `run` MUST поддерживать флаг `--retry-from <a
 
 #### Scenario: Retry на последнем агенте
 - **КОГДА** deployer завершился с ошибкой
-- **И** пользователь запускает `ai-team run --retry-from deployer`
+- **И** пользователь запускает `workaistrator run --retry-from deployer`
 - **ТОГДА** пайплайн MUST запустить только deployer заново
 - **И** старые артефакты deployer MUST быть перезаписаны

@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arturpanteleev/ai-team/pkg/config"
-	"github.com/arturpanteleev/ai-team/pkg/workflow"
+	"github.com/arturpanteleev/workaistrator/pkg/config"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/workflow"
 )
 
 func TestWorkflowCatalogListsCardsWithVersionsAndGraphCounts(t *testing.T) {

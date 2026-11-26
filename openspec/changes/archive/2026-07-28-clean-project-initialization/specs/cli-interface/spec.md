@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: Init
-`ai-team init` MUST создать `.ai-team/config.yaml`, artifact tasks, reports и
+`workaistrator init` MUST создать `.ai-team/config.yaml`, artifact tasks, reports и
 logs directories. В Git repository команда MUST обеспечить ignore
 `.ai-team/`, не изменяя workspace по умолчанию.
 

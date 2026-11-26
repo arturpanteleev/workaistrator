@@ -141,7 +141,7 @@ async function installApi(page) {
 }
 
 async function open(page, target, { theme = 'light', width = 1440, height = 900, reducedMotion = 'no-preference' } = {}) {
-  await page.addInitScript((value) => { try { localStorage.setItem('ai-team:theme', value) } catch {} }, theme)
+  await page.addInitScript((value) => { try { localStorage.setItem('WorkAiStrator:theme', value) } catch {} }, theme)
   await page.emulateMedia({ reducedMotion })
   await page.setViewportSize({ width, height })
   await installApi(page)

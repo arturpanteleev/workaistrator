@@ -7,7 +7,7 @@
 ## 2. pkg/ui — Persistent Status Bar
 
 - [ ] 2.1 Переписать `ProgressBar` на ANSI escape: `\033[s` (save cursor), `\033[u` (restore), `\033[K` (clear line)
-- [ ] 2.2 Создать `StatusBar` — нижняя строка: `[ai-team] <project> | <feature> | <agent> (N/M)`
+- [ ] 2.2 Создать `StatusBar` — нижняя строка: `[WorkAiStrator] <project> | <feature> | <agent> (N/M)`
 - [ ] 2.3 Создать `StatusWriter` — обёртка `io.Writer`, перерисовывает status bar после каждого `\n`
 - [ ] 2.4 Интегрировать StatusBar в PipelineStatus вместо ProgressBar
 - [ ] 2.5 Отключать status bar если stdout не терминал

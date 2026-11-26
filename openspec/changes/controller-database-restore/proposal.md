@@ -8,7 +8,7 @@ should verify the SQLite file before publication.
 
 ## Scope
 
-Add `ai-team db restore --from <snapshot> --out <new-path>`. It checks
+Add `workaistrator db restore --from <snapshot> --out <new-path>`. It checks
 `PRAGMA integrity_check`, writes a consistent copy to a fresh destination with
 mode 0600, and refuses symlink inputs or an existing output.
 

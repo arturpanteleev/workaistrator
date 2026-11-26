@@ -6,7 +6,7 @@
 
 Hard rules `project_checks` and `pr_checks_green` MUST be available on PR link
 stages and MUST run identically for results submitted by humans or agents.
-`project_checks` MUST run `ai-team gate` against a detached checkout of the PR
+`project_checks` MUST run `workaistrator gate` against a detached checkout of the PR
 head and its exact base; gate policy MUST come from the pinned base. The
 controller checkout MUST remain on its original branch and HEAD. `pr_checks_green`
 MUST use `gh pr checks` and fail closed if the PR identity changes during the

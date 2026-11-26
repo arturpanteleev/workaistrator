@@ -59,7 +59,7 @@ const (
 	// TrackerInboundConflict — запрос нельзя выполнить без решения оператора:
 	// неоднозначная карта статусов или недопустимый маршрут.
 	TrackerInboundConflict = "conflict"
-	// TrackerInboundIgnored — не запрос: собственное эхо ai-team, статус вне
+	// TrackerInboundIgnored — не запрос: собственное эхо WorkAiStrator, статус вне
 	// карты, карточка без связи.
 	TrackerInboundIgnored = "ignored"
 	// TrackerInboundSuperseded — граф ушёл с этапа запроса или связь снята.
@@ -83,7 +83,7 @@ type TrackerInbound struct {
 	IssueKey   string `json:"issue_key"`
 	FromStatus string `json:"from_status"`
 	ToStatus   string `json:"to_status"`
-	// Origin — ai-team (собственное эхо) или external.
+	// Origin — WorkAiStrator (собственное эхо) или external.
 	Origin    string    `json:"origin"`
 	Author    string    `json:"author,omitempty"`
 	ChangedAt time.Time `json:"changed_at"`

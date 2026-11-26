@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/arturpanteleev/ai-team/pkg/checks"
+	"github.com/arturpanteleev/workaistrator/pkg/engine/stage/checks"
 )
 
 // ApplyDetectedChecks adds explicit, inspectable required checks when a known

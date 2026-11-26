@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arturpanteleev/ai-team/pkg/web/store"
+	"github.com/arturpanteleev/workaistrator/pkg/web/store"
 	"github.com/gorilla/websocket"
 )
 

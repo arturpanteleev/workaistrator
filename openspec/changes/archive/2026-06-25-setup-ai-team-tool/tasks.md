@@ -1,7 +1,7 @@
 ## 1. Go-модуль и скелет проекта
 
-- [x] 1.1 Инициализировать Go-модуль `github.com/arturpanteleev/ai-team`
-- [x] 1.2 Создать дерево директорий: `cmd/ai-team/`, `pkg/{config,artifact,runtime,agent,pipeline}`, `agents/`, `testdata/`
+- [x] 1.1 Инициализировать Go-модуль `github.com/arturpanteleev/workaistrator`
+- [x] 1.2 Создать дерево директорий: `cmd/workaistrator/`, `pkg/{config,artifact,runtime,agent,pipeline}`, `agents/`, `testdata/`
 - [x] 1.3 Добавить `.gitignore` (go, openspec, .ai-team)
 - [x] 1.4 Создать `Makefile` с целями: `build`, `test`, `clean`
 
@@ -46,7 +46,7 @@
 - [x] 6.4 Реализовать настройку пайплайна из config.yaml (поддержка кастомного порядка)
 - [x] 6.5 Написать unit-тесты с мок-агентами
 
-## 7. CLI (cmd/ai-team)
+## 7. CLI (cmd/workaistrator)
 
 - [x] 7.1 Реализовать `main.go` с CLI-фреймворком (cobra или std flag)
 - [x] 7.2 Реализовать команду `init`:
@@ -76,6 +76,6 @@
 
 ## 10. Сборка и документация
 
-- [x] 10.1 Проверить, что `go build ./cmd/ai-team` успешно собирается
+- [x] 10.1 Проверить, что `go build ./cmd/workaistrator` успешно собирается
 - [x] 10.2 Написать `README.md` с примерами использования
 - [x] 10.3 Написать `CLAUDE.md` для AI-агентов, работающих над этим проектом

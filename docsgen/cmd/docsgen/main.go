@@ -1,4 +1,4 @@
-// Command docsgen builds the static ai-team documentation site from the
+// Command docsgen builds the static WorkAiStrator documentation site from the
 // repository's Markdown sources.
 //
 // Usage: go run ./docsgen [--out <dir>]
@@ -18,13 +18,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/arturpanteleev/ai-team/docsgen"
+	"github.com/arturpanteleev/workaistrator/docsgen"
 )
 
 func main() {
 	out := flag.String("out", "docs/_site", "output directory for the generated site")
 	basePath := flag.String("base-path", "", "site base path, e.g. /ai-team for a GitHub Pages project site")
-	githubRepo := flag.String("github-repo", "arturpanteleev/ai-team", "owner/repo used to rewrite directory links to GitHub tree URLs")
+	githubRepo := flag.String("github-repo", "arturpanteleev/workaistrator", "owner/repo used to rewrite directory links to GitHub tree URLs")
 	flag.Parse()
 
 	root, err := os.Getwd()

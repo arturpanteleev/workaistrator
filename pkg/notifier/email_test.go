@@ -113,7 +113,7 @@ func (s *fakeSMTP) serve(conn net.Conn) {
 
 func TestEmailSendsPlainTextMessageThroughSMTP(t *testing.T) {
 	server := startFakeSMTP(t, nil)
-	channel := NewEmailChannel("leads", "smtp://bot:s3cr3t-pass@"+server.addr(), "ai-team <bot@example.test>", []string{"Lead <lead@example.test>", "qa@example.test"})
+	channel := NewEmailChannel("leads", "smtp://bot:s3cr3t-pass@"+server.addr(), "WorkAiStrator <bot@example.test>", []string{"Lead <lead@example.test>", "qa@example.test"})
 	if channel.Name() != "leads" {
 		t.Fatalf("name=%q", channel.Name())
 	}
@@ -130,9 +130,9 @@ func TestEmailSendsPlainTextMessageThroughSMTP(t *testing.T) {
 		t.Fatalf("envelope from=%q to=%v", got.from, got.to)
 	}
 	for _, want := range []string{
-		"From: \"ai-team\" <bot@example.test>\r\n",
+		"From: \"WorkAiStrator\" <bot@example.test>\r\n",
 		"To: \"Lead\" <lead@example.test>, <qa@example.test>\r\n",
-		"Message-ID: <ai-team-event-42@ai-team.invalid>\r\n",
+		"Message-ID: <ai-team-event-42@WorkAiStrator.invalid>\r\n",
 		"Content-Type: text/plain; charset=utf-8\r\n",
 		"\r\nhttps://ai-team.example/tasks/run-42\r\n",
 	} {

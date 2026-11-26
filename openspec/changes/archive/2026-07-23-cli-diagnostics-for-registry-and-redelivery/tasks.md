@@ -5,10 +5,10 @@
 - [x] 1.3 specs/cli-interface/spec.md (MODIFIED)
 - [x] 1.4 tasks.md (этот файл)
 
-## 2. Finding 9 — `ai-team list` не должен терять агентов молча
+## 2. Finding 9 — `workaistrator list` не должен терять агентов молча
 
 - [x] 2.1 `agent.Registry.List()` → `(agents []*Agent, failures []LoadFailure)`
-- [x] 2.2 `cmd/ai-team/main.go cmdList()` печатает failures в stderr
+- [x] 2.2 `cmd/workaistrator/main.go cmdList()` печатает failures в stderr
 - [x] 2.3 Обновить существующий вызов в `pkg/agent/registry_test.go`
 - [x] 2.4 Новый тест: невалидный, не-shadowing agent виден в failures, не
       теряется среди валидных
@@ -17,7 +17,7 @@
 
 - [x] 3.1 `evidence.FindDelivered(runsRoot, feature)` — сканирует run.json +
       attempt manifests, ищет deployer attempt с непустым CommitSHA/PRURL
-- [x] 3.2 `cmd/ai-team/main.go warnIfAlreadyDelivered` — вызывается из
+- [x] 3.2 `cmd/workaistrator/main.go warnIfAlreadyDelivered` — вызывается из
       `cmdRun()` только для свежего run (не `--retry-from`)
 - [x] 3.3 Тесты: находит доставленный run; игнорирует другие фичи и
       незавершённые/partial delivery attempts; not-found на отсутствующем
