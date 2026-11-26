@@ -422,9 +422,12 @@ test('Chromium viewport flow reads, decides, resumes and reloads the persisted i
     run('git', ['commit', '-m', 'Initialize browser E2E target'], { cwd: target })
     run('git', ['push', '-u', 'origin', 'master'], { cwd: target })
     // Initialize only after Git exists so WorkAiStrator can put .ai-team/ in the
-    // repository-local exclude file. The first admitted run then starts from
-    // a genuinely clean workspace, matching the server's real preflight.
+    // repository-local exclude file. Init also creates workflow.yaml and
+    // .env.example; commit them so the first admitted run starts from a
+    // genuinely clean workspace, matching the server's real preflight.
     run(binary, ['init', '--target', target], { cwd: repoDir })
+    run('git', ['add', '.env.example', 'workflow.yaml'], { cwd: target })
+    run('git', ['commit', '-m', 'Add onboarding files'], { cwd: target })
     expect(run('git', ['status', '--porcelain', '--untracked-files=all'], { cwd: target })).toBe('')
 
     await mkdir(mockBin, { recursive: true })

@@ -86,7 +86,7 @@ func reviewFixture(t *testing.T, diff string, flags ...string) (*External, Reque
 	if err := os.MkdirAll(agentDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	script, err := os.ReadFile("../../../e2etest/container-review-agent/review.sh")
+	script, err := os.ReadFile("../../../../e2etest/container-review-agent/review.sh")
 	if err != nil {
 		t.Fatal(err)
 	}
